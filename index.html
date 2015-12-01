@@ -4,21 +4,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1,
                                  maximum-scale=1 user-scalable=no">
 
-  <!-- jQuery includes -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-
-  <!-- Angular includes -->
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
 
   <!-- Bootstrap includes -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
-  <script type="text/javascript" src="js/bootstrap.min.js"></script>
 
-  <!-- Bootstrap includes -->
-  <script type="text/javascript" src="js/angular.js"></script>
-  <script type="text/javascript" src="js/controller.js"></script>
-  <script type="text/javascript" src="js/index.js"></script>
+  <!-- User includes -->
   <link rel="stylesheet" type="text/css" href="css/index.css" />
 </head>
 
@@ -61,29 +52,53 @@
   <!-- viewport -->
   <div id="base_view" class="col-sm-12 col-md-10 container-fluid relative-wrapper">
     <!-- search bar -->
-    <div id="hidden base_searchbar" class="absolute-wrapper">
+    <div id="base_searchbar" class="absolute-wrapper">
       <div  class="col-xs-12 absolute-wrapper"></div>
-      <span class="col-xs-12 absolute-wrapper"></span>
+      <span id="searchbar_search" class="col-xs-12 absolute-wrapper">search</span>
     </div>
 
     <!-- image -->
     <div id="base_image" class="absolute-wrapper">
-      <!--<img class="img-responsive" />-->
+      <img class="img-responsive" src="img/charizard2.jpg"/>
     </div>
 
     <!-- overlay -->
-    <div id="hidden base_overlay-container"  class="col-xs-12 absolute-wrapper">
+    <div id="base_overlay-container"  class="col-xs-12 absolute-wrapper">
       <div class="hidden-xs hidden-sm col-spacers col-md-2"></div>
       <div class="col-sm-12 col-md-8">
-        <div id="base_overlay" class="absolute-wrapper">
+        <div id="base_overlay" class="text-center absolute-wrapper">
+          <!-- fullscreen glyphicon glyphicon-resize-full       -->
+          <span class="glyphicon glyphicon-resize-full"></span>
+
+          <!-- left       glyphicon glyphicon-chevron-left      -->
+          <span class="glyphicon glyphicon-chevron-left"></span>
+
+          <!-- right      glyphicon glyphicon-chevron-right     -->
+          <span class="glyphicon glyphicon-chevron-right"></span>
+
+          <!-- pause      glyphicon glyphicon-pause             -->
+          <span class="glyphicon glyphicon-pause"></span>
+
+          <!-- download   glyphicon glyphicon-download-alt      -->
+          <span class="glyphicon glyphicon-download-alt"></span>
+
+          <!-- save       glyphicon glyphicon-save              -->
+          <span class="glyphicon glyphicon-save"></span>
+
+          <!-- info       glyphicon glyphicon-option-horizontal -->
+          <span class="glyphicon glyphicon-option-horizontal"></span>
         </div>
       </div>
       <div class="hidden-xs hidden-sm col-spacers col-md-2"></div>
     </div>
 
     <!-- searches -->
-    <div id="hidden base_searches" class="absolute-wrapper">
-      <!--<div class="image-square-container"><img src="" /</div>-->
+    <div id="base_searches" class="absolute-wrapper">
+      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
+      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
+      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
+      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
+      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
     </div>
 
   </div>
@@ -91,6 +106,18 @@
   <!-- spacers -->
   <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
 </div>
+
+
+<!-- jQuery includes -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<!-- Angular includes -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+<!-- Bootstrap includes -->
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<!-- User includes -->
+<script type="text/javascript" src="js/angular.js"></script>
+<script type="text/javascript" src="js/controller.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
 </body>
 
 </html>
