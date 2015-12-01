@@ -1,6 +1,102 @@
+/* Fonts */
+@font-face {
+  font-family: "Pokemon GB";
+  src: url("../fonts/Pokemon_GB.eot?")          format("eot"),
+       url("../fonts/Pokemon_GB.woff")          format("woff"),
+       url("../fonts/Pokemon_GB.ttf")           format("truetype"),
+       url("../fonts/Pokemon_GB.svg#PokemonGB") format("svg");
+  font-weight:normal;
+  font-style:normal;
+}
+
 /* Bootstrap overrides */
 .absolute-wrapper {
   position: absolute;
+  height: 100%;
+}
+
+.relative-wrapper {
+  position: relative;
+  height: 100%;
 }
 
 /* User defined */
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.image-square-container {
+  position: relative;
+  padding: 0;
+  width:  100px;
+  height: 100px;
+  border: 1px solid black;
+  float: left;
+  overflow: hidden;
+}
+
+.image-square-container img {
+  width: 100% !important;
+  background-position: 50% 50%;
+}
+
+
+
+/* User defined IDs */
+#base_searchbar {
+  z-index: 1;
+  width: 100%;
+}
+  #base_searchbar div {
+    height: 100%
+    z-index: 2;
+
+    background-image: linear-gradient(0deg, #94C31D, #BEDB77);
+    opacity: 0.4;
+  }
+
+  #base_searchbar span {
+    height: 100px;
+    bottom: 15px;
+    z-index: 3;
+    color: white;
+
+    font-size: 48pt;
+    font-family: "Pokemon GB";
+  }
+
+#base_back {
+  z-index: 0;
+  /*background-image: linear-gradient(0deg, #B7D86B, #DEEDBB);*/
+  background-image: url("../img/subtle_white_mini_waves.png");
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  padding: 0;
+}
+
+#base_view { padding: 0; margin: 0 auto; }
+
+#base_image {
+  width: 100%;
+  background-image: linear-gradient(0deg, #000000, #333333);
+}
+  #base_image img {
+    max-height: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+#base_searches {
+  width: 200px;
+  right: 0;
+  background-image: linear-gradient(0deg, #010100, #000000);
+  overflow-y: auto;
+  overflow-x: hidden;
+  opacity: 0.3;
+}
+
+#base_overlay { padding: 15px; }
