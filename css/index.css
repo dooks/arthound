@@ -20,6 +20,11 @@
   height: 100%;
 }
 
+.col-spacers {
+  pointer-events: none;
+  opacity: 0;
+}
+
 /* User defined */
 html, body {
   height: 100%;
@@ -63,6 +68,7 @@ html, body {
     z-index: 3;
     color: white;
 
+    text-align: center;
     font-size: 48pt;
     font-family: "Pokemon GB";
   }
@@ -83,6 +89,7 @@ html, body {
   background-image: linear-gradient(0deg, #000000, #333333);
 }
   #base_image img {
+    border: 1px solid black;
     max-height: 100%;
     position: absolute;
     top: 50%;
@@ -99,4 +106,17 @@ html, body {
   opacity: 0.3;
 }
 
-#base_overlay { padding: 15px; }
+#base_overlay-container {
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+  #base_overlay-container > div {
+    height: 100%;
+  }
+
+  #base_overlay {
+    width: 100%;
+    height: 100px;
+    bottom: 0;
+  }

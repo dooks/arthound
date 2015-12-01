@@ -56,34 +56,40 @@
 <!-- backdrop -->
 <div id="base_back" class="col-xs-12 absolute-wrapper">
   <!-- spacers -->
-  <div class="hidden-xs hidden-sm col-md-1"></div>
+  <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
 
   <!-- viewport -->
   <div id="base_view" class="col-sm-12 col-md-10 container-fluid relative-wrapper">
     <!-- search bar -->
-    <div id="base_searchbar" class="absolute-wrapper">
+    <div id="hidden base_searchbar" class="absolute-wrapper">
       <div  class="col-xs-12 absolute-wrapper"></div>
-      <span class="col-xs-12 absolute-wrapper">search</span>
+      <span class="col-xs-12 absolute-wrapper"></span>
     </div>
 
     <!-- image -->
     <div id="base_image" class="absolute-wrapper">
-      <img class="img-responsive" src="img/charizard2.jpg" />
+      <!--<img class="img-responsive" />-->
     </div>
 
     <!-- overlay -->
-    <div id="base_overlay"  class="col-xs-12 absolute-wrapper">
+    <div id="hidden base_overlay-container"  class="col-xs-12 absolute-wrapper">
+      <div class="hidden-xs hidden-sm col-spacers col-md-2"></div>
+      <div class="col-sm-12 col-md-8">
+        <div id="base_overlay" class="absolute-wrapper">
+        </div>
+      </div>
+      <div class="hidden-xs hidden-sm col-spacers col-md-2"></div>
     </div>
 
     <!-- searches -->
-    <div id="base_searches" class="absolute-wrapper">
-      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
+    <div id="hidden base_searches" class="absolute-wrapper">
+      <!--<div class="image-square-container"><img src="" /</div>-->
     </div>
 
   </div>
 
   <!-- spacers -->
-  <div class="hidden-xs hidden-sm col-md-1"></div>
+  <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
 </div>
 </body>
 
