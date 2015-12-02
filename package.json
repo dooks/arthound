@@ -1,0 +1,20 @@
+{
+  "name": "pokeart",
+  "version": "0.0.0",
+  "description": "Pokemon fanart finder, pulling from several different sources.",
+  "scripts": {
+    "test": "tests/alltests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dooks/pokeart.git"
+  },
+  "author": "Dylan 'Ziggy' Lotivio",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dooks/pokeart/issues"
+  },
+  "dependencies": {
+    "jasmine": "~2.3.2"
+  }
+}
