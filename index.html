@@ -4,16 +4,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1,
                                  maximum-scale=1 user-scalable=no">
 
-
   <!-- Bootstrap includes -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
 
+  <!-- Jasmine testing -->
+  <!--<link rel="shortcut icon" type="image/png" href="tests/jasmine_favicon.png">-->
+  <!--<link rel="stylesheet" type="text/css"     href="tests/jasmine.css">-->
+
   <!-- User includes -->
   <link rel="stylesheet" type="text/css" href="css/index.css" />
+
 </head>
 
-<body>
+<body ng-app="ngPokemon">
 
 <!--info modal-->
 <!-- Small modal -->
@@ -50,15 +54,22 @@
   <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
 
   <!-- viewport -->
-  <div id="base_view" class="col-sm-12 col-md-10 container-fluid relative-wrapper">
+  <div id="base_view"
+    ng-controller="MainCtrl as main"
+    class="col-sm-12 col-md-10 container-fluid relative-wrapper">
+
     <!-- search bar -->
-    <div id="base_searchbar" class="absolute-wrapper">
-      <div  class="col-xs-12 absolute-wrapper"></div>
-      <span id="searchbar_search" class="col-xs-12 absolute-wrapper">search</span>
+    <div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar"
+         class="absolute-wrapper">
+      <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
+      <input type="text" ng-model="searchbar.search"
+             id="searchbar_search" class="col-xs-12 absolute-wrapper" />
     </div>
 
     <!-- image -->
-    <div id="base_image" class="absolute-wrapper">
+    <div id="base_image"
+         ng-controller="ImageCtrl as image"
+         class="absolute-wrapper">
       <img class="img-responsive" src="img/charizard2.jpg"/>
     </div>
 
@@ -66,7 +77,9 @@
     <div id="base_overlay-container"  class="col-xs-12 absolute-wrapper">
       <div class="hidden-xs hidden-sm col-spacers col-md-2"></div>
       <div class="col-sm-12 col-md-8">
-        <div id="base_overlay" class="text-center absolute-wrapper">
+        <div id="base_overlay"
+             ng-controller="OverlayCtrl"
+             class="text-center absolute-wrapper">
           <!-- fullscreen glyphicon glyphicon-resize-full       -->
           <span class="glyphicon glyphicon-resize-full"></span>
 
@@ -93,12 +106,9 @@
     </div>
 
     <!-- searches -->
-    <div id="base_searches" class="absolute-wrapper">
-      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
-      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
-      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
-      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
-      <div class="image-square-container"><img src="img/charizard1.jpg" /></div>
+    <div id="base_searches" ng-controller="SearchesCtrl as searches"
+         class="absolute-wrapper">
+      <tile class="image-square-container" tag="01234567"></tile>
     </div>
 
   </div>
@@ -117,7 +127,13 @@
 <!-- User includes -->
 <script type="text/javascript" src="js/angular.js"></script>
 <script type="text/javascript" src="js/controller.js"></script>
+<script type="text/javascript" src="js/directives.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
+
+<!-- Jasmine testing -->
+<!--<script type="text/javascript" src="tests/jasmine.js"></script>-->
+<!--<script type="text/javascript" src="tests/jasmine-html.js"></script>-->
+<!--<script type="text/javascript" src="tests/boot.js"></script>-->
 </body>
 
 </html>
