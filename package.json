@@ -14,7 +14,4 @@
   "bugs": {
     "url": "https://github.com/dooks/pokeart/issues"
   },
-  "dependencies": {
-    "jasmine": "~2.3.2"
-  }
 }
