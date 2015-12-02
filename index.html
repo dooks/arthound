@@ -60,7 +60,7 @@
 
     <!-- search bar -->
     <div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar"
-         class="absolute-wrapper">
+         class="hidden absolute-wrapper">
       <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
       <input type="text" ng-model="searchbar.search"
              id="searchbar_search" class="col-xs-12 absolute-wrapper" />
@@ -70,11 +70,11 @@
     <div id="base_image"
          ng-controller="ImageCtrl as image"
          class="absolute-wrapper">
-      <img class="img-responsive" src="img/charizard2.jpg"/>
+         <img class="img-responsive" />
     </div>
 
     <!-- overlay -->
-    <div id="base_overlay-container"  class="col-xs-12 absolute-wrapper">
+    <div id="base_overlay-container"  class="hidden col-xs-12 absolute-wrapper">
       <div class="hidden-xs hidden-sm col-spacers col-md-2"></div>
       <div class="col-sm-12 col-md-8">
         <div id="base_overlay"
@@ -107,7 +107,7 @@
 
     <!-- searches -->
     <div id="base_searches" ng-controller="SearchesCtrl as searches"
-         class="absolute-wrapper">
+         class="hidden absolute-wrapper">
       <tile class="image-square-container" tag="01234567"></tile>
     </div>
 
