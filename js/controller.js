@@ -28,7 +28,20 @@
       }
     };
 
-    self.changeSubstate = function(substate) { };
+    self.changeSubstate = function(substate) {
+      switch(substate) {
+        case "NONE":
+          // hide base_searchbar
+          ng_app.base_searchbar.addClass("hidden");
+          break;
+        case "INPUT":
+          // Show base_searchbar
+          ng_app.base_searchbar.removeClass("hidden");
+          break;
+        default:
+          break;
+      }
+    };
 
   }]);
 

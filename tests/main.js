@@ -28,6 +28,23 @@ describe("MainCtrl", function() {
       expect(ng_app.base_overlay_container.hasClass("hidden")).toBe(true);
     });
   });
+
+  describe("MainCtrl.changeSubstate", function() {
+
+    it("changeSubstate('NONE') should hide base_searchbar", function() {
+      scope.main.changeSubstate("NONE");
+      expect(ng_app.base_searchbar.hasClass("hidden")).toBe(true);
+    });
+
+    it("changeSubstate('INPUT') should show base_searchbar", function() {
+      scope.main.changeSubstate("INPUT");
+      expect(ng_app.base_searchbar.hasClass("hidden")).toBe(false);
+    });
+
+    it("changeSubstate('LOAD') shouldn't do anything...", function() {
+      scope.main.changeSubstate("LOAD");
+    });
+  });
 });
 
 }(ng_pokemon, "ngPokemon"));
