@@ -1,20 +1,27 @@
 (function(ng_app) {
-  // Do nothing
   ng_app.controller("MainCtrl", [function() {
     var self = this;
 
     self.state    = "DEFAULT"; // DEFAULT | SEARCHING | ACTIVE
     self.substate = "NONE";    //    NONE | LOADING   | INPUT
 
-    self.changeState = function(state) {
+    self.changeState = function(state, callback) {
+      self.state = state;
+
       switch(state) {
         case "DEFAULT":
-          // Accept keyboard input
-          // Nothing happening...
-          // Everything should be hidden except for...
-          //    base_back
-          //    base_view
-          //    base_image
+        case "SEARCHING":
+          // Clear image list
+          // hide base_searches
+          ng_app.base_searches.addClass("hidden");
+          // hide base_overlay_container
+          ng_app.base_overlay_container.addClass("hidden");
+          break;
+        case "ACTIVE":
+          // show base_searches
+          ng_app.base_searches.removeClass("hidden");
+          // show base_overlay_container
+          ng_app.base_overlay_container.removeClass("hidden");
           break;
         default:
           break;
