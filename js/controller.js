@@ -7,6 +7,8 @@
   ng_app.controller("SearchbarCtrl", [function() {
     // Handles the searching overlay, overrides typing
     var self = this;
+
+    self.search = ""; // bound ngModel with #searchbar_search
   }]);
 
   ng_app.controller("SearchesCtrl", [function() {

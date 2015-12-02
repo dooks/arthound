@@ -59,11 +59,11 @@
     class="col-sm-12 col-md-10 container-fluid relative-wrapper">
 
     <!-- search bar -->
-    <div id="base_searchbar"
-         ng-controller="SearchbarCtrl as searchbar"
+    <div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar"
          class="absolute-wrapper">
-      <div  class="col-xs-12 absolute-wrapper"></div>
-      <span id="searchbar_search" class="col-xs-12 absolute-wrapper">search</span>
+      <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
+      <input type="text" ng-model="searchbar.search"
+             id="searchbar_search" class="col-xs-12 absolute-wrapper" />
     </div>
 
     <!-- image -->
