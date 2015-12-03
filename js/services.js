@@ -69,24 +69,41 @@
     return keyboard;
   });
 
-  ng_app.factory("Search", function($rootScope) {
+  ng_app.factory("Search", ["$rootScope", "$http", function($rootScope, $http) {
     var search = {};
     search.query = "";
+    search.response = {};
 
-    search.clear = function() {
-      this.query = "";
-    }
+    // Search DEFAULTS
+    search.limit   = 10;
+    search.mature  = false;
+
+    search.clear         = function() { search.query = ""; }
+    search.clearResponse = function() { delete search.response; search.response = {}; }
 
     search.search = function(query) {
       // Where the "magic" happens, Performs HTTP search
-      //   @query: optional, search query to perform. Uses this.query if blank
-      this.broadcast();
-    };
+      //   @query: optional, search query to perform. Uses search.query if blank
 
-    search.broadcast = function() {
-      $rootScope.$broadcast("onsearch");
+      // Form GET request
+      // Example REST query for deviantart...
+      // https://www.deviantart.com/api/v1/oauth2/browse/tags?tag=charizard&limit=10&mature_content=false
+      // Requires OAuth
+      $rootScope.$broadcast("onsearching");
+      $http( {method: "GET", url: "tests/charizard.json"}).then(
+        function success(res) {
+          search.response = res.data;
+        },
+        function error(res) {
+          search.response = {}; // TODO: null, or empty object
+          console.error(res);
+        }
+      ).finally(
+        // Broadcast that search has been returned
+        function returned() { $rootScope.$broadcast("onsearchreturned"); }
+      );
     };
 
     return search;
-  });
+  }]);
 }(ng_pokemon));
