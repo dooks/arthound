@@ -10,24 +10,8 @@
       switch(state) {
         case "DEFAULT":
         case "SEARCHING":
-          // Clear image list
-          // hide base_searches
-          ng_app.base_searches.addClass("hidden");
-          // hide base_overlay_container
-          ng_app.base_overlay_container.addClass("hidden");
-
-          $rootScope.$broadcast("onstatechange");
-          break;
-
         case "ACTIVE":
-          // show base_searches
-          ng_app.base_searches.removeClass("hidden");
-          // show base_overlay_container
-          ng_app.base_overlay_container.removeClass("hidden");
           $rootScope.$broadcast("onstatechange");
-          break;
-
-        default:
           break;
       }
     };
@@ -37,20 +21,8 @@
 
       switch(substate) {
         case "NONE":
-          // hide base_searchbar
-          self.substate = "NONE";
-          ng_app.base_searchbar.addClass("hidden");
-          $rootScope.$broadcast("onsubstatechange");
-          break;
-
         case "INPUT":
-          // Show base_searchbar
-          self.substate = "INPUT";
-          ng_app.base_searchbar.removeClass("hidden");
           $rootScope.$broadcast("onsubstatechange");
-          break;
-
-        default:
           break;
       }
     };
@@ -101,7 +73,13 @@
     var search = {};
     search.query = "";
 
+    search.clear = function() {
+      this.query = "";
+    }
+
     search.search = function(query) {
+      // Where the "magic" happens, Performs HTTP search
+      //   @query: optional, search query to perform. Uses this.query if blank
       this.broadcast();
     };
 
