@@ -1,55 +1,53 @@
 (function(ng_app) {
-  ng_app.controller("MainCtrl", [function() {
-    var self = this;
+  ng_app.controller("SearchbarCtrl",
+    ["$scope", "State", "Keyboard", "Search",
+    function($scope, State, Keyboard, Search) {
 
-    self.state    = "DEFAULT"; // DEFAULT | SEARCHING | ACTIVE
-    self.substate = "NONE";    //    NONE | LOADING   | INPUT
-
-    self.changeState = function(state, callback) {
-      self.state = state;
-
-      switch(state) {
-        case "DEFAULT":
-        case "SEARCHING":
-          // Clear image list
-          // hide base_searches
-          ng_app.base_searches.addClass("hidden");
-          // hide base_overlay_container
-          ng_app.base_overlay_container.addClass("hidden");
-          break;
-        case "ACTIVE":
-          // show base_searches
-          ng_app.base_searches.removeClass("hidden");
-          // show base_overlay_container
-          ng_app.base_overlay_container.removeClass("hidden");
-          break;
-        default:
-          break;
-      }
-    };
-
-    self.changeSubstate = function(substate) {
-      switch(substate) {
-        case "NONE":
-          // hide base_searchbar
-          ng_app.base_searchbar.addClass("hidden");
-          break;
-        case "INPUT":
-          // Show base_searchbar
-          ng_app.base_searchbar.removeClass("hidden");
-          break;
-        default:
-          break;
-      }
-    };
-
-  }]);
-
-  ng_app.controller("SearchbarCtrl", [function() {
     // Handles the searching overlay, overrides typing
     var self = this;
 
-    self.search = ""; // bound ngModel with #searchbar_search
+    $scope.$on("onkeyup", function() {
+      if(State.substate === "NONE") {
+        // activate INPUT substate
+        State.changeSubstate("INPUT");
+
+        // Add first letter to Search term
+        self.search += Keyboard.ord;
+
+        // Focus
+        ng_app.searchbar_search.focus();
+      }
+    });
+
+    $scope.$on("onkeyenter", function() {
+      // Clear Search
+      self.search = "";
+
+      // If substate INPUT, initiate Search
+      if(State.substate === "INPUT") {
+        // lose focus...
+        ng_app.searchbar_search.blur();
+
+        // Change State and substate
+        State.changeSubstate("NONE");
+        State.changeState("SEARCHING");
+
+        Search.search($scope.search);
+      }
+    });
+
+    $scope.$on("onkeyesc", function() {
+      // Clear Search
+      self.search = "";
+
+      if(State.substate === "INPUT") {
+        // switch to NONE substate
+        State.changeSubstate("NONE");
+
+        // lose focus...
+        ng_app.searchbar_search.blur();
+      }
+    });
   }]);
 
   ng_app.controller("SearchesCtrl", [function() {

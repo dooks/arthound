@@ -54,15 +54,13 @@
   <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
 
   <!-- viewport -->
-  <div id="base_view"
-    ng-controller="MainCtrl as main"
-    class="col-sm-12 col-md-10 container-fluid relative-wrapper">
+  <div id="base_view" class="col-sm-12 col-md-10 container-fluid relative-wrapper">
 
     <!-- search bar -->
-    <div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar"
+    <div id="base_searchbar" ng-controller="SearchbarCtrl as search"
          class="hidden absolute-wrapper">
       <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
-      <input type="text" ng-model="searchbar.search"
+      <input type="text" ng-model="search.search"
              id="searchbar_search" class="col-xs-12 absolute-wrapper" />
     </div>
 
