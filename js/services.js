@@ -78,7 +78,8 @@
     search.limit   = 10;
     search.mature  = false;
 
-    search.clear = function() { search.query = ""; }
+    search.clear         = function() { search.query = ""; }
+    search.clearResponse = function() { delete search.response; search.response = {}; }
 
     search.search = function(query) {
       // Where the "magic" happens, Performs HTTP search
@@ -89,18 +90,17 @@
       // https://www.deviantart.com/api/v1/oauth2/browse/tags?tag=charizard&limit=10&mature_content=false
       // Requires OAuth
       $rootScope.$broadcast("onsearching");
-      $http( {method: "GET", url: "tests/charizard.json"}).finally(
-        // Broadcast that search has been returned
-        function returned() { $rootScope.$broadcast("onsearchreturned"); }
-      ).then(
+      $http( {method: "GET", url: "tests/charizard.json"}).then(
         function success(res) {
           search.response = res.data;
-          console.log(res);
         },
         function error(res) {
           search.response = {}; // TODO: null, or empty object
-          console.log(res);
+          console.error(res);
         }
+      ).finally(
+        // Broadcast that search has been returned
+        function returned() { $rootScope.$broadcast("onsearchreturned"); }
       );
     };
 
