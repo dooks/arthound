@@ -58,9 +58,9 @@
     });
   }]);
 
-  ng_app.controller("SearchesCtrl",
-    ["$scope", "State", "Keyboard", "Search",
-    function($scope, State, Keyboard, Search) {
+  ng_app.controller("ListingCtrl",
+    ["$scope", "State", "Search",
+    function($scope, State, Search) {
     // Handles the searchlist overlay, which contains a grid list of searches found
     var self = this;
 
@@ -76,6 +76,11 @@
           ng_app.base_searches.removeClass("hidden");
           break;
       }
+    });
+
+    $scope.$on("onsearchreturned", function() {
+      // Hand off to a listing service
+      console.log(Search.response);
     });
   }]);
 
