@@ -36,14 +36,13 @@
       if(State.substate === "INPUT") {
         // lose focus, search, and clear
         ng_app.searchbar_search.blur();
-        Search.search();
-        Search.clear();
 
         // Change State and substate
         State.changeSubstate("NONE");
         State.changeState("SEARCHING");
 
         Search.search($scope.search);
+        Search.clear();
       }
     });
 
