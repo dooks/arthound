@@ -102,13 +102,11 @@ html, body {
     margin: 0 auto;
   }
 
-#base_searches {
-  width: 200px;
-  right: 0;
+#base_listing {
+  width: 200px !important; // Overridden by jQuery scrollbar
   background-image: linear-gradient(0deg, #010100, #000000);
-  overflow-y: auto;
-  overflow-x: hidden;
   opacity: 0.3;
+  right: 0;
 }
 
   #base_listing div {
