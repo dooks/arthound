@@ -1,7 +1,8 @@
 (function(ng_app) {
   ng_app.factory("State", ["$rootScope", function($rootScope) {
     var state = {};
-    state.state    = "DEFAULT"; // DEFAULT | SEARCHING | ACTIVE
+    // TODO: why does initializing this make it persistent....?
+    //state.state    = "DEFAULT"; // DEFAULT | SEARCHING | ACTIVE
     state.substate = "NONE";    //    NONE | INPUT
 
     state.changeState = function(state) {

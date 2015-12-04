@@ -40,9 +40,7 @@
         // Change State and substate
         State.changeSubstate("NONE");
         State.changeState("SEARCHING");
-
-        Search.search($scope.search);
-        Search.clear();
+        Search.search(ng_app.searchbar_search.val());
       }
     });
 
@@ -83,14 +81,8 @@
       // Hand off to a listing service
       Navigate.populate(Search.response.results);
       Search.clearResponse();
-    });
 
-    $scope.$on("onnavigatepop", function() {
-      // Navigate to first item on list
-      Navigate.to(0);
       self.listing = Navigate.listing; // Make available to directive
-      console.log(self.listing);
-
       State.changeState("ACTIVE");
     });
 
