@@ -110,9 +110,20 @@
     });
   }]);
 
-  ng_app.controller("ImageCtrl", [function() {
+  ng_app.controller("ImageCtrl",
+    ["$scope", "State", "Navigate",
+    function($scope, State, Navigate) {
     // Handles current image being shown
     var self = this;
+    var current = {};
+
+    $scope.$on("onnavigate", function() {
+      // Display preview image if available, otherwise full resolution picture
+      current = Navigate.listing[Navigate.current];
+      var image = (current.preview || current.content);
+      console.log(current);
+      ng_app.image.attr("src", image.src);
+    });
   }]);
 
 }(ng_pokemon));

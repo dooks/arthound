@@ -42,12 +42,8 @@ html, body {
   overflow: hidden;
 }
 
-.image-square-container div img {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-  background-position: -50% -50%;
-}
+.image-square-container > div { width: 100%; height: 100%; }
+.image-square-container > div > img { max-height: 100%; }
 
 
 
@@ -109,7 +105,7 @@ html, body {
   right: 0;
 }
 
-  #base_listing div {
+  #base_listing > div {
     height: 100%;
   }
 
