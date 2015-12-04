@@ -10,22 +10,14 @@
     };
   });
 
-  ng_app.directive("tile", function($compile) {
+  ng_app.directive("tile", ["Navigate", function(Navigate) {
     return {
-      restrict: "E",
+      restrict: "A",
       link: function(scope, element, attrs) {
-        var html = "<div class='" + attrs.class +
-                   "'><img src='" + "img/charizard1.jpg" +
-                   "' /></div>";
-        var e = $compile(html)(scope);
-
-        e.bind("click", function() {
-          // Do nothing...
-          console.log("Clicked " + attrs.tag);
-        });
-        element.replaceWith(e);
+        // Navigate to selected index
+        element.bind("click", function() { Navigate.to(attrs.index); });
       }
     };
-  });
+  }]);
 
 }(ng_pokemon));

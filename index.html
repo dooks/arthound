@@ -14,6 +14,7 @@
 
   <!-- User includes -->
   <link rel="stylesheet" type="text/css" href="css/index.css" />
+  <link rel="stylesheet" type="text/css" href="css/jquery.scrollbar.css" />
 
 </head>
 
@@ -103,10 +104,19 @@
       <div class="hidden-xs hidden-sm col-spacers col-md-2"></div>
     </div>
 
-    <!-- searches -->
-    <div id="base_searches" ng-controller="SearchesCtrl as searches"
-         class="hidden absolute-wrapper">
-      <tile class="image-square-container" tag="01234567"></tile>
+    <!-- listing -->
+    <div id="base_listing" ng-controller="ListingCtrl as listing" class="absolute-wrapper">
+        <div class="scrollbar-inner">
+          <div ng-repeat="item in listing.listing">
+            <div tile tag="{{ item.deviationid }}" index="{{ $index }}"
+                 class="image-square-container">
+              <div ng-repeat="img in item.thumbs" ng-if="$index == 2">
+                <img ng-src="{{ img.src }}" />
+              </div>
+            </div>
+          </div>
+        </div>
+     </div>
     </div>
 
   </div>
@@ -129,6 +139,9 @@
 
 <!-- Bootstrap includes -->
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
+
+<!-- Plugin includes -->
+<script src="js/jquery.scrollbar.min.js"></script>
 
 <!-- User includes -->
 <script type="text/javascript" src="js/angular.js"></script>
