@@ -10,11 +10,12 @@
     };
   });
 
-  ng_app.directive("tile", [function() {
+  ng_app.directive("tile", ["Navigate", function(Navigate) {
     return {
       restrict: "A",
       link: function(scope, element, attrs) {
-        element.bind("click", function() { console.log("Clicked " + attrs.tag); });
+        // Navigate to selected index
+        element.bind("click", function() { Navigate.to(attrs.index); });
       }
     };
   }]);

@@ -108,9 +108,11 @@
     <div id="base_listing" ng-controller="ListingCtrl as listing" class="absolute-wrapper">
         <div class="scrollbar-inner">
           <div ng-repeat="item in listing.listing">
-            <div tile tag="{{ item.deviationid }}" class="image-square-container"
-              ng-repeat="img in item.thumbs" ng-if="$index == 2">
-              <img ng-src="{{ img.src }}" />
+            <div tile tag="{{ item.deviationid }}" index="{{ $index }}"
+                 class="image-square-container">
+              <div ng-repeat="img in item.thumbs" ng-if="$index == 2">
+                <img ng-src="{{ img.src }}" />
+              </div>
             </div>
           </div>
         </div>

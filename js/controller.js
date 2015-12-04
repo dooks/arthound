@@ -83,6 +83,7 @@
       Search.clearResponse();
 
       self.listing = Navigate.listing; // Make available to directive
+      Navigate.to(0); // Navigate to first element
       State.changeState("ACTIVE");
     });
 
