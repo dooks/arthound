@@ -11,6 +11,7 @@ var ng_pokemon = (function(ng) {
   ng_app.base_searchbar   = $("#base_searchbar");
   ng_app.searchbar_search = $("#searchbar_search");
   ng_app.base_image       = $("#base_image");
+  ng_app.image            = $("#base_image img");
   ng_app.base_overlay     = $("#base_overlay");
   ng_app.base_listing     = $("#base_listing");
   ng_app.base_overlay_container = $("#base_overlay_container");
