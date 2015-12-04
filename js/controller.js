@@ -59,29 +59,41 @@
   }]);
 
   ng_app.controller("ListingCtrl",
-    ["$scope", "State", "Search",
-    function($scope, State, Search) {
+    ["$scope", "State", "Search", "Navigate",
+    function($scope, State, Search, Navigate) {
     // Handles the searchlist overlay, which contains a grid list of searches found
     var self = this;
+    self.listing = {};
 
     $scope.$on("onstatechange", function() {
       switch(State.state) {
         case "DEFAULT":
         case "SEARCHING":
-          ng_app.base_searches.addClass("hidden");
+          ng_app.base_listing.addClass("hidden");
           break;
 
         case "ACTIVE":
-          // show base_searches
-          ng_app.base_searches.removeClass("hidden");
+          // show base_listing
+          ng_app.base_listing.removeClass("hidden");
           break;
       }
     });
 
     $scope.$on("onsearchreturned", function() {
       // Hand off to a listing service
-      console.log(Search.response);
+      Navigate.populate(Search.response.results);
+      Search.clearResponse();
     });
+
+    $scope.$on("onnavigatepop", function() {
+      // Navigate to first item on list
+      Navigate.to(0);
+      self.listing = Navigate.listing; // Make available to directive
+      console.log(self.listing);
+
+      State.changeState("ACTIVE");
+    });
+
   }]);
 
   ng_app.controller("OverlayCtrl",
@@ -98,7 +110,7 @@
           break;
 
         case "ACTIVE":
-          // show base_searches
+          // show base_listing
           ng_app.base_overlay_container.removeClass("hidden");
           break;
       }

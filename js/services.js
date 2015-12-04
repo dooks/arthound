@@ -1,5 +1,5 @@
 (function(ng_app) {
-  ng_app.factory("State", function($rootScope) {
+  ng_app.factory("State", ["$rootScope", function($rootScope) {
     var state = {};
     state.state    = "DEFAULT"; // DEFAULT | SEARCHING | ACTIVE
     state.substate = "NONE";    //    NONE | INPUT
@@ -28,9 +28,9 @@
     };
 
     return state;
-  });
+  }]);
 
-  ng_app.factory("Keyboard", function($rootScope) {
+  ng_app.factory("Keyboard", ["$rootScope", function($rootScope) {
     var keyboard = {};
     keyboard.key = '';
     keyboard.ord = null;
@@ -67,7 +67,7 @@
     };
 
     return keyboard;
-  });
+  }]);
 
   ng_app.factory("Search", ["$rootScope", "$http", function($rootScope, $http) {
     var search = {};
@@ -81,9 +81,16 @@
     search.clear         = function() { search.query = ""; }
     search.clearResponse = function() { delete search.response; search.response = {}; }
 
+    search.suggestions = function(query) {
+      // Provide list of similar Pokemon queries to aid with mispellings
+    };
+
     search.search = function(query) {
       // Where the "magic" happens, Performs HTTP search
       //   @query: optional, search query to perform. Uses search.query if blank
+
+      // Clear previous response if hasn't already happened...
+      search.clearResponse();
 
       // Form GET request
       // Example REST query for deviantart...
@@ -105,5 +112,41 @@
     };
 
     return search;
+
+  }]);
+
+  ng_app.factory("Navigate", ["$rootScope", function($rootScope) {
+    var navigate = {};
+    navigate.listing = []; // Contains listing data
+    navigate.current =  0;// Index of image to be displayed
+
+    navigate.populate = function(obj) {
+      // Populate navigate.listing and broadcast event
+      navigate.listing = obj;
+      navigate.broadcastPop();
+    };
+
+    navigate.next = function() {
+      if((navigate.current + 1) < navigate.listing.length) {
+        navigate.current += 1; this.broadcastNav(); return true;
+      } else { return false; }
+    };
+
+    navigate.prev = function() {
+      if((navigate.current - 1) >= 0) {
+        navigate.current -= 1; this.broadcastNav(); return true;
+      } else { return false; }
+    };
+
+    navigate.to = function(n) {
+      if(n <  navigate.listing.length && n >= 0) {
+        navigate.current = n; this.broadcastNav(); return true;
+      } else { return false; }
+    };
+
+    navigate.broadcastNav = function() { $rootScope.$broadcast("onnavigate"); }
+    navigate.broadcastPop = function() { $rootScope.$broadcast("onnavigatepop"); }
+
+    return navigate;
   }]);
 }(ng_pokemon));
