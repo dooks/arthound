@@ -51,7 +51,7 @@
 
         // this is a new search, so clear the old response...
         Search.clearResponse();
-        Search.search();
+        Search.queue();
 
         // Force $scope to update
         Search.clear();
@@ -99,7 +99,7 @@
 
     $scope.$on("onsearchreturned", function() {
       // Hand off to a listing service
-      Navigate.populate(Search.response.results);
+      Navigate.populate(Search.response);
       Search.clearResponse();
 
       self.listing = Navigate.listing; // Make available to directive
@@ -140,7 +140,7 @@
       ng_app.info_help.addClass("hidden");
 
       // Convert date to readable Date
-      var date = new Date(self.current.published_time * 1000);
+      var date = new Date(self.current.date * 1000);
       self.date = date.toDateString();
 
       console.log(self.current);
