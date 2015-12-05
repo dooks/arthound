@@ -36,7 +36,8 @@ var client_keys = {
 router.get('/deviantart', function(req, response, next) {
   // Limit tags to one word only
   req.params.tags = req.query.tags || "art";
-  var    tag = req.query.tags.replace(/%20.*$/, "");
+  req.params.tags = encodeURIComponent(req.params.tags);
+  var    tag = req.query.tags.replace(/(%20|\ ).*$/, "");
   var offset = req.query.offset || 0;
   var  limit = req.query.limit || 24;
 

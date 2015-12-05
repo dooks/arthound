@@ -101,7 +101,7 @@
         }
       }).then(
           function success(res) {
-            self.response = res.data;
+            self.response = res.data || {};
           },
           function error(res) {
             this.response = {};
