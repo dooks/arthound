@@ -103,7 +103,6 @@
       Search.clearResponse();
 
       self.listing = Navigate.listing; // Make available to directive
-      console.log(self.listing);
       //Navigate.to(0); // Navigate to first element
       State.changeState("ACTIVE");
     });
@@ -111,25 +110,43 @@
   }]);
 
   ng_app.controller("InfoCtrl",
-    ["$scope", "State", "Keyboard", "Search",
+    ["$scope", "State", "Navigate",
     function($scope, State, Navigate) {
     // Handles display info for current image
     // How many images got returned
     var self = this;
+    self.current = {};
+    self.date = null;
+    self.message = "Type anywhere...";
 
     $scope.$on("onstatechange", function() {
       switch(State.state) {
         case "DEFAULT":
         case "SEARCHING":
-          ng_app.base_overlay_container.addClass("hidden");
-          break;
-
-        case "ACTIVE":
-          // show base_listing
-          //ng_app.base_overlay_container.removeClass("hidden");
+          // Display instructions for typing
+          ng_app.info_help.removeClass("hidden");
+          ng_app.info_details.addClass("hidden");
           break;
       }
     });
+
+    $scope.$on("onnavigate", function() {
+      self.current = Navigate.listing[Navigate.current];
+      self.drawInfo();
+    });
+
+    self.drawInfo = function() {
+      ng_app.info_details.removeClass("hidden");
+      ng_app.info_help.addClass("hidden");
+
+      // Convert date to readable Date
+      var date = new Date(self.current.published_time * 1000);
+      self.date = date.toDateString();
+
+      console.log(self.current);
+
+      $scope.$apply();
+    };
   }]);
 
   ng_app.controller("ImageCtrl",
@@ -159,7 +176,7 @@
     $scope.$on("onnavigate", function() {
       // Display preview image if available, otherwise full resolution picture
       current = Navigate.listing[Navigate.current];
-      var image = (current.preview || current.content);
+      var image = (current.preview || current.content || current.thumbs);
       ng_app.image_img.attr("src", image);
       ng_app.image_div.css("background-image", "url('" + image + "')");
     });
