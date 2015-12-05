@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1,
+                                 maximum-scale=1 user-scalable=no">
+
+  <!-- Bootstrap includes -->
+  <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="/css/bootstrap-theme.min.css" />
+
+  <!-- Jasmine testing -->
+  <!--<link rel="shortcut icon" type="image/png" href="img/jasmine_favicon.png">-->
+  <!--<link rel="stylesheet" type="text/css"     href="/css/jasmine.css">-->
+
+  <!-- User includes -->
+  <link rel="stylesheet" type="text/css" href="/css/index.css" />
+  <link rel="stylesheet" type="text/css" href="/css/jquery.scrollbar.css" />
+
+</head>
+
+<body ng-app="ngPokemon" onkey>
+<!-- backdrop -->
+<div id="base_back" class="col-xs-12 absolute-wrapper">
+  <!-- spacers -->
+  <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
+
+  <!-- viewport -->
+  <div id="base_view" class="col-sm-12 col-md-10 container-fluid relative-wrapper">
+    <!-- search bar -->
+    <div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar"
+         class="hidden absolute-wrapper">
+      <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
+      <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
+    </div>
+
+    <!-- image -->
+    <div id="base_image"
+         ng-controller="ImageCtrl as image"
+         class="absolute-wrapper">
+         <img />
+         <div></div>
+    </div>
+
+    <!-- overlay -->
+    <div id="base_overlay_container"  class="hidden col-xs-12 absolute-wrapper">
+      <div class="hidden-xs hidden-sm col-spacers col-md-2"></div>
+      <div class="col-sm-12 col-md-8">
+        <div id="base_overlay"
+             ng-controller="OverlayCtrl"
+             class="text-center absolute-wrapper">
+          <!-- fullscreen glyphicon glyphicon-resize-full       -->
+          <span class="glyphicon glyphicon-resize-full"></span>
+
+          <!-- left       glyphicon glyphicon-chevron-left      -->
+          <span class="glyphicon glyphicon-chevron-left"></span>
+
+          <!-- right      glyphicon glyphicon-chevron-right     -->
+          <span class="glyphicon glyphicon-chevron-right"></span>
+
+          <!-- pause      glyphicon glyphicon-pause             -->
+          <span class="glyphicon glyphicon-pause"></span>
+
+          <!-- download   glyphicon glyphicon-download-alt      -->
+          <span class="glyphicon glyphicon-download-alt"></span>
+
+          <!-- save       glyphicon glyphicon-save              -->
+          <span class="glyphicon glyphicon-save"></span>
+
+          <!-- info       glyphicon glyphicon-option-horizontal -->
+          <span class="glyphicon glyphicon-option-horizontal"></span>
+        </div>
+      </div>
+      <div class="hidden-xs hidden-sm col-spacers col-md-2"></div>
+    </div>
+
+    <!-- listing -->
+    <div id="base_listing" ng-controller="ListingCtrl as listing" class="absolute-wrapper">
+        <div class="scrollbar-inner">
+          <div ng-repeat="item in listing.listing">
+            <div tile tag="{{ item.deviationid }}" index="{{ $index }}"
+                 class="image-square-container">
+              <div ng-repeat="img in item.thumbs" ng-if="$index == 2">
+                <img ng-src="{{ img.src }}" />
+              </div>
+            </div>
+          </div>
+        </div>
+     </div>
+    </div>
+
+  </div>
+
+  <!-- spacers -->
+  <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
+</div>
+
+<!-- Jasmine testing -->
+<!--<script type="text/javascript" src="tests/jasmine.js"></script>-->
+<!--<script type="text/javascript" src="tests/jasmine-html.js"></script>-->
+<!--<script type="text/javascript" src="tests/boot.js"></script>-->
+
+<!-- jQuery includes -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="/js/client-keys.js"></script>
+
+<!-- Angular includes -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+<script src="/js/angular-mocks.js"></script>
+
+<!-- Bootstrap includes -->
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<!-- Plugin includes -->
+<script src="/js/jquery.scrollbar.min.js"></script>
+
+<!-- User includes -->
+<script type="text/javascript" src="/js/angular.js"></script>
+<script type="text/javascript" src="/js/services.js"></script>
+<script type="text/javascript" src="/js/controller.js"></script>
+<script type="text/javascript" src="/js/directives.js"></script>
+<script type="text/javascript" src="/js/index.js"></script>
+
+<!--<script type="text/javascript" src="tests/State.js"></script>-->
+</body>
+
+</html>
