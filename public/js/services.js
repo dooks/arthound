@@ -85,8 +85,6 @@
       // Where the "magic" happens, Performs HTTP search
       //   @query: optional, search query to perform. Uses search.query if blank
 
-      // Clear previous response if hasn't already happened...
-
       // Form GET request
       // Example REST query for deviantart...
       $rootScope.$broadcast("onsearching");
@@ -101,7 +99,8 @@
         }
       }).then(
           function success(res) {
-            self.response = res.data || {};
+            self.response = res.data;
+            console.log(self.response);
           },
           function error(res) {
             this.response = {};

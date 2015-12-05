@@ -71,19 +71,24 @@ router.get('/deviantart', function(req, response, next) {
       new_body[i].published_time = new_body[i].published_time  || 0;
 
       // Normalize
-      new_body[i].author    = new_body[i].author  || {};
-      new_body[i].content   = new_body[i].content || {};
-      new_body[i].comments  = new_body[i].stats   || {};
-      new_body[i].preview   = new_body[i].preview || {};
+      new_body[i].author      = new_body[i].author  || {};
+      new_body[i].content     = new_body[i].content || {};
+      new_body[i].comments    = new_body[i].stats   || {};
+      new_body[i].preview     = new_body[i].preview || {};
 
       // Flatten
-      new_body[i].author    = new_body[i].author.username || "";
-      new_body[i].content   = new_body[i].content.src     || "";
-      new_body[i].width     = new_body[i].content.width   ||  0;
-      new_body[i].height    = new_body[i].content.height  ||  0;
-      new_body[i].comments  = new_body[i].stats.comments  ||  0;
-      new_body[i].favorites = new_body[i].stats.favorites ||  0;
-      new_body[i].preview   = new_body[i].preview.src     || null;
+      new_body[i].author      = new_body[i].author.username || "";
+      new_body[i].content     = new_body[i].content.src     || "";
+      new_body[i].width       = new_body[i].content.width   ||  0;
+      new_body[i].height      = new_body[i].content.height  ||  0;
+      new_body[i].comments    = new_body[i].stats.comments  ||  0;
+      new_body[i].favorites   = new_body[i].stats.favorites ||  0;
+      new_body[i].preview     = new_body[i].preview.src     || null;
+
+      if(new_body[i].author !== "") {
+        new_body[i].author_link = new_body[i].author + ".deviantart.com";
+      }
+
       if(new_body[i].thumbs[2] !== undefined) {
         new_body[i].thumbs = new_body[i].thumbs[2].src || "";
       } else { new_body[i].thumbs = ""; }
