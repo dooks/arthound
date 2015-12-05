@@ -1,3 +1,11 @@
+function shuffle(o){
+  // Shuffle array o
+  for(var j, x, i = o.length;
+      i;
+      j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+  return o;
+}
+
 (function(ng_app) {
   ng_app.service("State", ["$rootScope", function($rootScope) {
     // TODO: why does initializing this make it persistent....?
@@ -76,29 +84,32 @@
 
     self.clear         = function() { self.query = ""; }
     self.clearResponse = function() { delete self.response; self.response = {}; }
+    self.pruneResponse = function() {
+      // If greater than 5 chunks, lop off first...
+    }
 
     self.suggestions = function(query) {
       // Provide list of similar Pokemon queries to aid with mispellings
     };
 
-    self.search = function(query) {
+    self.queue = function(query, page, limit) {
       // Where the "magic" happens, Performs HTTP search
+      // Appends to search.response per chunk
       //   @query: optional, search query to perform. Uses search.query if blank
-
-      // Form GET request
-      // Example REST query for deviantart...
-      $rootScope.$broadcast("onsearching");
+      var new_page = page || 0;
 
       $http({
         method: "GET",
-        url: "/get/deviantart",
+        url: "/get/request",
         params:   {
-          "tags": self.query,
-          "offset": 0,
-          "limit": 24
+          "tags":   self.query,
+          "page":     new_page,
+          "limit": limit || 24 // Server hard limit
         }
       }).then(
           function success(res) {
+            // Append to response
+            //self.response.push({ new_page : res });
             self.response = res.data;
             console.log(self.response);
           },
@@ -111,7 +122,6 @@
         function returned() { $rootScope.$broadcast("onsearchreturned"); }
       );
     }; // end of search function
-
   }]);
 
   ng_app.service("Navigate", ["$rootScope", function($rootScope) {
@@ -123,6 +133,10 @@
       // Populate self.listing and broadcast event
       if(obj) self.listing = obj;
       else self.listing = [];
+
+      // Shuffle listing...
+      shuffle(self.listing);
+
       self.broadcastPop();
     };
 
