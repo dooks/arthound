@@ -159,8 +159,8 @@
       // Display preview image if available, otherwise full resolution picture
       current = Navigate.listing[Navigate.current];
       var image = (current.preview || current.content);
-      ng_app.image_img.attr("src", image.src);
-      ng_app.image_div.css("background-image", "url('" + image.src + "')");
+      ng_app.image_img.attr("src", image);
+      ng_app.image_div.css("background-image", "url('" + image + "')");
     });
   }]);
 

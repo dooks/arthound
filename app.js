@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 var routes = require('./routes');
 
 var app = express();
-app.use('/request', routes);
+app.use('/get', routes);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

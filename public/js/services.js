@@ -91,14 +91,13 @@
       // Example REST query for deviantart...
       $rootScope.$broadcast("onsearching");
 
-      $http( {
+      $http({
         method: "GET",
-        url: "/request/deviantart/tag",
+        url: "/get/deviantart",
         params:   {
-          "tags": encodeURIComponent(self.query),
+          "tags": self.query,
           "offset": 0,
-          "limit": 24,
-          "access_token": client_keys["deviantart"].access_token
+          "limit": 24
         }
       }).then(
           function success(res) {

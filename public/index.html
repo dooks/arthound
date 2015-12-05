@@ -77,11 +77,8 @@
     <div id="base_listing" ng-controller="ListingCtrl as listing" class="absolute-wrapper">
         <div class="scrollbar-inner">
           <div ng-repeat="item in listing.listing">
-            <div tile tag="{{ item.deviationid }}" index="{{ $index }}"
-                 class="image-square-container">
-              <div ng-repeat="img in item.thumbs" ng-if="$index == 2">
-                <img ng-src="{{ img.src }}" />
-              </div>
+            <div tile index="{{ $index }}" class="image-square-container">
+              <div style="background-image: url('{{ item.thumbs }}')"></div>
             </div>
           </div>
         </div>
@@ -101,7 +98,6 @@
 
 <!-- jQuery includes -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script type="text/javascript" src="/js/client-keys.js"></script>
 
 <!-- Angular includes -->
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
