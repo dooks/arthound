@@ -22,25 +22,43 @@
       if(State.substate === "NONE") {
         // activate INPUT substate
         State.changeSubstate("INPUT");
+      }
 
-        // Add letter to search term
-        Search.query += Keyboard.ord;
+      // Add letter to search term
+      Search.query += Keyboard.ord.toLowerCase();
+      self.query = Search.query;
 
-        // Focus
-        ng_app.searchbar_search.focus();
+      // Force $scope to update
+      $scope.$apply();
+    });
+
+    $scope.$on("onkeybackspace", function() {
+      if(State.substate === "INPUT") {
+        // delete last letter of query
+        Search.query = Search.query.slice(0, -1);
+        self.query = Search.query;
+
+        // Force $scope to update
+        $scope.$apply();
       }
     });
 
     $scope.$on("onkeyenter", function() {
-      // If substate INPUT, initiate Search
       if(State.substate === "INPUT") {
-        // lose focus, search, and clear
-        ng_app.searchbar_search.blur();
-
-        // Change State and substate
+        // initiate Search
         State.changeSubstate("NONE");
         State.changeState("SEARCHING");
-        Search.search(ng_app.searchbar_search.val());
+
+        // this is a new search, so clear the old response...
+        Search.clearResponse();
+        Search.search();
+
+        // Force $scope to update
+        Search.clear();
+        $scope.$apply();
+      } else {
+        // Open INPUT
+        State.changeSubstate("INPUT");
       }
     });
 
@@ -49,9 +67,11 @@
         // switch to NONE substate
         State.changeSubstate("NONE");
 
-        // lose focus and clear...
+        // clear search
         Search.clear();
-        ng_app.searchbar_search.blur();
+
+        // Force $scope to update
+        $scope.$apply();
       }
     });
   }]);
@@ -61,18 +81,18 @@
     function($scope, State, Search, Navigate) {
     // Handles the searchlist overlay, which contains a grid list of searches found
     var self = this;
-    self.listing = {};
+    self.listing = [];
 
     $scope.$on("onstatechange", function() {
       switch(State.state) {
         case "DEFAULT":
         case "SEARCHING":
-          ng_app.base_listing.addClass("hidden");
+          ng_app.base_listing.addClass("invisible");
           break;
 
         case "ACTIVE":
           // show base_listing
-          ng_app.base_listing.removeClass("hidden");
+          ng_app.base_listing.removeClass("invisible");
           break;
       }
     });
@@ -83,16 +103,18 @@
       Search.clearResponse();
 
       self.listing = Navigate.listing; // Make available to directive
-      Navigate.to(0); // Navigate to first element
+      console.log(self.listing);
+      //Navigate.to(0); // Navigate to first element
       State.changeState("ACTIVE");
     });
 
   }]);
 
-  ng_app.controller("OverlayCtrl",
+  ng_app.controller("InfoCtrl",
     ["$scope", "State", "Keyboard", "Search",
-    function($scope, State, Keyboard, Search) {
-    // Handles navigation of slideshow, slideshow settings, options, info, download
+    function($scope, State, Navigate) {
+    // Handles display info for current image
+    // How many images got returned
     var self = this;
 
     $scope.$on("onstatechange", function() {
@@ -104,7 +126,7 @@
 
         case "ACTIVE":
           // show base_listing
-          ng_app.base_overlay_container.removeClass("hidden");
+          //ng_app.base_overlay_container.removeClass("hidden");
           break;
       }
     });
@@ -117,12 +139,29 @@
     var self = this;
     var current = {};
 
+    $scope.$on("onstatechange", function() {
+      switch(State.state) {
+        case "DEFAULT":
+          //ng_app.base_image_info.removeClass("hidden");
+          break;
+
+        case "ACTIVE":
+          // show base_listing
+          //ng_app.base_image_info.addClass("hidden");
+          break;
+      }
+    });
+
+    $scope.$on("onnavigatepop", function() {
+      Navigate.to(0);
+    });
+
     $scope.$on("onnavigate", function() {
       // Display preview image if available, otherwise full resolution picture
       current = Navigate.listing[Navigate.current];
       var image = (current.preview || current.content);
-      console.log(current);
-      ng_app.image.attr("src", image.src);
+      ng_app.image_img.attr("src", image);
+      ng_app.image_div.css("background-image", "url('" + image + "')");
     });
   }]);
 

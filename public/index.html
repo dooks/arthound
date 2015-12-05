@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<head>
+<title>ArtHound</title>
+<meta name="viewport" content="width=device-width, initial-scale=1,
+                               maximum-scale=1 user-scalable=no">
+
+<!-- Bootstrap includes -->
+<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="/css/bootstrap-theme.min.css" />
+
+<!-- Jasmine testing -->
+<!--<link rel="shortcut icon" type="image/png" href="img/jasmine_favicon.png">-->
+<!--<link rel="stylesheet" type="text/css"     href="/css/jasmine.css">-->
+
+<!-- User includes -->
+<link rel="stylesheet" type="text/css" href="/css/index.css" />
+<link rel="stylesheet" type="text/css" href="/css/jquery.scrollbar.css" />
+</head>
+
+<body ng-app="ngPokemon" onkey>
+<!-- backdrop -->
+<div id="base_back" class="col-xs-12 absolute-wrapper">
+  <!-- spacers -->
+  <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
+
+  <!-- viewport -->
+  <div id="base_view" class="col-sm-12 col-md-10 container-fluid relative-wrapper">
+    <!-- search bar -->
+    <div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar"
+         class="hidden absolute-wrapper">
+      <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
+      <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
+    </div>
+
+    <!-- image -->
+    <div id="base_image"
+         ng-controller="ImageCtrl as image"
+         class="absolute-wrapper">
+         <img />
+         <div></div>
+    </div>
+
+    <!-- listing -->
+    <div id="base_sidebar" class="absolute-wrapper">
+      <div id="base_listing" class="invisible" ng-controller="ListingCtrl as listing">
+        <div class="scrollbar-inner">
+          <div ng-repeat="item in listing.listing">
+            <div tile index="{{ $index }}" class="image-square-container">
+              <div style="background-image: url('{{ item.thumbs }}')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="base_info" ng-controller="InfoCtrl as info">
+      </div>
+    </div>
+
+  </div>
+
+    <!-- info -->
+    <!--<div id="base_info" ng-controller="InfoCtrl as info" class="absolute-wrapper"> </div>-->
+
+  <!-- spacers -->
+  <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
+</div>
+
+<!-- Jasmine testing -->
+<!--<script type="text/javascript" src="tests/jasmine.js"></script>-->
+<!--<script type="text/javascript" src="tests/jasmine-html.js"></script>-->
+<!--<script type="text/javascript" src="tests/boot.js"></script>-->
+
+<!-- jQuery includes -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+<!-- Angular includes -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+<script src="/js/angular-mocks.js"></script>
+
+<!-- Bootstrap includes -->
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<!-- Plugin includes -->
+<script src="/js/jquery.scrollbar.min.js"></script>
+
+<!-- User includes -->
+<script type="text/javascript" src="/js/angular.js"></script>
+<script type="text/javascript" src="/js/services.js"></script>
+<script type="text/javascript" src="/js/controller.js"></script>
+<script type="text/javascript" src="/js/directives.js"></script>
+<script type="text/javascript" src="/js/index.js"></script>
+
+<!--<script type="text/javascript" src="tests/State.js"></script>-->
+</body>
+
+</html>
