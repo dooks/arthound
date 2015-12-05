@@ -5,50 +5,20 @@
                                  maximum-scale=1 user-scalable=no">
 
   <!-- Bootstrap includes -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
+  <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="/css/bootstrap-theme.min.css" />
 
   <!-- Jasmine testing -->
   <!--<link rel="shortcut icon" type="image/png" href="img/jasmine_favicon.png">-->
-  <!--<link rel="stylesheet" type="text/css"     href="css/jasmine.css">-->
+  <!--<link rel="stylesheet" type="text/css"     href="/css/jasmine.css">-->
 
   <!-- User includes -->
-  <link rel="stylesheet" type="text/css" href="css/index.css" />
-  <link rel="stylesheet" type="text/css" href="css/jquery.scrollbar.css" />
+  <link rel="stylesheet" type="text/css" href="/css/index.css" />
+  <link rel="stylesheet" type="text/css" href="/css/jquery.scrollbar.css" />
 
 </head>
 
 <body ng-app="ngPokemon" onkey>
-
-<!--info modal-->
-<!-- Small modal -->
-<div class="modal fade info-modal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel">
-<div class="modal-dialog modal-lg">
-
-  <div class="modal-content">
-    <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h4 class="modal-title">About...</h3>
-    </div>
-
-    <!--<div class="modal-body">-->
-    <!--</div>-->
-
-    <div class="modal-footer">
-      <div class="col-md-12">Powered by:</div>
-      <div class="col-md-3">jQuery</div>
-      <div class="col-md-3">Angular</div>
-      <div class="col-md-3">Bootstrap</div>
-
-      <div class="col-md-12">About Me</div>
-      <div class="col-md-3">Github</div>
-    </div>
-  </div>
-
-</div>
-</div>
-
-
 <!-- backdrop -->
 <div id="base_back" class="col-xs-12 absolute-wrapper">
   <!-- spacers -->
@@ -56,20 +26,19 @@
 
   <!-- viewport -->
   <div id="base_view" class="col-sm-12 col-md-10 container-fluid relative-wrapper">
-
     <!-- search bar -->
-    <div id="base_searchbar" ng-controller="SearchbarCtrl as search"
+    <div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar"
          class="hidden absolute-wrapper">
       <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
-      <input type="text" ng-model="search.search"
-             id="searchbar_search" class="col-xs-12 absolute-wrapper" />
+      <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
     </div>
 
     <!-- image -->
     <div id="base_image"
          ng-controller="ImageCtrl as image"
          class="absolute-wrapper">
-         <img class="img-responsive" />
+         <img />
+         <div></div>
     </div>
 
     <!-- overlay -->
@@ -132,23 +101,24 @@
 
 <!-- jQuery includes -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="/js/client-keys.js"></script>
 
 <!-- Angular includes -->
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
-<script src="js/angular-mocks.js"></script>
+<script src="/js/angular-mocks.js"></script>
 
 <!-- Bootstrap includes -->
-<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
 
 <!-- Plugin includes -->
-<script src="js/jquery.scrollbar.min.js"></script>
+<script src="/js/jquery.scrollbar.min.js"></script>
 
 <!-- User includes -->
-<script type="text/javascript" src="js/angular.js"></script>
-<script type="text/javascript" src="js/services.js"></script>
-<script type="text/javascript" src="js/controller.js"></script>
-<script type="text/javascript" src="js/directives.js"></script>
-<script type="text/javascript" src="js/index.js"></script>
+<script type="text/javascript" src="/js/angular.js"></script>
+<script type="text/javascript" src="/js/services.js"></script>
+<script type="text/javascript" src="/js/controller.js"></script>
+<script type="text/javascript" src="/js/directives.js"></script>
+<script type="text/javascript" src="/js/index.js"></script>
 
 <!--<script type="text/javascript" src="tests/State.js"></script>-->
 </body>

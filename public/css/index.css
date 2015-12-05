@@ -43,19 +43,29 @@ html, body {
 }
 
 .image-square-container > div { width: 100%; height: 100%; }
-.image-square-container > div > img { max-height: 100%; }
+.image-square-container > div > div {
+  width:  100%;
+  height: 100%;
+
+  -webkit-filter:grayscale(1);
+  background-size:     cover;
+  background-repeat:   no-repeat;
+  background-position: center;
+  cursor: pointer;
+}
+  .image-square-container > div > div:hover { -webkit-filter:grayscale(0); }
 
 
 
 /* User defined IDs */
 #base_searchbar {
-  z-index: 1;
+  z-index: 4;
   width: 100%;
 }
 
   #base_searchbar div {
     height: 100%;
-    z-index: 2;
+    z-index: 5;
 
     background-image: linear-gradient(0deg, #94C31D, #BEDB77);
     opacity: 0.4;
@@ -65,7 +75,7 @@ html, body {
   #searchbar_search {
     height: 100px;
     bottom:  15px;
-    z-index:    3;
+    z-index:    6;
 
     background-color: rgba(0, 0, 0, 0);
     border:    0;
@@ -92,17 +102,38 @@ html, body {
   width: 100%;
   background-image: linear-gradient(0deg, #000000, #333333);
 }
-  #base_image img {
-    border: 1px solid black;
-    max-height: 100%;
-    margin: 0 auto;
+  #base_image > img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 2;
   }
+
+  #base_image > div {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 1px solid black;
+    z-index: 1;
+  }
+
 
 #base_listing {
   width: 200px !important; // Overridden by jQuery scrollbar
   background-image: linear-gradient(0deg, #010100, #000000);
-  opacity: 0.3;
-  right: 0;
+  opacity: 0.01;
+  left: 0;
+  transition: 0.5s;
+  z-index: 3;
+}
+
+#base_listing:hover {
+  opacity: 1.0;
+  transition: 0.5s;
 }
 
   #base_listing > div {
