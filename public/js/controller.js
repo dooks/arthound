@@ -87,12 +87,12 @@
       switch(State.state) {
         case "DEFAULT":
         case "SEARCHING":
-          ng_app.base_listing.addClass("hidden");
+          ng_app.base_listing.addClass("invisible");
           break;
 
         case "ACTIVE":
           // show base_listing
-          ng_app.base_listing.removeClass("hidden");
+          ng_app.base_listing.removeClass("invisible");
           break;
       }
     });
@@ -110,10 +110,11 @@
 
   }]);
 
-  ng_app.controller("OverlayCtrl",
+  ng_app.controller("InfoCtrl",
     ["$scope", "State", "Keyboard", "Search",
-    function($scope, State, Keyboard, Search) {
-    // Handles navigation of slideshow, slideshow settings, options, info, download
+    function($scope, State, Navigate) {
+    // Handles display info for current image
+    // How many images got returned
     var self = this;
 
     $scope.$on("onstatechange", function() {
