@@ -74,19 +74,13 @@ function shuffle(o){
 
   ng_app.service("Search", ["$rootScope", "$http", function($rootScope, $http) {
     var self = this;
-    self.query    = "";
-    self.response = {};
-    self.sources  = [ "deviantart" ];
-
-    // Search DEFAULTS
-    self.limit   = 10;
-    self.mature  = false;
+    self.query      = "";
+    self.last_query = "";
+    self.response   = {};
+    self.sources    = [ "deviantart" ];
 
     self.clear         = function() { self.query = ""; }
     self.clearResponse = function() { delete self.response; self.response = {}; }
-    self.pruneResponse = function() {
-      // If greater than 5 chunks, lop off first...
-    }
 
     self.suggestions = function(query) {
       // Provide list of similar Pokemon queries to aid with mispellings
@@ -97,6 +91,7 @@ function shuffle(o){
       // Appends to search.response per chunk
       //   @query: optional, search query to perform. Uses search.query if blank
       var new_page = page || 0;
+      self.last_query = self.query; // Store previous query
 
       $http({
         method: "GET",
@@ -109,9 +104,8 @@ function shuffle(o){
       }).then(
           function success(res) {
             // Append to response
-            //self.response.push({ new_page : res });
-            self.response = res.data;
-            console.log(self.response);
+            self.response = { page: new_page, data: res.data };
+            console.log("Search response", self.response);
           },
           function error(res) {
             this.response = {};
@@ -125,40 +119,99 @@ function shuffle(o){
   }]);
 
   ng_app.service("Navigate", ["$rootScope", function($rootScope) {
+    // Navigation service
+    // Contains navigation listing
+    // Listing data must be { "{{Page #}}": chunk }
     var self = this;
-    self.listing = []; // Contains listing data
-    self.current =  0;// Index of image to be displayed
+    var listing_limit =  3; // How many pages away from median to load
+    self.limit        = 24; // Query limit
+    self.listing      = []; // Contains listing data
+    self.page_sizes   = []; // Variable page sizes, used for indexing
+    self.index        =  0; // Index of image to be displayed
+    self.current_page =  0; // Current page median
+    self.current_low  =  0; // Current page minimum
+    self.current_high =  3; // Current page maximum
 
-    self.populate = function(obj) {
-      // Populate self.listing and broadcast event
-      if(obj) self.listing = obj;
-      else self.listing = [];
+    self.append = function(obj) {
+      // Append to self.listing and broadcast event
+      // Obj should be in the search response format { page: n, data: chunk }
+      if(obj) { self.listing.push(obj); }
 
-      // Shuffle listing...
-      shuffle(self.listing);
+      // If page number doesn't exist in self.page_sizes...
+      if(self.page_sizes[obj.page] === undefined) {
+        if(obj.page !==0) {
+          // Add obj.data.length to previous element
+          self.page_sizes.push(obj.data.length + self.pages_sizes[obj.page - 1]);
+        } else {
+          self.page_sizes.push(obj.data.length);
+        }
+      }
+      console.log("Navigation", self.listing);
 
-      self.broadcastPop();
+      self.broadcast("onnavigateappend");
     };
 
     self.next = function() {
-      if((self.current + 1) < self.listing.length) {
-        self.current += 1; self.broadcastNav(); return true;
+      if((self.index + 1) < self.listing.length) {
+        self.index += 1; self.broadcast("onnavigate"); return true;
       } else { return false; }
     };
 
     self.prev = function() {
-      if((self.current - 1) >= 0) {
-        self.current -= 1; self.broadcastNav(); return true;
+      if((self.index - 1) >= 0) {
+        self.index -= 1; self.broadcast("onnavigate"); return true;
       } else { return false; }
     };
 
     self.to = function(n) {
-      if(n < self.listing.length && n >= 0) {
-        self.current = n; self.broadcastNav(); return true;
+      if(n >= 0 && n < self.page_sizes[self.page_sizes.length - 1])  {
+        self.index = n; self.broadcast("onnavigate"); return true;
       } else { return false; }
     };
 
-    self.broadcastNav = function() { $rootScope.$broadcast("onnavigate"); }
-    self.broadcastPop = function() { $rootScope.$broadcast("onnavigatepop"); }
+    self.nextPage = function() {
+      if((self.current_page + 1 - self.current_low) > listing_limit) {
+        // Lop off beginning of listing
+        self.listing.slice(self.current_low, self.current_low + 1);
+      }
+      self._calcPage(++self.current_page);
+      self.broadcast("onnavigatenext");
+    };
+
+    self.prevPage = function() {
+      if(self.current_high - (self.current_page - 1) > listing_limit) {
+        // Lop off end of listing
+        self.listing.slice(self.current_high);
+      }
+      self._calcPage(--self.current_page);
+      self.broadcast("onnavigateprev");
+    };
+
+    self.findByIndex = function(index) {
+      // Return item in listing based on index
+      if(index > self.page_sizes[0]) {
+
+        // Start with second listing index
+        for(var i = 1; i < self.page_sizes.length; i++) {
+          if(self.page_sizes[i] > index) {
+            var sub_index = index - page_sizes[i - 1];
+            return self.listing[i].data[sub_index];
+          }
+        }
+
+      } else {
+        return self.listing[0].data[index];
+      }
+    };
+
+    self._calcPage = function(page) {
+      // Calculates current_low and current_high
+      self.current_low  = page - 3;
+      if(self.current_low <= 0) self.current_low = 0;
+      self.current_high = page + 3;
+    };
+
+    self.broadcast = function(ev) { $rootScope.$broadcast(ev); }
+
   }]);
 }(ng_pokemon));
