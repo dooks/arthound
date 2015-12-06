@@ -102,15 +102,8 @@ function shuffle(o){
           "limit": limit || 24 // Server hard limit
         }
       }).then(
-          function success(res) {
-            // Append to response
-            self.response = { page: new_page, data: res.data };
-            console.log("Search response", self.response);
-          },
-          function error(res) {
-            this.response = {};
-            console.error(res);
-          }
+          function success(res) { self.response = { page: new_page, data: res.data }; },
+          function error(res) { this.response = {}; console.error(res); }
       ).finally(
         // Broadcast that search has been returned
         function returned() { $rootScope.$broadcast("onsearchreturned"); }
@@ -153,7 +146,7 @@ function shuffle(o){
       if(self.page_sizes[obj.page] === undefined) {
         if(obj.page !==0) {
           // Add obj.data.length to previous element
-          self.page_sizes.push(obj.data.length + self.pages_sizes[obj.page - 1]);
+          self.page_sizes.push(obj.data.length + self.page_sizes[obj.page - 1]);
         } else {
           self.page_sizes.push(obj.data.length);
         }
@@ -175,7 +168,7 @@ function shuffle(o){
       // Add obj to listing
       self.listing.push(obj);
       if(self.listing.length === 1) self.broadcast("onnavigatepop");
-      console.log("Navigation", self.listing);
+      console.log("Navigation listing", self.listing);
 
       self.broadcast("onnavigateappend");
     };
@@ -204,7 +197,7 @@ function shuffle(o){
         self.listing.slice(self.current_low, self.current_low + 1);
       }
       self._calcPage(++self.current_page);
-      self.broadcast("onnavigatenext");
+      self.broadcast("onnavigatepage");
     };
 
     self.prevPage = function() {
@@ -213,7 +206,7 @@ function shuffle(o){
         self.listing.slice(self.current_high);
       }
       self._calcPage(--self.current_page);
-      self.broadcast("onnavigateprev");
+      self.broadcast("onnavigatepage");
     };
 
     self.findByIndex = function(index) {
@@ -223,7 +216,7 @@ function shuffle(o){
         // Start with second listing index
         for(var i = 1; i < self.page_sizes.length; i++) {
           if(self.page_sizes[i] > index) {
-            var sub_index = index - page_sizes[i - 1];
+            var sub_index = index - self.page_sizes[i - 1];
             return self.listing[i].data[sub_index];
           }
         }

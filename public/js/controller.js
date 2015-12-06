@@ -98,17 +98,16 @@
       }
     });
 
-    $scope.$on("onnavigateprev", function() {
+    $scope.$on("onnavigatepage", function() {
       // Append search response to end of listing array
       Search.queue(Search.last_query, Navigate.current_page, Navigate.limit);
     });
 
-    $scope.$on("onnavigatenext", function() {
-      // Append search response to end of listing array
-      Search.queue(Search.last_query, Navigate.current_page, Navigate.limit);
+    $scope.$on("onnavigatepop", function() {
+      Navigate.to(0);
+      // Preemptively load next two pages...
+      Navigate.nextPage();
     });
-
-    $scope.$on("onnavigatepop", function() { Navigate.to(0); });
 
     $scope.$on("onsearchreturned", function() {
       // Append response to Navigation service listing
