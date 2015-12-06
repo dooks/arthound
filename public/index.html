@@ -18,7 +18,7 @@
 <link rel="stylesheet" type="text/css" href="/css/jquery.scrollbar.css" />
 </head>
 
-<body ng-app="ngPokemon" onkey>
+<body ng-app="ngHound" onkey>
 <!-- backdrop -->
 <div id="base_back" class="col-xs-12 absolute-wrapper">
   <!-- spacers -->
@@ -44,7 +44,7 @@
     <!-- listing -->
     <div id="base_sidebar" class="absolute-wrapper">
       <div id="base_listing" class="invisible" ng-controller="ListingCtrl as listing">
-        <div class="scrollbar-inner">
+        <div data-jquery-scrollbar="listing.scrollbar">
           <div ng-repeat="page in listing.listing">
             <div ng-repeat="item in page.data">
               <div tile index="{{ item.index }}" class="image-square-container">
@@ -96,7 +96,7 @@
 <script type="text/javascript" src="/js/bootstrap.min.js"></script>
 
 <!-- Plugin includes -->
-<script src="/js/jquery.scrollbar.min.js"></script>
+<script src="/js/jquery.scrollbar.js"></script>
 
 <!-- User includes -->
 <script type="text/javascript" src="/js/angular.js"></script>

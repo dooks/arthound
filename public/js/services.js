@@ -236,4 +236,4 @@ function shuffle(o){
     self.broadcast = function(ev) { $rootScope.$broadcast(ev); }
 
   }]);
-}(ng_pokemon));
+}(ng_hound));
