@@ -97,13 +97,22 @@
       }
     });
 
+    $scope.$on("onnavigateprev", function() {
+      // Append search response to end of listing array
+      Search.queue(Search.last_query, Navigate.current_page, Navigate.limit);
+    });
+
+    $scope.$on("onnavigatenext", function() {
+      // Append search response to end of listing array
+      Search.queue(Search.last_query, Navigate.current_page, Navigate.limit);
+    });
+
     $scope.$on("onsearchreturned", function() {
-      // Hand off to a listing service
-      Navigate.populate(Search.response);
-      Search.clearResponse();
+      // Append response to Navigation service listing
+      Navigate.append(Search.response);
+      Search.clearResponse(); // Immediately discard response
 
       self.listing = Navigate.listing; // Make available to directive
-      //Navigate.to(0); // Navigate to first element
       State.changeState("ACTIVE");
     });
 
@@ -130,10 +139,10 @@
       }
     });
 
-    $scope.$on("onnavigate", function() {
-      self.current = Navigate.listing[Navigate.current];
-      self.drawInfo();
-    });
+    //$scope.$on("onnavigate", function() {
+      //self.current = Navigate.listing[Navigate.current];
+      //self.drawInfo();
+    //});
 
     self.drawInfo = function() {
       ng_app.info_details.removeClass("hidden");
@@ -169,13 +178,9 @@
       }
     });
 
-    $scope.$on("onnavigatepop", function() {
-      Navigate.to(0);
-    });
-
     $scope.$on("onnavigate", function() {
       // Display preview image if available, otherwise full resolution picture
-      current = Navigate.listing[Navigate.current];
+      current = Navigate.findByIndex(Navigate.index);
       var image = (current.preview || current.content || current.thumbs);
       ng_app.image_img.attr("src", image);
       ng_app.image_div.css("background-image", "url('" + image + "')");
