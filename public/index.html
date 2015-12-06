@@ -47,7 +47,7 @@
         <div class="scrollbar-inner">
           <div ng-repeat="page in listing.listing">
             <div ng-repeat="item in page.data">
-              <div tile index="{{ $index }}" class="image-square-container">
+              <div tile index="{{ item.index }}" class="image-square-container">
                 <div style="background-image: url('{{ item.thumbs }}')"></div>
               </div>
             </div>

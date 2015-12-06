@@ -1,7 +1,7 @@
 (function(ng_app) {
   ng_app.controller("SearchbarCtrl",
-    ["$scope", "State", "Keyboard", "Search",
-    function($scope, State, Keyboard, Search) {
+    ["$scope", "State", "Keyboard", "Search", "Navigate",
+    function($scope, State, Keyboard, Search, Navigate) {
     // Handles the searching overlay
     // Searching overlay appears when beginning to type
     var self = this;
@@ -49,7 +49,8 @@
         State.changeSubstate("NONE");
         State.changeState("SEARCHING");
 
-        // this is a new search, so clear the old response...
+        // this is a new search, so clear the old listing and response...
+        Navigate.clear();
         Search.clearResponse();
         Search.queue();
 
@@ -107,6 +108,8 @@
       Search.queue(Search.last_query, Navigate.current_page, Navigate.limit);
     });
 
+    $scope.$on("onnavigatepop", function() { Navigate.to(0); });
+
     $scope.$on("onsearchreturned", function() {
       // Append response to Navigation service listing
       Navigate.append(Search.response);
@@ -139,10 +142,10 @@
       }
     });
 
-    //$scope.$on("onnavigate", function() {
-      //self.current = Navigate.listing[Navigate.current];
-      //self.drawInfo();
-    //});
+    $scope.$on("onnavigate", function() {
+      self.current = Navigate.findByIndex(Navigate.index);
+      self.drawInfo();
+    });
 
     self.drawInfo = function() {
       ng_app.info_details.removeClass("hidden");
@@ -151,9 +154,6 @@
       // Convert date to readable Date
       var date = new Date(self.current.date * 1000);
       self.date = date.toDateString();
-
-      console.log(self.current);
-
       $scope.$apply();
     };
   }]);

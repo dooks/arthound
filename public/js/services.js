@@ -132,10 +132,22 @@ function shuffle(o){
     self.current_low  =  0; // Current page minimum
     self.current_high =  3; // Current page maximum
 
+    self.clear = function() {
+      delete self.listing;
+      delete self.page_sizes;
+      self.index        = 0;
+      self.current_page = 0;
+      self.current_low  = 0;
+      self.current_high = 3;
+
+      // Re-initialize
+      self.listing    = [];
+      self.page_sizes = [];
+    };
+
     self.append = function(obj) {
       // Append to self.listing and broadcast event
       // Obj should be in the search response format { page: n, data: chunk }
-      if(obj) { self.listing.push(obj); }
 
       // If page number doesn't exist in self.page_sizes...
       if(self.page_sizes[obj.page] === undefined) {
@@ -146,6 +158,23 @@ function shuffle(o){
           self.page_sizes.push(obj.data.length);
         }
       }
+
+      // Now that page size exists, assign proper indices to obj.data[i]
+      if(obj.page === 0) {
+        // Assign indices normally
+        for(var i = 0; i < obj.data.length; i++) {
+          obj.data[i].index = i;
+        }
+      } else {
+        // Start index based off of previous page's size
+        var index = self.page_sizes[obj.page - 1];
+        for(var i = 0; i < obj.data.length; i++) { obj.data[i].index = index; index++;  }
+      }
+
+
+      // Add obj to listing
+      self.listing.push(obj);
+      if(self.listing.length === 1) self.broadcast("onnavigatepop");
       console.log("Navigation", self.listing);
 
       self.broadcast("onnavigateappend");
