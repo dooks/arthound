@@ -84,6 +84,14 @@
     var self = this;
     self.listing = [];
 
+    self.scrollbar = {
+      "onScroll": function(y, x) {
+        if(y.scroll === y.maxScroll) {
+          if(self.listing.length > 0) { Navigate.nextPage(); }
+        }
+      }
+    };
+
     $scope.$on("onstatechange", function() {
       switch(State.state) {
         case "DEFAULT":
@@ -186,4 +194,4 @@
     });
   }]);
 
-}(ng_pokemon));
+}(ng_hound));

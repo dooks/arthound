@@ -39,4 +39,4 @@
     };
   }]);
 
-}(ng_pokemon));
+}(ng_hound));

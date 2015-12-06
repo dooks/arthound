@@ -1,9 +1,9 @@
-var ng_pokemon = (function(ng) {
+var ng_hound = (function(ng) {
   if(ng === undefined || ng === null) {
     console.error("Angular not found");
   }
 
-  var ng_app = ng.module("ngPokemon", []);
+  var ng_app = ng.module("ngHound", ["jQueryScrollbar"]);
 
   // Store references to important elements on document...
   ng_app.base_back        = $("#base_back");
