@@ -23,7 +23,11 @@
       restrict: "A",
       link: function(scope, element, attrs) {
         // Navigate to selected index
-        element.bind("click", function() { Navigate.to(attrs.index); });
+        element.bind("click", function() {
+          Navigate.to(attrs.index);
+          $("div.image-square-container-selected").removeClass("image-square-container-selected");
+          $(this).addClass("image-square-container-selected");
+        });
       }
     };
   }]);
