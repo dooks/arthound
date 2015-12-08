@@ -20,5 +20,17 @@ var ng_hound = (function(ng) {
   ng_app.info_help        = $("#info_help");
   ng_app.info_details     = $("#info_details");
 
+  ng_app.assert = function(condition, message) {
+    if(!condition) {
+      message = message || "Assertion failed";
+
+      //if(typeof Error !== "undefined") {
+        //throw new Error(message);
+      //}
+      //throw message;
+
+    }
+  };
+
   return ng_app;
 }(angular));

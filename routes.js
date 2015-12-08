@@ -61,6 +61,7 @@ router.get('/request', function(req, response, next) {
           headers: { "Authorization": "Bearer " + client_keys["deviantart"].access_token }
         }, function(err, res, body) {
           if(res.statusCode === 429) { // Reached adaptive rate limit
+            console.log("DeviantArt rate limit reached...");
             client_keys["deviantart"].last_delay *= 2;
           } else {
             if(--client_keys["deviantart"].last_delay <= 0) {
