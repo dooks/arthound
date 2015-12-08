@@ -19,22 +19,15 @@
 </head>
 
 <body ng-app="ngHound" onkey>
+<!-- search bar -->
+<div id="base_searchbar" search ng-controller="SearchbarCtrl as searchbar"
+     class="hidden absolute-wrapper">
+  <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
+  <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
+</div>
+
 <!-- viewport -->
 <div id="base_view" class="container-fluid relative-wrapper">
-  <!-- search bar -->
-  <div id="base_searchbar" search ng-controller="SearchbarCtrl as searchbar"
-       class="hidden absolute-wrapper">
-    <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
-    <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
-  </div>
-
-  <!-- image -->
-  <div id="base_image"
-       ng-controller="ImageCtrl as image"
-       class="absolute-wrapper">
-       <img />
-       <div></div>
-  </div>
 
   <!-- listing -->
   <div id="base_sidebar" class="absolute-wrapper">
@@ -43,7 +36,7 @@
         <div ng-repeat="page in listing.listing">
           <div ng-repeat="item in page.data">
             <div tile index="{{ item.index }}" class="image-square-container">
-              <div style="background-image: url('{{ item.thumbs }}')"></div>
+              <div style="background-image: url('{{item.thumbs}}')"></div>
             </div>
           </div>
         </div>
@@ -62,8 +55,14 @@
           <li>{{ info.date }}</li>
         </ul>
       </div>
-
     </div>
+
+  </div>
+
+  <!-- image -->
+  <div id="base_image" ng-controller="ImageCtrl as image">
+       <img />
+       <div></div>
   </div>
 
 </div>
@@ -85,6 +84,7 @@
 
 <!-- Bootstrap includes -->
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/bootstrap-toolkit.min.js"></script>
 
 <!-- Plugin includes -->
 <script src="js/jquery.scrollbar.js"></script>

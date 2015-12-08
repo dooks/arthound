@@ -15,22 +15,11 @@ var ng_hound = (function(ng) {
   ng_app.image_div        = $("#base_image > div");
   ng_app.image_img        = $("#base_image > img");
   ng_app.base_overlay     = $("#base_overlay");
+  ng_app.base_sidebar     = $("#base_sidebar");
   ng_app.base_listing     = $("#base_listing");
   ng_app.base_info        = $("#base_info");
   ng_app.info_help        = $("#info_help");
   ng_app.info_details     = $("#info_details");
-
-  ng_app.assert = function(condition, message) {
-    if(!condition) {
-      message = message || "Assertion failed";
-
-      //if(typeof Error !== "undefined") {
-        //throw new Error(message);
-      //}
-      //throw message;
-
-    }
-  };
 
   return ng_app;
 }(angular));

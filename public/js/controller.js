@@ -78,11 +78,11 @@
   }]);
 
   ng_app.controller("ListingCtrl",
-    ["$scope", "State", "Search", "Navigate",
-    function($scope, State, Search, Navigate) {
+    ["$scope", "State", "Search", "Navigate", "Bootstrap",
+    function($scope, State, Search, Navigate, Bootstrap) {
     // Handles the searchlist overlay, which contains a grid list of searches found
     var self = this;
-    self.listing = [];
+    self.listing = [ ];
 
     self.scrollbar = {
       "onScroll": function(y, x) {
@@ -103,6 +103,25 @@
           // show base_listing
           ng_app.base_listing.removeClass("invisible");
           break;
+      }
+    });
+
+    $scope.$on("onviewportchange", function() {
+      console.log(Bootstrap.state);
+
+      if(Bootstrap.state === "xs") {
+        // Switch sidebar to full
+        ng_app.base_sidebar.addClass("full-sidebar");
+        ng_app.base_view.addClass("no-padding");
+        ng_app.base_info.addClass("hidden");
+        $(".image-square-container").addClass("image-square-container-full");
+      }
+      if(Bootstrap.state === "sm" || Bootstrap.state === "md" || Bootstrap.state === "lg") {
+        // Switch sidebar to normal
+        ng_app.base_sidebar.removeClass("full-sidebar");
+        ng_app.base_view.removeClass("no-padding");
+        ng_app.base_info.removeClass("hidden");
+        $(".image-square-container").removeClass("image-square-container-full");
       }
     });
 
@@ -196,6 +215,8 @@
     var self = this;
     var current = {};
 
+    self.scrollbar = { "onScroll": function(y, x) { /* Options... */ } };
+
     $scope.$on("onstatechange", function() {
       switch(State.state) {
         case "DEFAULT":
@@ -214,8 +235,22 @@
       current = Navigate.findByIndex(Navigate.index);
       if(current) {
         var image = (current.preview || current.content || current.thumbs);
-        ng_app.image_img.attr("src", image);
-        ng_app.image_div.css("background-image", "url('" + image + "')");
+
+
+        if(current.zoom) {
+          // View full resolution picture instead
+          image = current.content;
+          ng_app.image_img.attr("src", image);
+
+          ng_app.image_img.addClass("base_image_zoom");
+          ng_app.image_div.addClass("hidden");
+        } else {
+          ng_app.image_img.attr("src", image);
+
+          ng_app.image_img.removeClass("base_image_zoom");
+          ng_app.image_div.removeClass("hidden");
+          ng_app.image_div.css("background-image", "url('" + image + "')");
+        }
       } else {
         // Do not update
         console.log("Could not find image", Navigate.index);
