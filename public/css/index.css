@@ -143,6 +143,7 @@ html, body {
   }
 
   #base_listing > div {
+    overflow: auto;
     height: 100%;
   }
 

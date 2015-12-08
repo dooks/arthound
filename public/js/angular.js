@@ -1,9 +1,9 @@
-var ng_pokemon = (function(ng) {
+var ng_hound = (function(ng) {
   if(ng === undefined || ng === null) {
     console.error("Angular not found");
   }
 
-  var ng_app = ng.module("ngPokemon", []);
+  var ng_app = ng.module("ngHound", ["jQueryScrollbar"]);
 
   // Store references to important elements on document...
   ng_app.base_back        = $("#base_back");
@@ -19,6 +19,18 @@ var ng_pokemon = (function(ng) {
   ng_app.base_info        = $("#base_info");
   ng_app.info_help        = $("#info_help");
   ng_app.info_details     = $("#info_details");
+
+  ng_app.assert = function(condition, message) {
+    if(!condition) {
+      message = message || "Assertion failed";
+
+      //if(typeof Error !== "undefined") {
+        //throw new Error(message);
+      //}
+      //throw message;
+
+    }
+  };
 
   return ng_app;
 }(angular));
