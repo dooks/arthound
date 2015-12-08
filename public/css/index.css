@@ -55,6 +55,10 @@ html, body {
 }
   .image-square-container > div:hover { -webkit-filter:grayscale(0); }
 
+.image-square-container-selected { border: 1px solid white; }
+
+.image-square-container-selected > div { -webkit-filter:grayscale(0) !important; }
+
 
 
 /* User defined IDs */
