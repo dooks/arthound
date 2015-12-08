@@ -19,66 +19,57 @@
 </head>
 
 <body ng-app="ngHound" onkey>
-<!-- backdrop -->
-<div id="base_back" class="col-xs-12 absolute-wrapper">
-  <!-- spacers -->
-  <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
+<!-- viewport -->
+<div id="base_view" class="container-fluid relative-wrapper">
+  <!-- search bar -->
+  <div id="base_searchbar" search ng-controller="SearchbarCtrl as searchbar"
+       class="hidden absolute-wrapper">
+    <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
+    <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
+  </div>
 
-  <!-- viewport -->
-  <div id="base_view" class="col-sm-12 col-md-10 container-fluid relative-wrapper">
-    <!-- search bar -->
-    <div id="base_searchbar" search ng-controller="SearchbarCtrl as searchbar"
-         class="hidden absolute-wrapper">
-      <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
-      <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
-    </div>
+  <!-- image -->
+  <div id="base_image"
+       ng-controller="ImageCtrl as image"
+       class="absolute-wrapper">
+       <img />
+       <div></div>
+  </div>
 
-    <!-- image -->
-    <div id="base_image"
-         ng-controller="ImageCtrl as image"
-         class="absolute-wrapper">
-         <img />
-         <div></div>
-    </div>
-
-    <!-- listing -->
-    <div id="base_sidebar" class="absolute-wrapper">
-      <div id="base_listing" class="invisible" ng-controller="ListingCtrl as listing">
-        <div data-jquery-scrollbar="listing.scrollbar">
-          <div ng-repeat="page in listing.listing">
-            <div ng-repeat="item in page.data">
-              <div tile index="{{ item.index }}" class="image-square-container">
-                <div style="background-image: url('{{ item.thumbs }}')"></div>
-              </div>
+  <!-- listing -->
+  <div id="base_sidebar" class="absolute-wrapper">
+    <div id="base_listing" class="invisible" ng-controller="ListingCtrl as listing">
+      <div data-jquery-scrollbar="listing.scrollbar">
+        <div ng-repeat="page in listing.listing">
+          <div ng-repeat="item in page.data">
+            <div tile index="{{ item.index }}" class="image-square-container">
+              <div style="background-image: url('{{ item.thumbs }}')"></div>
             </div>
           </div>
         </div>
       </div>
-
-      <div id="base_info" ng-controller="InfoCtrl as info">
-        <div id="info_help">{{ info.message }}</div>
-        <div id="info_details" class="hidden">
-          <ul>
-            <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
-            <li>by: <a href="http://{{ info.current.author_link }}">
-                      {{ info.current.author }}
-                    </a>
-            </li>
-            <li>{{ info.date }}</li>
-          </ul>
-        </div>
-
-      </div>
     </div>
 
+    <div id="base_info" ng-controller="InfoCtrl as info">
+      <div id="info_help">{{ info.message }}</div>
+      <div id="info_details" class="hidden">
+        <ul>
+          <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
+          <li>by: <a href="http://{{ info.current.author_link }}">
+                    {{ info.current.author }}
+                  </a>
+          </li>
+          <li>{{ info.date }}</li>
+        </ul>
+      </div>
+
+    </div>
   </div>
 
-    <!-- info -->
-    <!--<div id="base_info" ng-controller="InfoCtrl as info" class="absolute-wrapper"> </div>-->
-
-  <!-- spacers -->
-  <div class="hidden-xs hidden-sm col-spacers col-md-1"></div>
 </div>
+
+  <!-- info -->
+  <!--<div id="base_info" ng-controller="InfoCtrl as info" class="absolute-wrapper"> </div>-->
 
 <!-- Jasmine testing -->
 <!--<script type="text/javascript" src="tests/jasmine.js"></script>-->
