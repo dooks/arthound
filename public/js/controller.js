@@ -49,10 +49,10 @@
         State.changeSubstate("NONE");
         State.changeState("SEARCHING");
 
-        // this is a new search, so clear the old listing and response...
-        Navigate.clear();
+        // this is a new search, so clear the old listing_buffer and response...
+        Navigate.initialize();
         Search.clearResponse();
-        Search.queue();
+        Search.get(Search.query);
 
         // Force $scope to update
         Search.clear();
@@ -108,24 +108,48 @@
 
     $scope.$on("onnavigatepage", function() {
       // Append search response to end of listing array
-      Search.queue(Search.last_query, Navigate.current_page, Navigate.limit);
+      if(!Navigate.last_page) {
+        Search.get(Search.last_query, Navigate.current_page, Navigate.limit);
+      }
     });
 
     $scope.$on("onnavigatepop", function() {
       Navigate.to(0);
-      // Preemptively load next two pages...
-      Navigate.nextPage();
+
+      if(!Navigate.last_page) {
+        // queue up to current_high
+        for(var i = 1; i <= Navigate.display_high; i++) {
+          Search.get(Search.last_query, Navigate.current_page + i)
+        }
+      }
+      State.changeState("ACTIVE");
     });
 
     $scope.$on("onsearchreturned", function() {
       // Append response to Navigation service listing
-      Navigate.append(Search.response);
-      Search.clearResponse(); // Immediately discard response
+      // If last result in queue has no length...
 
-      self.listing = Navigate.listing; // Make available to directive
-      State.changeState("ACTIVE");
+      if(Search.response[Search.response.length -1].data.length === 0) {
+        Search.clearResponse();
+        console.log("Paging is now disabled, end of results");
+        // No search results, or we've reached the last page
+        Navigate.last_page = true;
+
+        // Disallow next paging
+        Navigate.can_page = false;
+      } else {
+        // Allow paging again
+        Navigate.can_page = true;
+
+        Navigate.append(Search.response[0]);
+        Search.clearResponse(); // Clear oldest response
+
+        // Update listing display
+        self.listing = Navigate.getDisplay(Navigate.listing_buffer);
+        //console.log("Listing", self.listing);
+        //self.listing = Navigate.listing_buffer;
+      }
     });
-
   }]);
 
   ng_app.controller("InfoCtrl",
@@ -135,8 +159,8 @@
     // How many images got returned
     var self = this;
     self.current = {};
-    self.date = null;
-    self.message = "Type anywhere...";
+    var date = null;
+    var message = "Type anywhere...";
 
     $scope.$on("onstatechange", function() {
       switch(State.state) {
@@ -150,19 +174,19 @@
     });
 
     $scope.$on("onnavigate", function() {
+      // Draw image info
       self.current = Navigate.findByIndex(Navigate.index);
-      self.drawInfo();
+
+      if(self.current) {
+        ng_app.info_details.removeClass("hidden");
+        ng_app.info_help.addClass("hidden");
+
+        // Convert date to readable Date
+        var date = new Date(self.current.date * 1000);
+        date = date.toDateString();
+        $scope.$apply();
+      }
     });
-
-    self.drawInfo = function() {
-      ng_app.info_details.removeClass("hidden");
-      ng_app.info_help.addClass("hidden");
-
-      // Convert date to readable Date
-      var date = new Date(self.current.date * 1000);
-      self.date = date.toDateString();
-      $scope.$apply();
-    };
   }]);
 
   ng_app.controller("ImageCtrl",
@@ -188,9 +212,14 @@
     $scope.$on("onnavigate", function() {
       // Display preview image if available, otherwise full resolution picture
       current = Navigate.findByIndex(Navigate.index);
-      var image = (current.preview || current.content || current.thumbs);
-      ng_app.image_img.attr("src", image);
-      ng_app.image_div.css("background-image", "url('" + image + "')");
+      if(current) {
+        var image = (current.preview || current.content || current.thumbs);
+        ng_app.image_img.attr("src", image);
+        ng_app.image_div.css("background-image", "url('" + image + "')");
+      } else {
+        // Do not update
+        console.log("Could not find image", Navigate.index);
+      }
     });
   }]);
 

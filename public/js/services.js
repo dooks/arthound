@@ -75,35 +75,44 @@ function shuffle(o){
   ng_app.service("Search", ["$rootScope", "$http", function($rootScope, $http) {
     var self = this;
     self.query      = "";
-    self.last_query = "";
-    self.response   = {};
+    self.response   = [];
     self.sources    = [ "deviantart" ];
+    self.limit      = 24;
 
     self.clear         = function() { self.query = ""; }
-    self.clearResponse = function() { delete self.response; self.response = {}; }
-
-    self.suggestions = function(query) {
-      // Provide list of similar Pokemon queries to aid with mispellings
+    self.clearResponse = function() {
+      if(self.response.length > 1)  { self.response = self.response.slice(1); }
+      else                          { self.response.length = 0;               }
     };
 
-    self.queue = function(query, page, limit) {
-      // Where the "magic" happens, Performs HTTP search
-      // Appends to search.response per chunk
-      //   @query: optional, search query to perform. Uses search.query if blank
-      var new_page = page || 0;
-      self.last_query = self.query; // Store previous query
+    self.get = function(query, page, limit) {
+      // Where the "magic" happens
+      // Requests "get" data; a page is cumulative of all defined sources
+      //   @query: optional, self.last_query if blank
+      //   @page: page number to check for in each source
+      //   @limit: How many records to return for each source
+
+      var new_page    = page || 0;
+      self.limit      = limit || self.limit;
+      self.last_query = query || self.last_query || self.query;
 
       $http({
         method: "GET",
         url: "/get/request",
         params:   {
-          "tags":   self.query,
-          "page":     new_page,
-          "limit": limit || 24 // Server hard limit
+          "tags":  self.last_query,
+          "page":  new_page,
+          "limit": self.limit // Server hard limit of 24 per resource...
         }
       }).then(
-          function success(res) { self.response = { page: new_page, data: res.data }; },
-          function error(res) { this.response = {}; console.error(res); }
+          function success(res) {
+            self.response.push({ page: new_page, data: res.data });
+            //console.log("Search responses", self.response);
+          },
+          function error(res) {
+            self.response.push({ page: null, data: []});
+            console.error("Search responses", self.response);
+          }
       ).finally(
         // Broadcast that search has been returned
         function returned() { $rootScope.$broadcast("onsearchreturned"); }
@@ -111,77 +120,81 @@ function shuffle(o){
     }; // end of search function
   }]);
 
+
+
+
   ng_app.service("Navigate", ["$rootScope", function($rootScope) {
     // Navigation service
     // Contains navigation listing
     // Listing data must be { "{{Page #}}": chunk }
     var self = this;
-    var listing_limit =  3; // How many pages away from median to load
-    self.limit        = 24; // Query limit
-    self.listing      = []; // Contains listing data
-    self.page_sizes   = []; // Variable page sizes, used for indexing
-    self.index        =  0; // Index of image to be displayed
-    self.current_page =  0; // Current page median
-    self.current_low  =  0; // Current page minimum
-    self.current_high =  3; // Current page maximum
 
-    self.clear = function() {
-      delete self.listing;
-      delete self.page_sizes;
-      self.index        = 0;
-      self.current_page = 0;
-      self.current_low  = 0;
-      self.current_high = 3;
+    self.initialize = function(limit) {
+      // reinitialize values based on page limit
+      self.current_limit  =  limit || 3; // How far ahead or behind to buffer
+      self.current_index  =  0; // Index of image to be displayed
+      self.current_page   =  0;
+      self.display_low    =  0 - self.current_limit; // How far ahead to buffer
+      self.display_high   =  0 + self.current_limit; // How far behind to buffer
 
-      // Re-initialize
-      self.listing    = [];
-      self.page_sizes = [];
-    };
+      self.can_page       = false; // If next/prev page can execute
+      self.last_page      = false; // Disables next page
+      self.listing_buffer = []; // Contains entire listing data
+      self.page_sizes     = []; // Used for searching indices
+    }
+    self.initialize(3); // Default limit of 3
 
-    self.append = function(obj) {
-      // Append to self.listing and broadcast event
-      // Obj should be in the search response format { page: n, data: chunk }
 
-      // If page number doesn't exist in self.page_sizes...
-      if(self.page_sizes[obj.page] === undefined) {
-        if(obj.page !==0) {
-          // Add obj.data.length to previous element
-          self.page_sizes.push(obj.data.length + self.page_sizes[obj.page - 1]);
-        } else {
-          self.page_sizes.push(obj.data.length);
-        }
+
+    self.append = function(response) {
+      // Append a search resposne to self.listing_buffer
+      // Response should be in the format { page: n, data: chunk }
+
+      if(response === null || response === undefined) {
+        console.error("response is null or undefined");
+      }
+      // TODO: check if response follows format
+
+      if(self.listing_buffer[response.page] !== undefined) {
+        return false; // Already exists in listing_buffer
       }
 
-      // Now that page size exists, assign proper indices to obj.data[i]
-      if(obj.page === 0) {
-        // Assign indices normally
-        for(var i = 0; i < obj.data.length; i++) {
-          obj.data[i].index = i;
-        }
-      } else {
-        // Start index based off of previous page's size
-        var index = self.page_sizes[obj.page - 1];
-        for(var i = 0; i < obj.data.length; i++) { obj.data[i].index = index; index++;  }
+      // Determine start index
+      var start_index = 0;
+      if(self.listing_buffer.length > 0) {
+        // Get index of last item...
+        var last_buffer = self.listing_buffer[self.listing_buffer.length - 1].data;
+        start_index = last_buffer[last_buffer.length - 1].index + 1;
+      } // else index starts zero
+
+      // Index all items in response.data
+      for(var i = 0; i < response.data.length; i++) {
+        response.data[i].index = start_index + i;
       }
 
+      // Add response to listing_buffer
+      self.listing_buffer.push(response);
+      // Add size of response to page_sizes + previous size, or 0 if it doesn't exist
+      self.page_sizes.push(response.data.length +
+        (self.page_sizes[self.page_sizes.length - 1] || 0));
 
-      // Add obj to listing
-      self.listing.push(obj);
-      if(self.listing.length === 1) self.broadcast("onnavigatepop");
-      console.log("Navigation listing", self.listing);
+      if(self.listing_buffer.length === 1) { self.broadcast("onnavigatepop"); }
+      //console.log("Navigation Page Sizes", self.page_sizes);
+      //console.log("Navigation Buffer",     self.listing_buffer);
 
       self.broadcast("onnavigateappend");
     };
 
-    self.next = function() {
-      if((self.index + 1) < self.listing.length) {
-        self.index += 1; self.broadcast("onnavigate"); return true;
+    self.checkDisplay = function(n) {
+      // Check if page is within display range of current page...
+      if(n < self.display_high && n > self.display_low) {
+        return true;
       } else { return false; }
     };
 
-    self.prev = function() {
-      if((self.index - 1) >= 0) {
-        self.index -= 1; self.broadcast("onnavigate"); return true;
+    self.next = function() {
+      if((self.index + 1) < self.listing_buffer.length) {
+        self.index += 1; self.broadcast("onnavigate"); return true;
       } else { return false; }
     };
 
@@ -192,45 +205,62 @@ function shuffle(o){
     };
 
     self.nextPage = function() {
-      if((self.current_page + 1 - self.current_low) > listing_limit) {
-        // Lop off beginning of listing
-        self.listing.slice(self.current_low, self.current_low + 1);
+      if(!self.last_page && self.can_page) {
+        self.can_page = false;
+        self._calcPage(++self.current_page);
+        self.broadcast("onnavigatepage");
       }
-      self._calcPage(++self.current_page);
-      self.broadcast("onnavigatepage");
     };
 
-    self.prevPage = function() {
-      if(self.current_high - (self.current_page - 1) > listing_limit) {
-        // Lop off end of listing
-        self.listing.slice(self.current_high);
+    self.getDisplay = function(buffer) {
+      // Return list of display to show
+      // TODO: replace with more efficient method (slicing end/beginning)
+      var retval = [];
+      var low  = self.display_low;
+      var high = self.display_high;
+
+      if(self.display_low < 0) low = 0;
+      // There is no high ceiling for array.slice
+      retval = buffer.slice(low, high);
+
+      return retval;
+    }
+
+    self.getPageByIndex = function(n) {
+      // Return page number of item
+      // warning: can return 0 or null. be explicit when checking
+      //   @n: index of item
+      if(index < self.page_sizes[0]) { return 0; } // first page
+      else {
+        for(var i = 1; i < self.page_sizes.length; i++) {
+          if(self.page_sizes[i] > index) { return i; }
+        }
+
+        return null; // Index not within page ranges
       }
-      self._calcPage(--self.current_page);
-      self.broadcast("onnavigatepage");
     };
 
     self.findByIndex = function(index) {
-      // Return item in listing based on index
+      // Return item in listing_buffer based on index
       if(index > self.page_sizes[0]) {
 
-        // Start with second listing index
         for(var i = 1; i < self.page_sizes.length; i++) {
           if(self.page_sizes[i] > index) {
             var sub_index = index - self.page_sizes[i - 1];
-            return self.listing[i].data[sub_index];
+            return self.listing_buffer[i].data[sub_index];
           }
         }
 
       } else {
-        return self.listing[0].data[index];
+        return self.listing_buffer[0].data[index];
       }
     };
 
     self._calcPage = function(page) {
-      // Calculates current_low and current_high
-      self.current_low  = page - 3;
-      if(self.current_low <= 0) self.current_low = 0;
-      self.current_high = page + 3;
+      // Calculates current_low and display_high
+      self.display_low  = page - self.current_limit;
+      if(self.display_low <= 0) self.display_low = 0;
+      self.display_high = page + self.current_limit;
     };
 
     self.broadcast = function(ev) { $rootScope.$broadcast(ev); }
