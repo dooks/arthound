@@ -6,7 +6,7 @@ function shuffle(o){
   return o;
 }
 
-(function(ng_app) {
+(function(ng_app, viewport) {
   ng_app.service("State", ["$rootScope", function($rootScope) {
     // TODO: why does initializing this make it persistent....?
     var self = this;
@@ -36,6 +36,39 @@ function shuffle(o){
       }
     };
   }]);
+
+
+  ng_app.service("Bootstrap", ["$rootScope", function ($rootScope) {
+    var self = this;
+    self.state      = "";
+    self.last_state = "";
+    self.viewport   = viewport;
+    self.interval   = 1000;
+    self.can_change = true;
+
+    $(document).ready(function() {
+      self.state      = viewport.current();
+      self.last_state = self.state;
+
+      $(window).resize(function() {
+        if(self.can_change) {
+          self.can_change = false;
+          self.state = viewport.current();
+
+          if(self.state !== self.last_state) {
+            self.last_state = self.state;
+            $rootScope.$broadcast("onviewportchange");
+          }
+
+          setTimeout(function() {
+            self.can_change = true;
+          }, self.interval);
+        }
+      });
+    });
+
+  }]);
+
 
   ng_app.service("Keyboard", ["$rootScope", function($rootScope) {
     var self = this;
@@ -155,9 +188,9 @@ function shuffle(o){
       }
       // TODO: check if response follows format
 
-      if(self.listing_buffer[response.page] !== undefined) {
-        return false; // Already exists in listing_buffer
-      }
+      // Already exists in listing_buffer
+      // TODO: check actual page number
+      if(self.listing_buffer[response.page] !== undefined) { return false; }
 
       // Determine start index
       var start_index = 0;
@@ -167,8 +200,17 @@ function shuffle(o){
         start_index = last_buffer[last_buffer.length - 1].index + 1;
       } // else index starts zero
 
-      // Index all items in response.data
+      // Process response data
       for(var i = 0; i < response.data.length; i++) {
+        // set zoom flag based on aspect ratio
+        // also prevent divide by zero for height...
+        var aspect = response.data[i].width / (response.data[i].height || 0.1);
+
+        // if aspect ratio is ~ 1:2 or thinner...
+        if(aspect < 0.5) response.data[i].zoom = true;
+        else               response.data[i].zoom = false;
+
+        // Index item
         response.data[i].index = start_index + i;
       }
 
@@ -266,4 +308,4 @@ function shuffle(o){
     self.broadcast = function(ev) { $rootScope.$broadcast(ev); }
 
   }]);
-}(ng_hound));
+}(ng_hound, ResponsiveBootstrapToolkit));
