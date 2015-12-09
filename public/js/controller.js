@@ -5,6 +5,7 @@
     // Handles the searching overlay
     // Searching overlay appears when beginning to type
     var self = this;
+    self.sources = { "deviantart": true, "e926": true, "imgur": true };
 
     $scope.$on("onsubstatechange", function() {
       switch(State.substate) {
@@ -49,9 +50,13 @@
         State.changeSubstate("NONE");
         State.changeState("SEARCHING");
 
-        // this is a new search, so clear the old listing_buffer and response...
+        // this is a new search, so...
+        // clear the old listing_buffer
         Navigate.initialize();
+        // Clear search responses
         Search.clearResponse();
+        // Reset sources
+        Search.resetSources(self.sources);
         Search.get(Search.query);
 
         // Force $scope to update

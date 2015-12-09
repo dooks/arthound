@@ -2,19 +2,11 @@ var express = require("express");
 var router  = express.Router();
 var request = require("request");
 var promise = require("promise");
-var filter  = require("./filter.js");
+var filter  = require("./filter");
 
 var global_delay = 1000; // 1 second
+var client_keys = require("./keys");
 
-var client_keys = {
-  "deviantart": {
-    client_id: "4010",
-    client_secret: "ca8edec4cdaa48fc6b64196de7394d66",
-    access_token: null,
-    slow_down: false,
-    last_delay: 0
-  }
-};
 (function newToken() {
   request({
     url: "https://www.deviantart.com/oauth2/token",
@@ -38,75 +30,174 @@ var client_keys = {
   });
 }())
 
-router.get('/request', function(req, response, next) {
+router.post('/request', function(req, response, next) {
   // Limit tags to one word only
-  req.query.tags = req.query.tags || "fire"; // "fire" is a nice, subjective default
-  req.query.tags = encodeURIComponent(req.query.tags);
-  var   page     = req.query.page || 0;
-  var  limit     = req.query.limit || 24;
+  // "fire" is a nice, subjective default
+  // Possibly replace with a "most popular" tag... ?
+  req.body.tags = req.body.tags || "fire";
+  req.body.tags = encodeURIComponent(req.body.tags);
+  var page    = req.body.page    || 0;
+  var limit   = req.body.limit   || 24;
+  var sources = req.body.sources || { "deviantart": true, "e926": true, "imgur": true };
 
-  // 24 is set hard limit due to Deviantart...
-  if(limit > 24) limit = 24;
+  if(sources.length === 0) console.error("No sources defined!");
+  if(limit > 24) limit = 24; // Server hard limit
+  var promises = [];
 
-  setTimeout(function() { // Global delay, always wait 1 second (at least)
+  /* ************* *
+   * ************* *
+   * * Deviant Art *
+   * ************* *
+   * ************* */
     // Deviantart has adaptive rate limiting...
-    var deviantart_promise = new promise(function(resolve, reject) {
-      setTimeout(function() {
-        request({
-          url: "https://www.deviantart.com/api/v1/oauth2/browse/tags" +
-               "?tag="    +  req.query.tags.replace(/(%20|\ ).*$/, "") +
-               "&offset=" +  page*limit +
-               "&limit="  +  limit,
-          method:   "GET",
-          headers: { "Authorization": "Bearer " + client_keys["deviantart"].access_token }
-        }, function(err, res, body) {
-          if(res.statusCode === 429) { // Reached adaptive rate limit
-            console.log("DeviantArt rate limit reached...");
-            client_keys["deviantart"].last_delay *= 2;
-          } else {
-            if(--client_keys["deviantart"].last_delay <= 0) {
-              // Deactivate slow_down limit
-              client_keys["deviantart"].last_delay = 0;
-            }
-          }
+  if(sources["deviantart"] === true) {
+    promises.push(
+      new promise(function(resolve, reject) {
 
-          // Normalize deviantart data before resolving promise
+        setTimeout(function() {
+          request({
+            url: "https://www.deviantart.com/api/v1/oauth2/browse/tags" +
+                 // Limit DA search query to one word...
+                 "?tag="    +  req.body.tags.replace(/(%20|\ ).*$/, "") +
+                 "&offset=" +  page*limit +
+                 "&limit="  +  limit,
+            method:   "GET",
+            headers: { "Authorization": "Bearer " + client_keys["deviantart"].access_token }
+          }, function(err, res, body) {
+            if(res.statusCode === 429) { // Reached adaptive rate limit
+              console.error("DeviantArt rate limit reached...");
+
+              client_keys["deviantart"].last_delay *= 2;
+              if(client_keys["deviantart"].last_delay <= 0) {
+                client_keys["deviantart"].last_delay = 1000;
+              }
+            } else {
+
+              // Slow decay to 0
+              client_keys["deviantart"].last_delay -= 1000;
+              if(client_keys["deviantart"].last_delay <= 0) {
+                // Deactivate slow_down limit
+                client_keys["deviantart"].last_delay = 0;
+              }
+
+            }
+
+            // Normalize deviantart data before resolving promise
+            var retval = JSON.parse(body);
+            var new_body = {
+              name: "deviantart",
+              stop: !retval.has_more,
+              results: filter.deviantart(retval.results)
+            };
+
+            resolve(new_body);
+          });
+        }, client_keys["deviantart"].last_delay);
+      })
+    );
+  }
+
+  /* ************* *
+   * ************* *
+   * **** e926 *** *
+   * ************* *
+   * ************* */
+  if(sources["e926"]) {
+    promises.push(
+      new promise(function(resolve, reject) {
+        request({
+          url: "https://e926.net/post/index.json" +
+               "?tags="       + req.body.tags    +
+               "%20score:>40" +            // Force high score...
+               "%20-friendship_is_magic" + // Substract ponies...
+               "&page="       + String(page + 1) +
+               "&limit="      + limit,
+          method:   "GET"
+        }, function(err, res, body) {
+          // Normalize e621 data before resolving promise
           var retval = JSON.parse(body);
-          var new_body = retval.results || [];
-          new_body = filter.deviantart(new_body);
+          var new_body = {
+            name: "e926",
+            stop: (retval.length === 0),
+            results: filter.e926(retval)
+          };
+
           resolve(new_body);
         });
-      }, client_keys["deviantart"].last_delay);
-    });
+      })
+    );
+  }
 
-    var e926_promise = new promise(function(resolve, reject) {
-      request({
-        url: "https://e621.net/post/index.json" +
-             "?tags="       + req.query.tags     +
-             "%20rating:s"  + // Force safe rating search
-             "%20score:>40" + // Force high score...
-             "%20-friendship_is_magic" + // Substract ponies...
-             "&page="       + page  +
-             "&limit="      + limit,
-        method:   "GET"
-      }, function(err, res, body) {
-        // Normalize e621 data before resolving promise
-        var retval = JSON.parse(body);
-        var new_body = retval || [];
-        new_body = filter.e926(new_body);
+  /* ************** *
+   * ************** *
+   * **** Imgur *** *
+   * ************** *
+   * ************** */
+    // Imgur intense rate limits...
 
-        resolve(new_body);
-      });
-    });
+    /*
+    // If user limit has been reached
+    if(client_keys["imgur"].user_remaining > 10) { // Just to be safe, stop at 10
+      if(client_keys["imgur"].client_remaining > 100) {
 
-    promise.all([ deviantart_promise, e926_promise ]).then(
-      function(res) {
-        //response.end(res[0].concat(res[1]));
-        var retval = res[0].concat(res[1]);
-        response.json(retval);
+        promises.push(
+          new promise(function(resolve, reject) {
+            setTimeout(function() {
+              request({
+                url: "https://api.imgur.com/3/gallery/search/" +
+                     "?q_all=" +  req.body.tags.replace(/(%20|\ )/, "+") +
+                     "&page="  + page,
+                     // Imgur doesn't have limiting for some reason, just paging
+                     //"&limit="  +  limit,
+                method:   "GET",
+                headers: { "Authorization": "Client-ID " + client_keys["deviantart"].client_id }
+              }, function(err, res, body) {
+                client_keys["imgur"].user_limit       = res.headers["X-RateLimit-UserLimit"];
+                client_keys["imgur"].user_remaining   = res.headers["X-RateLimit-UserRemaining"];
+                client_keys["imgur"].user_reset       = res.headers["X-RateLimit-UserReset"];
+                client_keys["imgur"].client_limit     = res.headers["X-RateLimit-ClientLimit"];
+                client_keys["imgur"].client_remaining = res.headers["X-RateLimit-ClientRemaining"];
+
+                console.log(client_keys["imgur"]);
+
+                // Normalize imgur data before resolving promise
+                var retval = JSON.parse(body);
+                var new_body = {
+                  name: "imgur",
+                  stop: (retval.data.length === 0),
+                  results: filter.imgur(retval.data)
+                };
+
+                resolve(new_body);
+              });
+            }, client_keys["imgur"].hard_delay);
+          });
+        );
+
+      } else { promises.push(Promise.reject([filter.template])); }
+    } else { promises.push(Promise.reject([filter.template])); }
+    */
+
+
+
+
+
+
+    promise.all(promises).then(
+      function success(res) {
+        // Response format:
+        // res is...
+        // {   name: "deviantart",
+        //     stop: false
+        //  results: ...
+        response.json(res);
+
+      },
+      function error(res) {
+        console.log("Errors");
+        response.json({"message": "error fetching for some reason"});
       }
     );
-  }, global_delay);
 
 });
 

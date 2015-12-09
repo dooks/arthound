@@ -1,5 +1,37 @@
 /* Normalizing filter functions for each source */
 
+// Base:
+// author: "grachiel"
+// author_link: "grachiel.deviantart.com"
+// content: "http://orig05.deviantart.net/0fe6/f/2012/132/c/0/anime_by_grachiel-d4zjpg1.jpg"
+// date: 1336801385
+// favorites: 0
+// height: 600
+// id: "F3EA54E5-C93F-5F62-C3B9-2CD9F200B984"
+// preview: 
+// source: "deviantart"
+// thumbs: ""
+// title: "Anime"
+// url: "http://grachiel.deviantart.com/art/Anime-301570705"
+// width: 750
+
+module.exports.template = {
+  author:      "",
+  author_link: "",
+  content:     "",
+  date:         0,
+  favorites:    0,
+  height:       0,
+  id:          "",
+  preview:     "",
+  source:      "",
+  thumbs:      "",
+  title:       "",
+  url:         "",
+  source:      "",
+  width:        0
+}
+
 module.exports.deviantart = function(body) {
   var new_body = body;
 
@@ -104,3 +136,6 @@ module.exports.e926 = function(body) {
 
   return new_body;
 };
+
+module.exports.imgur = function(body) {
+}
