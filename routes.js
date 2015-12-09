@@ -135,7 +135,6 @@ router.post('/request', function(req, response, next) {
    * ************** */
     // Imgur intense rate limits...
 
-    /*
     // If user limit has been reached
     if(client_keys["imgur"].user_remaining > 10) { // Just to be safe, stop at 10
       if(client_keys["imgur"].client_remaining > 100) {
@@ -145,20 +144,18 @@ router.post('/request', function(req, response, next) {
             setTimeout(function() {
               request({
                 url: "https://api.imgur.com/3/gallery/search/" +
-                     "?q_all=" +  req.body.tags.replace(/(%20|\ )/, "+") +
+                     "?q=art+" +  req.body.tags.replace(/(%20|\ )/, "+") +
                      "&page="  + page,
                      // Imgur doesn't have limiting for some reason, just paging
                      //"&limit="  +  limit,
                 method:   "GET",
-                headers: { "Authorization": "Client-ID " + client_keys["deviantart"].client_id }
+                headers: { "Authorization": "Client-ID " + client_keys["imgur"].client_id }
               }, function(err, res, body) {
-                client_keys["imgur"].user_limit       = res.headers["X-RateLimit-UserLimit"];
-                client_keys["imgur"].user_remaining   = res.headers["X-RateLimit-UserRemaining"];
-                client_keys["imgur"].user_reset       = res.headers["X-RateLimit-UserReset"];
-                client_keys["imgur"].client_limit     = res.headers["X-RateLimit-ClientLimit"];
-                client_keys["imgur"].client_remaining = res.headers["X-RateLimit-ClientRemaining"];
-
-                console.log(client_keys["imgur"]);
+                client_keys["imgur"].user_limit       = res.headers["x-ratelimit-userlimit"];
+                client_keys["imgur"].user_remaining   = res.headers["x-ratelimit-userremaining"];
+                client_keys["imgur"].user_reset       = res.headers["x-ratelimit-userreset"];
+                client_keys["imgur"].client_limit     = res.headers["x-ratelimit-clientlimit"];
+                client_keys["imgur"].client_remaining = res.headers["x-ratelimit-clientremaining"];
 
                 // Normalize imgur data before resolving promise
                 var retval = JSON.parse(body);
@@ -171,12 +168,11 @@ router.post('/request', function(req, response, next) {
                 resolve(new_body);
               });
             }, client_keys["imgur"].hard_delay);
-          });
+          })
         );
 
-      } else { promises.push(Promise.reject([filter.template])); }
-    } else { promises.push(Promise.reject([filter.template])); }
-    */
+      } else { promises.push(promise.reject([filter.template])); }
+    } else { promises.push(promise.reject([filter.template])); }
 
 
 

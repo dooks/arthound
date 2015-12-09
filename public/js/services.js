@@ -159,7 +159,6 @@ function shuffle(o){
             }
 
             // Sort results ...? 
-
             self.response.push({ page: new_page, data: new_data });
           },
 
