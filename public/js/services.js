@@ -141,7 +141,7 @@ function shuffle(o){
           "tags":    self.last_query,
           "page":    new_page,
           "limit":   self.limit,
-          "sources": self.stop_sources
+          "sources": self.sources
         }
       }).then(
           function success(res) {
