@@ -170,7 +170,7 @@
 
         // Update listing display
         self.listing = Navigate.getDisplay(Navigate.listing_buffer);
-        //console.log("Listing", self.listing);
+        console.log("Listing", self.listing);
         //self.listing = Navigate.listing_buffer;
       }
     });
