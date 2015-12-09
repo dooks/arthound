@@ -24,15 +24,15 @@ module.exports = {
     url: "https://www.deviantart.com/oauth2/token",
     method: "GET",
     qs: {
-      "client_id":     client_keys["deviantart"].client_id,
-      "client_secret": client_keys["deviantart"].client_secret,
+      "client_id":     module.exports["deviantart"].client_id,
+      "client_secret": module.exports["deviantart"].client_secret,
       "grant_type":    "client_credentials"
     },
   }, function(err, res, body) {
     if(body === undefined) body = "{}";
     var obj = JSON.parse(body);
-    client_keys["deviantart"].access_token = obj.access_token;
-    console.log("Deviant Art token:", client_keys["deviantart"].access_token);
+    module.exports["deviantart"].access_token = obj.access_token;
+    console.log("Deviant Art token:", module.exports["deviantart"].access_token);
 
     if(obj.expires_in) {
       // Automatically renew token
@@ -40,7 +40,7 @@ module.exports = {
       console.log("Deviant Art bearer token resets in...", +obj.expires_in, "seconds");
     }
   });
-}())
+}());
 
 (function imgurRate() {
   request({

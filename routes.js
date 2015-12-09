@@ -16,6 +16,9 @@ router.post('/request', function(req, response, next) {
   var limit   = req.body.limit   || 24;
   var sources = req.body.sources || { "deviantart": true, "e926": true, "imgur": true };
 
+  console.log("Page:", page, "Limit: ", req.body.limit,
+              "Sources:", req.body.sources, "Tags:", req.body.tags);
+
   if(sources.length === 0) console.error("No sources defined!");
   if(limit > 24) limit = 24; // Server hard limit
   var promises = [];

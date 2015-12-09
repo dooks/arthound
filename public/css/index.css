@@ -10,6 +10,11 @@
 }
 
 /* Bootstrap overrides */
+a {
+  text-decoration: underline;
+  color: white;
+}
+
 .absolute-wrapper {
   position: absolute;
   height: 100%;
