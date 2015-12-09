@@ -19,6 +19,29 @@ module.exports = {
   }
 };
 
+(function deviantToken() {
+  request({
+    url: "https://www.deviantart.com/oauth2/token",
+    method: "GET",
+    qs: {
+      "client_id":     client_keys["deviantart"].client_id,
+      "client_secret": client_keys["deviantart"].client_secret,
+      "grant_type":    "client_credentials"
+    },
+  }, function(err, res, body) {
+    if(body === undefined) body = "{}";
+    var obj = JSON.parse(body);
+    client_keys["deviantart"].access_token = obj.access_token;
+    console.log("Deviant Art token:", client_keys["deviantart"].access_token);
+
+    if(obj.expires_in) {
+      // Automatically renew token
+      setTimeout(deviantToken, obj.expires_in * 1000);
+      console.log("Deviant Art bearer token resets in...", +obj.expires_in, "seconds");
+    }
+  });
+}())
+
 (function imgurRate() {
   request({
     url: "https://api.imgur.com/3/credits",
@@ -33,14 +56,14 @@ module.exports = {
     module.exports["imgur"].user_reset       = parsed_body.data["UserReset"];
     module.exports["imgur"].client_limit     = parsed_body.data["ClientLimit"];
     module.exports["imgur"].client_remaining = parsed_body.data["ClientRemaining"];
-    console.log("Imgur Rate Limits:", module.exports["imgur"]);
 
     // Determine when to run this function again
     var now   = Date.now();
     var then  = new Date(module.exports["imgur"].user_reset * 1000);
     var timer = new Date(then - now);
 
-    console.log("Imgur User Limit resets at", then.toString());
+    console.log("Imgur User Limit resets at", timer.toString(), timer.getTime());
+    console.log("Imgur client_remaining", module.exports["imgur"].client_remaining);
     setTimeout(imgurRate, timer);
   });
 

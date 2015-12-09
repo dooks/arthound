@@ -133,7 +133,6 @@ function shuffle(o){
       var new_page    = page || 0;
       self.limit      = limit || self.limit;
       self.last_query = query || self.last_query || self.query;
-      console.log(self.last_query);
 
       $http({
         method: "POST",
@@ -146,19 +145,27 @@ function shuffle(o){
         }
       }).then(
           function success(res) {
-            // Concatenate res.data.results(s) into single array
+            console.log("Server query:", "\"" + self.last_query + "\"",
+                        "Page", new_page,
+                        "Response", res);
+
+            // Normalize response to new_data
+            // { page: #, data: array }
             var new_data = [];
             for(var i = 0; i < res.data.length; i++) {
               // Turn off sources if res.data[i].stop returns true
               if(res.data[i].stop === true) {
-                console.log("Reached last page for", res.data.name);
                 self.sources[res.data[i].name] = false;
               }
 
+              // Sort results before concatenating to new_data.data
+              res.data[i].results.sort(function(a, b) {
+                // Sort in descending order by date
+                return b.date - a.date;
+              });
               new_data.push.apply(new_data, res.data[i].results);
             }
 
-            // Sort results ...? 
             self.response.push({ page: new_page, data: new_data });
           },
 

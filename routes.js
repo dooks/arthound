@@ -2,33 +2,9 @@ var express = require("express");
 var router  = express.Router();
 var request = require("request");
 var promise = require("promise");
+
 var filter  = require("./filter");
-
-var global_delay = 1000; // 1 second
 var client_keys = require("./keys");
-
-(function newToken() {
-  request({
-    url: "https://www.deviantart.com/oauth2/token",
-    method: "GET",
-    qs: {
-      "client_id":     client_keys["deviantart"].client_id,
-      "client_secret": client_keys["deviantart"].client_secret,
-      "grant_type":    "client_credentials"
-    },
-  }, function(err, res, body) {
-    if(body === undefined) body = "{}";
-    var obj = JSON.parse(body);
-    client_keys["deviantart"].access_token = obj.access_token;
-    console.log("New token:", client_keys["deviantart"].access_token);
-
-    if(obj.expires_in) {
-      // Automatically renew token
-      console.log("Renewing token in...", +obj.expires_in, "seconds");
-      setTimeout(newToken, obj.expires_in * 1000);
-    }
-  });
-}())
 
 router.post('/request', function(req, response, next) {
   // Limit tags to one word only
