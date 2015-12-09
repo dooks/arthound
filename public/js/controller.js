@@ -139,13 +139,6 @@
 
     $scope.$on("onnavigatepop", function() {
       Navigate.to(0);
-
-      if(!Navigate.last_page) {
-        // queue up to current_high
-        for(var i = 1; i <= Navigate.display_high; i++) {
-          Search.get(Search.last_query, Navigate.current_page + i)
-        }
-      }
       State.changeState("ACTIVE");
     });
 
@@ -170,8 +163,7 @@
 
         // Update listing display
         self.listing = Navigate.getDisplay(Navigate.listing_buffer);
-        console.log("Listing", self.listing);
-        //self.listing = Navigate.listing_buffer;
+        //console.log("Listing", self.listing);
       }
     });
   }]);
@@ -183,8 +175,8 @@
     // How many images got returned
     var self = this;
     self.current = {};
-    var date = null;
-    var message = "Type anywhere...";
+    self.date    =  0;
+    var message  = "Type anywhere...";
 
     $scope.$on("onstatechange", function() {
       switch(State.state) {
@@ -207,7 +199,7 @@
 
         // Convert date to readable Date
         var date = new Date(self.current.date * 1000);
-        date = date.toDateString();
+        self.date = date.toDateString();
         $scope.$apply();
       }
     });
