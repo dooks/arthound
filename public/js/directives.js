@@ -38,6 +38,19 @@
     };
   }]);
 
+  ng_app.directive("pagebutton", ["Navigate", function(Navigate) {
+    return {
+      restrict: "A",
+      link: function(scope, element, attrs) {
+        // Navigates to next page in listing
+        element.bind("click", function(ev) {
+          ev.stopPropagation();
+          if(attrs.pagebutton === "next") { Navigate.nextPage(); }
+        });
+      }
+    };
+  }]);
+
 
   ng_app.directive("search", ["State", function(State) {
     return {
