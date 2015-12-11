@@ -76,12 +76,13 @@ function shuffle(o){
     self.ord = null;
 
     self.getKey = function(key_code) {
+      // Broadcasts proper event based on key_code
+      //  @key_code: event.keyCode
+      //  @shift: event.shiftKey
       self.key = key_code;
 
-      // If keycode is within alphabet
-      if((key_code >= 65 && key_code <= 90) // a-z A-Z
-         || (key_code === 32)) {            // space
-        self.ord = String.fromCharCode(key_code);        }
+      if(key_code >= 32 && key_code <= 122)
+                               { self.ord = String.fromCharCode(key_code); }
       else if(key_code === 8)  { self.ord = "BACKSPACE"; }
       else if(key_code === 13) { self.ord = "ENTER";     }
       else if(key_code === 27) { self.ord = "ESCAPE";    }

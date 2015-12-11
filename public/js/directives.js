@@ -12,7 +12,13 @@
       link: function(scope, element, attrs) {
         element.bind("keyup", function(ev) {
           // Otherwise, send to "keyboard" service
-          Keyboard.getKey(ev.keyCode);
+          var key = ev.which || ev.keyCode;
+          if(key < 32 && key !== 16) Keyboard.getKey(key);
+        });
+
+        element.bind("keypress", function(ev) {
+          // Otherwise, send to "keyboard" service
+          Keyboard.getKey(ev.which || ev.keyCode);
         });
       }
     };
