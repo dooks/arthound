@@ -15,7 +15,7 @@ module.exports = {
     user_reset:       0,
     client_limit:     12500,
     client_remaining: 0,
-    hard_delay:     2000
+    hard_delay:     1000
   }
 };
 

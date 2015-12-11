@@ -1,8 +1,9 @@
 var express = require("express");
 var router  = express.Router();
 var request = require("request");
-var promise = require("promise");
+var Promise = require("promise");
 
+var Promise_ext = require("./promise.js");
 var filter  = require("./filter");
 var client_keys = require("./keys");
 
@@ -31,49 +32,52 @@ router.post('/request', function(req, response, next) {
     // Deviantart has adaptive rate limiting...
   if(sources["deviantart"] === true) {
     promises.push(
-      new promise(function(resolve, reject) {
+      Promise_ext.reqPromise({
+        url: "https://www.deviantart.com/api/v1/oauth2/browse/tags" +
+             // Limit DA search query to one word...
+             "?tag="    +  req.body.tags.replace(/(%20|\ ).*$/, "") +
+             "&offset=" +  page*limit +
+             "&limit="  +  limit,
+        method:   "GET",
+        headers: { "Authorization": "Bearer " + client_keys["deviantart"].access_token }
+      }, client_keys["deviantart"].last_delay)
+      .then(
+        function success(ret) {
+          var err = ret.error;
+          var res = ret.response;
+          var body = ret.body;
 
-        setTimeout(function() {
-          request({
-            url: "https://www.deviantart.com/api/v1/oauth2/browse/tags" +
-                 // Limit DA search query to one word...
-                 "?tag="    +  req.body.tags.replace(/(%20|\ ).*$/, "") +
-                 "&offset=" +  page*limit +
-                 "&limit="  +  limit,
-            method:   "GET",
-            headers: { "Authorization": "Bearer " + client_keys["deviantart"].access_token }
-          }, function(err, res, body) {
-            if(res.statusCode === 429) { // Reached adaptive rate limit
-              console.error("DeviantArt rate limit reached...");
+          if(res.statusCode === 429) { // Reached adaptive rate limit
+            console.error("DeviantArt rate limit reached...");
 
-              client_keys["deviantart"].last_delay *= 2;
-              if(client_keys["deviantart"].last_delay <= 0) {
-                client_keys["deviantart"].last_delay = 1000;
-              }
-            } else {
-
-              // Slow decay to 0
-              client_keys["deviantart"].last_delay -= 1000;
-              if(client_keys["deviantart"].last_delay <= 0) {
-                // Deactivate slow_down limit
-                client_keys["deviantart"].last_delay = 0;
-              }
-
+            client_keys["deviantart"].last_delay *= 2;
+            if(client_keys["deviantart"].last_delay <= 0) {
+              client_keys["deviantart"].last_delay = 1000;
             }
+          } else {
+            // Slow decay to 0
+            client_keys["deviantart"].last_delay -= 1000;
+            if(client_keys["deviantart"].last_delay <= 0) {
+              // Deactivate slow_down limit
+              client_keys["deviantart"].last_delay = 0;
+            }
+          }
 
-            // Normalize deviantart data before resolving promise
-            var retval = JSON.parse(body);
-            var new_body = {
-              name: "deviantart",
-              stop: !retval.has_more,
-              results: filter.deviantart(retval.results)
-            };
+          // Normalize deviantart data before resolving Promise
+          var retval = JSON.parse(body);
+          var new_body = {
+            name: "deviantart",
+            stop: !retval.has_more,
+            results: filter.deviantart(retval.results)
+          };
 
-            resolve(new_body);
-          });
-        }, client_keys["deviantart"].last_delay);
-      })
-    );
+          return new_body;
+      },
+      function error(ret) {
+        return ret.error;
+      }
+      ) // end promise then
+    ); // end array push
   }
 
   /* ************* *
@@ -83,27 +87,34 @@ router.post('/request', function(req, response, next) {
    * ************* */
   if(sources["e926"]) {
     promises.push(
-      new promise(function(resolve, reject) {
-        request({
-          url: "https://e926.net/post/index.json" +
-               "?tags="       + req.body.tags    +
-               "%20score:>40" +            // Force high score...
-               "%20-friendship_is_magic" + // Substract ponies...
-               "&page="       + String(page + 1) +
-               "&limit="      + limit,
-          method:   "GET"
-        }, function(err, res, body) {
-          // Normalize e621 data before resolving promise
-          var retval = JSON.parse(body);
-          var new_body = {
-            name: "e926",
-            stop: (retval.length === 0),
-            results: filter.e926(retval)
-          };
+      Promise_ext.reqPromise({
+        url: "https://e621.net/post/index.json" +
+             "?tags="       + req.body.tags    +
+             //"%20score:>40" +            // Force high score...
+             "%20-friendship_is_magic" + // Substract ponies...
+             "&page="       + String(page + 1) +
+             "&limit="      + limit,
+        method:   "GET"
+      }).then(
+        function success(ret) {
+        var err = ret.error;
+        var res = ret.response;
+        var body = ret.body;
 
-          resolve(new_body);
-        });
-      })
+        // Normalize e621 data before resolving Promise
+        var retval = JSON.parse(body);
+        var new_body = {
+          name: "e926",
+          stop: (retval.length === 0),
+          results: filter.e926(retval)
+        };
+
+        return new_body;
+        },
+        function error(ret) {
+          return ret.error;
+        }
+      )
     );
   }
 
@@ -119,52 +130,54 @@ router.post('/request', function(req, response, next) {
       if(client_keys["imgur"].client_remaining > 100) {
 
         promises.push(
-          new promise(function(resolve, reject) {
-            setTimeout(function() {
-              request({
-                url: "https://api.imgur.com/3/gallery/search/" +
-                     "?q=art+" +  req.body.tags.replace(/(%20|\ )/, "+") +
-                     "&page="  + page,
-                     // Imgur doesn't have limiting for some reason, just paging
-                     //"&limit="  +  limit,
-                method:   "GET",
-                headers: { "Authorization": "Client-ID " + client_keys["imgur"].client_id }
-              }, function(err, res, body) {
-                client_keys["imgur"].user_limit       = res.headers["x-ratelimit-userlimit"];
-                client_keys["imgur"].user_remaining   = res.headers["x-ratelimit-userremaining"];
-                client_keys["imgur"].user_reset       = res.headers["x-ratelimit-userreset"];
-                client_keys["imgur"].client_limit     = res.headers["x-ratelimit-clientlimit"];
-                client_keys["imgur"].client_remaining = res.headers["x-ratelimit-clientremaining"];
+          Promise_ext.reqPromise({
+              url: "https://api.imgur.com/3/gallery/search/" +
+                   "?q=art+" +  req.body.tags.replace(/(%20|\ )/, "+") +
+                   "&page="  + page,
+                   // Imgur doesn't have limiting for some reason, just paging
+                   //"&limit="  +  limit,
+              method:   "GET",
+              headers: { "Authorization": "Client-ID " + client_keys["imgur"].client_id }
+          }, client_keys["imgur"].hard_delay).then(
+            function success(ret) {
+              var err = ret.error;
+              var res = ret.response;
+              var body = ret.body;
 
-                // Normalize imgur data before resolving promise
-                var retval = JSON.parse(body);
-                var new_body = {
-                  name: "imgur",
-                  stop: (retval.data.length === 0),
-                  results: filter.imgur(retval.data)
-                };
+              client_keys["imgur"].user_limit       = res.headers["x-ratelimit-userlimit"];
+              client_keys["imgur"].user_remaining   = res.headers["x-ratelimit-userremaining"];
+              client_keys["imgur"].user_reset       = res.headers["x-ratelimit-userreset"];
+              client_keys["imgur"].client_limit     = res.headers["x-ratelimit-clientlimit"];
+              client_keys["imgur"].client_remaining = res.headers["x-ratelimit-clientremaining"];
 
-                resolve(new_body);
-              });
-            }, client_keys["imgur"].hard_delay);
-          })
+              // Normalize imgur data before resolving Promise
+              var retval = JSON.parse(body);
+              var new_body = {
+                name: "imgur",
+                stop: (retval.data.length === 0),
+                results: filter.imgur(retval.data)
+              };
+
+              return new_body;
+            }
+          )
         );
 
-      } else { promises.push(promise.reject([filter.template])); }
-    } else { promises.push(promise.reject([filter.template])); }
+      } else { promises.push(Promise.reject([filter.template])); }
+    } else { promises.push(Promise.reject([filter.template])); }
 
 
 
 
 
 
-    promise.all(promises).then(
+    Promise.all(promises).then(
       function success(res) {
         // Response format:
         // res is...
         // {   name: "deviantart",
         //     stop: false
-        //  results: ...
+        //  results: ... }
         response.json(res);
 
       },
