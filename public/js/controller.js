@@ -1,10 +1,33 @@
 (function(ng_app) {
+  ng_app.controller("TitleCtrl", ["$scope", "State",
+    function($scope, State) {
+    // Handles the title container
+    var self = this;
+
+    $scope.$on("onstatechange", function() {
+      switch(State.state) {
+        case "SEARCHING":
+        case "ACTIVE":
+          ng_app.base_title.addClass("hidden");
+          break;
+      }
+    });
+  }]);
+
   ng_app.controller("SearchbarCtrl",
     ["$scope", "State", "Keyboard", "Search", "Navigate",
     function($scope, State, Keyboard, Search, Navigate) {
     // Handles the searching overlay
     // Searching overlay appears when beginning to type
     var self = this;
+    self.sources = { "deviantart": true, "e926": true, "imgur": true };
+
+    $scope.$on("onstatechange", function() {
+      switch(State.state) {
+        case "SEARCHING":
+          break;
+      }
+    });
 
     $scope.$on("onsubstatechange", function() {
       switch(State.substate) {
@@ -46,17 +69,16 @@
     $scope.$on("onkeyenter", function() {
       if(State.substate === "INPUT") {
         // initiate Search
-        State.changeSubstate("NONE");
         State.changeState("SEARCHING");
 
-        // this is a new search, so clear the old listing_buffer and response...
+        // this is a new search, so...
+        // clear the old listing_buffer
         Navigate.initialize();
+        // Clear search responses
         Search.clearResponse();
+        // Reset sources
+        Search.resetSources(self.sources);
         Search.get(Search.query);
-
-        // Force $scope to update
-        Search.clear();
-        $scope.$apply();
       } else {
         // Open INPUT
         State.changeSubstate("INPUT");
@@ -84,31 +106,25 @@
     var self = this;
     self.listing = [ ];
 
-    self.scrollbar = {
-      "onScroll": function(y, x) {
-        if(y.scroll === y.maxScroll) {
-          if(self.listing.length > 0) { Navigate.nextPage(); }
-        }
-      }
-    };
+    self.scrollbar = { "onScroll": function(y, x) { } };
 
+    // Initialize state to DEFAULT
     $scope.$on("onstatechange", function() {
       switch(State.state) {
         case "DEFAULT":
         case "SEARCHING":
-          ng_app.base_listing.addClass("invisible");
+          ng_app.base_sidebar.addClass("hidden no-click");
           break;
 
         case "ACTIVE":
           // show base_listing
-          ng_app.base_listing.removeClass("invisible");
+          ng_app.base_sidebar.removeClass("hidden no-click");
           break;
       }
     });
 
     $scope.$on("onviewportchange", function() {
-      console.log(Bootstrap.state);
-
+      /*
       if(Bootstrap.state === "xs") {
         // Switch sidebar to full
         ng_app.base_sidebar.addClass("full-sidebar");
@@ -123,6 +139,7 @@
         ng_app.base_info.removeClass("hidden");
         $(".image-square-container").removeClass("image-square-container-full");
       }
+      */
     });
 
     $scope.$on("onnavigatepage", function() {
@@ -134,19 +151,14 @@
 
     $scope.$on("onnavigatepop", function() {
       Navigate.to(0);
-
-      if(!Navigate.last_page) {
-        // queue up to current_high
-        for(var i = 1; i <= Navigate.display_high; i++) {
-          Search.get(Search.last_query, Navigate.current_page + i)
-        }
-      }
       State.changeState("ACTIVE");
     });
 
     $scope.$on("onsearchreturned", function() {
       // Append response to Navigation service listing
       // If last result in queue has no length...
+      State.changeSubstate("NONE");
+      Search.clear();
 
       if(Search.response[Search.response.length -1].data.length === 0) {
         Search.clearResponse();
@@ -156,9 +168,15 @@
 
         // Disallow next paging
         Navigate.can_page = false;
+
+        // Disable next page button
+        ng_app.page_next.addClass("page-button-inactive");
       } else {
         // Allow paging again
         Navigate.can_page = true;
+
+        // Disable next page button
+        ng_app.page_next.removeClass("page-button-inactive");
 
         Navigate.append(Search.response[0]);
         Search.clearResponse(); // Clear oldest response
@@ -166,7 +184,6 @@
         // Update listing display
         self.listing = Navigate.getDisplay(Navigate.listing_buffer);
         //console.log("Listing", self.listing);
-        //self.listing = Navigate.listing_buffer;
       }
     });
   }]);
@@ -178,8 +195,8 @@
     // How many images got returned
     var self = this;
     self.current = {};
-    var date = null;
-    var message = "Type anywhere...";
+    self.date    =  0;
+    var message  = "Type anywhere...";
 
     $scope.$on("onstatechange", function() {
       switch(State.state) {
@@ -202,7 +219,7 @@
 
         // Convert date to readable Date
         var date = new Date(self.current.date * 1000);
-        date = date.toDateString();
+        self.date = date.toDateString();
         $scope.$apply();
       }
     });
@@ -220,12 +237,12 @@
     $scope.$on("onstatechange", function() {
       switch(State.state) {
         case "DEFAULT":
-          //ng_app.base_image_info.removeClass("hidden");
+          ng_app.base_image_info.addClass("no-click");
           break;
 
         case "ACTIVE":
           // show base_listing
-          //ng_app.base_image_info.addClass("hidden");
+          ng_app.base_image_info.removeClass("no-click");
           break;
       }
     });

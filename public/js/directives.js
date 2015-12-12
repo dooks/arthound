@@ -12,7 +12,13 @@
       link: function(scope, element, attrs) {
         element.bind("keyup", function(ev) {
           // Otherwise, send to "keyboard" service
-          Keyboard.getKey(ev.keyCode);
+          var key = ev.which || ev.keyCode;
+          if(key < 32 && key !== 16) Keyboard.getKey(key);
+        });
+
+        element.bind("keypress", function(ev) {
+          // Otherwise, send to "keyboard" service
+          Keyboard.getKey(ev.which || ev.keyCode);
         });
       }
     };
@@ -27,6 +33,19 @@
           Navigate.to(attrs.index);
           $("div.image-square-container-selected").removeClass("image-square-container-selected");
           $(this).addClass("image-square-container-selected");
+        });
+      }
+    };
+  }]);
+
+  ng_app.directive("pagebutton", ["Navigate", function(Navigate) {
+    return {
+      restrict: "A",
+      link: function(scope, element, attrs) {
+        // Navigates to next page in listing
+        element.bind("click", function(ev) {
+          ev.stopPropagation();
+          if(attrs.pagebutton === "next") { Navigate.nextPage(); }
         });
       }
     };

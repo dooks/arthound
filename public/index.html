@@ -22,17 +22,35 @@
 <!-- search bar -->
 <div id="base_searchbar" search ng-controller="SearchbarCtrl as searchbar"
      class="hidden absolute-wrapper">
-  <div class="col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
+  <div class="no-click col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
+  <img class="img-responsive" src="img/spinner.gif" />
   <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
 </div>
 
+<!-- title -->
+<div id="base_title_container" ng-controller="TitleCtrl as title">
+  <div id="base_title">
+    <h1>Art Hound</h1>
+    <p>Searches images across:</p>
+    <p>
+      <a href="https://www.deviantart.com">DeviantArt</a>,
+      <a href="https://www.e926.net">e926.net</a>,
+      <a href="https://www.imgur.com">Imgur</a>
+    </p>
+    <p>Start typing anywhere on the page to search, or click the icon.</p>
+    <p><span class="glyphicon glyphicon-search"></span></p>
+  </div>
+</div>
+
+
 <!-- viewport -->
 <div id="base_view" class="container-fluid relative-wrapper">
-
   <!-- listing -->
-  <div id="base_sidebar" class="absolute-wrapper">
-    <div id="base_listing" class="invisible" ng-controller="ListingCtrl as listing">
-      <div data-jquery-scrollbar="listing.scrollbar">
+  <div id="base_sidebar" class="hidden absolute-wrapper">
+    <div id="base_listing" ng-controller="ListingCtrl as listing">
+      <div id="page_prev" class="page-button page-button-inactive"><span class="glyphicon glyphicon-minus"></span></div>
+
+      <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
         <div ng-repeat="page in listing.listing">
           <div ng-repeat="item in page.data">
             <div tile index="{{ item.index }}" class="image-square-container">
@@ -41,6 +59,8 @@
           </div>
         </div>
       </div>
+
+      <div id="page_next" class="page-button" pagebutton="next"><span class="glyphicon glyphicon-plus"></span></div>
     </div>
 
     <div id="base_info" ng-controller="InfoCtrl as info">
@@ -60,10 +80,11 @@
   </div>
 
   <!-- image -->
-  <div id="base_image" ng-controller="ImageCtrl as image">
+  <div id="base_image" ng-controller="ImageCtrl as image" class="no-click">
        <img />
        <div></div>
   </div>
+
 
 </div>
 
