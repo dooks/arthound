@@ -54,7 +54,8 @@ html, body {
   height:   100%;
   width:    100%;
   overflow: hidden;
-  background-image: linear-gradient(0deg, #000000, #333333);
+  background-image: url("../img/bg.png");
+  background-repeat: repeat-x;
 }
 
 .image-square-container {
