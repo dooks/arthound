@@ -159,13 +159,14 @@ function shuffle(o){
                 self.sources[res.data[i].name] = false;
               }
 
-              // Sort results before concatenating to new_data.data
-              res.data[i].results.sort(function(a, b) {
-                // Sort in descending order by date
-                return b.date - a.date;
-              });
               new_data.push.apply(new_data, res.data[i].results);
             }
+
+            // Sort new_data.data results
+            new_data.sort(function(a, b) {
+              // Sort in descending order by date
+              return b.date - a.date;
+            });
 
             self.response.push({ page: new_page, data: new_data });
           },
@@ -217,7 +218,6 @@ function shuffle(o){
       // TODO: check if response follows format
 
       // Already exists in listing_buffer
-      // TODO: check actual page number
       if(self.listing_buffer[response.page] !== undefined) { return false; }
 
       // Determine start index

@@ -8,6 +8,9 @@ module.exports = {
     slow_down: false,
     last_delay: 0
   },
+  "e926": {
+    // Does not require authentication, no request limit
+  },
   "imgur": {
     client_id: "1f63c77eaec2b1c",
     user_limit:       500,

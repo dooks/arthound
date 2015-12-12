@@ -74,7 +74,7 @@ router.post('/request', function(req, response, next) {
           return new_body;
       },
       function error(ret) {
-        return ret.error;
+        return { name: "deviantart", stop: true, error: ret.response.statusCode, data: []}
       }
       ) // end promise then
     ); // end array push
@@ -88,11 +88,11 @@ router.post('/request', function(req, response, next) {
   if(sources["e926"]) {
     promises.push(
       Promise_ext.reqPromise({
-        url: "https://e621.net/post/index.json" +
+        url: "https://e926.net/post/index.json" +
              "?tags="       + req.body.tags    +
-             //"%20score:>40" +            // Force high score...
-             "%20-friendship_is_magic" + // Substract ponies...
-             "&page="       + String(page + 1) +
+             "%20score:>40" +                    // Force high score...
+             "%20-friendship_is_magic" +         // Substract ponies...
+             "&page="       + String(page + 1) + // e926 paging starts at 1
              "&limit="      + limit,
         method:   "GET"
       }).then(
