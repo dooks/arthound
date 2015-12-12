@@ -76,12 +76,13 @@ function shuffle(o){
     self.ord = null;
 
     self.getKey = function(key_code) {
+      // Broadcasts proper event based on key_code
+      //  @key_code: event.keyCode
+      //  @shift: event.shiftKey
       self.key = key_code;
 
-      // If keycode is within alphabet
-      if((key_code >= 65 && key_code <= 90) // a-z A-Z
-         || (key_code === 32)) {            // space
-        self.ord = String.fromCharCode(key_code);        }
+      if(key_code >= 32 && key_code <= 122)
+                               { self.ord = String.fromCharCode(key_code); }
       else if(key_code === 8)  { self.ord = "BACKSPACE"; }
       else if(key_code === 13) { self.ord = "ENTER";     }
       else if(key_code === 27) { self.ord = "ESCAPE";    }
@@ -107,16 +108,21 @@ function shuffle(o){
 
   ng_app.service("Search", ["$rootScope", "$http", function($rootScope, $http) {
     var self = this;
-    self.query      = "";
-    self.response   = [];
-    self.sources    = [ "deviantart" ];
-    self.limit      = 24;
+    self.query        = "";
+    self.response     = [];
+    self.sources      = {};
+    self.limit        = 24;
 
     self.clear         = function() { self.query = ""; }
     self.clearResponse = function() {
       if(self.response.length > 1)  { self.response = self.response.slice(1); }
       else                          { self.response.length = 0;               }
     };
+    self.resetSources  = function(sources) {
+      // Resets source statuses back to original search
+      //   @sources: object containing { "source name": true/false if disabled }
+      self.sources = $.extend({}, sources); // Clone object
+    }
 
     self.get = function(query, page, limit) {
       // Where the "magic" happens
@@ -130,18 +136,41 @@ function shuffle(o){
       self.last_query = query || self.last_query || self.query;
 
       $http({
-        method: "GET",
+        method: "POST",
         url: "/get/request",
-        params:   {
-          "tags":  self.last_query,
-          "page":  new_page,
-          "limit": self.limit // Server hard limit of 24 per resource...
+        data:   {
+          "tags":    self.last_query,
+          "page":    new_page,
+          "limit":   self.limit,
+          "sources": self.sources
         }
       }).then(
           function success(res) {
-            self.response.push({ page: new_page, data: res.data });
-            //console.log("Search responses", self.response);
+            console.log("Server query:", "\"" + self.last_query + "\"",
+                        "Page", new_page,
+                        "Response", res);
+
+            // Normalize response to new_data
+            // { page: #, data: array }
+            var new_data = [];
+            for(var i = 0; i < res.data.length; i++) {
+              // Turn off sources if res.data[i].stop returns true
+              if(res.data[i].stop === true) {
+                self.sources[res.data[i].name] = false;
+              }
+
+              new_data.push.apply(new_data, res.data[i].results);
+            }
+
+            // Sort new_data.data results
+            new_data.sort(function(a, b) {
+              // Sort in descending order by date
+              return b.date - a.date;
+            });
+
+            self.response.push({ page: new_page, data: new_data });
           },
+
           function error(res) {
             self.response.push({ page: null, data: []});
             console.error("Search responses", self.response);
@@ -189,7 +218,6 @@ function shuffle(o){
       // TODO: check if response follows format
 
       // Already exists in listing_buffer
-      // TODO: check actual page number
       if(self.listing_buffer[response.page] !== undefined) { return false; }
 
       // Determine start index
@@ -204,7 +232,7 @@ function shuffle(o){
       for(var i = 0; i < response.data.length; i++) {
         // set zoom flag based on aspect ratio
         // also prevent divide by zero for height...
-        var aspect = response.data[i].width / (response.data[i].height || 0.1);
+        var aspect = response.data[i].width / (response.data[i].height || 1);
 
         // if aspect ratio is ~ 1:2 or thinner...
         if(aspect < 0.5) response.data[i].zoom = true;
