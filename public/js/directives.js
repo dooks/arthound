@@ -68,6 +68,9 @@
         var func = null;
 
         switch(attrs.navclick) {
+          case "search":
+            func = function() { State.toggleSubstate("SEARCH"); }
+            break;
           case "mini":
             func = function() { /* do nothing */ }
             break;
@@ -79,6 +82,7 @@
           case "full":
             func = function() {
               State.toggleSubstate("FULL");
+              if(!State.substates["LIST"]) State.changeSubstate("LIST", true);
             }
             break;
           case "save":
