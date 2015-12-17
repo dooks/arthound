@@ -123,13 +123,12 @@
 
     $scope.$on("onsubstatechange", function() {
       if(State.substates["FULL"]) {
-        // Switch sidebar to full //ng_app.base_sidebar.addClass("full-sidebar");
-        //ng_app.base_view.addClass("no-padding");
-        //ng_app.base_info.addClass("hidden");
-        //$(".image-square-container").addClass("image-square-container-full");
-        console.log("Change sidebar and image to full screen");
+        // Switch sidebar to full
+        ng_app.base_listing.addClass("full-listing");
+        $(".image-square-container").addClass("image-square-container-full");
       } else if(!State.substates["FULL"]) {
-        console.log("Change sidebar and image to normal");
+        ng_app.base_listing.removeClass("full-listing");
+        $(".image-square-container").removeClass("image-square-container-full");
       }
 
       if(State.substates["LIST"])       {
@@ -147,6 +146,10 @@
       if(Bootstrap.state === "sm" || Bootstrap.state === "md" || Bootstrap.state === "lg") {
         State.changeSubstate("FULL", false);
       }
+    });
+
+    $scope.$on("onnavigate", function() {
+      if(State.substates["FULL"]) { State.changeSubstate("LIST", false); }
     });
 
     $scope.$on("onnavigatepage", function() {

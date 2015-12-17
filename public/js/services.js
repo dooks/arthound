@@ -65,6 +65,7 @@ function shuffle(o){
     $(document).ready(function() {
       self.state      = viewport.current();
       self.last_state = self.state;
+      $rootScope.$broadcast("onviewportchange");
 
       $(window).resize(function() {
         if(self.can_change) {
