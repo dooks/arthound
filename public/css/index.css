@@ -273,8 +273,9 @@ html, body {
   z-index:   4;
 
   /* Will be overriden be full-sidebar */
-  width: 200px; /* Size on page is managed through base_view  */
-  left:      0;
+  width:   200px; /* Size on page is managed through base_view  */
+  left:        0;
+  overflow: none;
 }
 
   #listing_grid {

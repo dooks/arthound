@@ -23,13 +23,15 @@
     };
   });
 
-  ng_app.directive("tile", ["Navigate", function(Navigate) {
+  ng_app.directive("tile", ["State", "Navigate", function(State, Navigate) {
     return {
       restrict: "A",
       link: function(scope, element, attrs) {
         // Navigate to selected index
         element.bind("click", function() {
           Navigate.to(attrs.index);
+
+          // Replace previously selected tile with this one
           $("div.image-square-container-selected").removeClass("image-square-container-selected");
           $(this).addClass("image-square-container-selected");
         });
@@ -82,7 +84,7 @@
           case "full":
             func = function() {
               State.toggleSubstate("FULL");
-              if(!State.substates["LIST"]) State.changeSubstate("LIST", true);
+              if(State.substates["LIST"]) State.changeSubstate("LIST", false);
             }
             break;
           case "save":
