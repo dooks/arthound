@@ -45,8 +45,8 @@ a {
   height: 100%;
 }
 
-.no-click {
-  pointer-events: none;
+.no-list {
+  padding: 0 !important;
 }
 
 /* User defined */
@@ -54,8 +54,7 @@ html, body {
   height:   100%;
   width:    100%;
   overflow: hidden;
-  background-image: url("../img/bg.png");
-  background-repeat: repeat-x;
+  background-image: linear-gradient(0deg, #031634, #033649);
 }
 
 .image-square-container {
@@ -80,20 +79,33 @@ html, body {
   height: 100%;
   padding: 0;
 
+  filter:grayscale(1);
   -webkit-filter:grayscale(1);
+  -moz-filter:grayscale(1);
   background-size:     cover;
   background-repeat:   no-repeat;
   background-position: center;
   cursor: pointer;
 }
-  .image-square-container > div:hover { -webkit-filter:grayscale(0); }
+  .image-square-container > div:hover {
+    border: 1px solid white;
+    filter:grayscale(0);
+    -webkit-filter:grayscale(0);
+    -moz-filter:grayscale(0);
+  }
   .image-square-container-selected { border: 1px solid white; }
-  .image-square-container-selected > div { -webkit-filter:grayscale(0) !important; }
+  .image-square-container-selected > div {
+    border: 1px solid white;
+    filter:grayscale(0)         !important;
+    -webkit-filter:grayscale(0) !important;
+    -moz-filter:grayscale(0)    !important;
+  }
 
 
 
 /* User defined IDs */
 #base_searchbar {
+  display: table;
   z-index: 6;
   width: 100%;
 }
@@ -102,7 +114,7 @@ html, body {
     height: 100%;
     z-index: 7;
 
-    background-image: linear-gradient(0deg, #94C31D, #BEDB77);
+    background-image: linear-gradient(0deg, rgba(232, 221, 203, 1), rgba(232, 221, 203, 0));
     pointer-events: none;
     opacity: 0.4;
   }
@@ -122,6 +134,12 @@ html, body {
     font-family: "Pokemon GB";
   }
 
+
+
+
+
+
+
 #base_view {
   padding-left: 200px;
   padding-right: 0;
@@ -139,38 +157,38 @@ html, body {
     display:    table-cell;
     text-align:     center;
     vertical-align: middle;
+    color: white;
   }
 
   #base_title > p > span {
     font-size: 4vw;
   }
 
-#base_sidebar {
-  z-index:              3;
 
-  /* Will be overriden be full-sidebar */
-  padding-bottom:   100px;
-  width:            200px; /* Size on page is managed through base_view  */
-  left:                 0;
-}
+
+
+
 
 #base_image {
   overflow: auto;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  height: 100%;
+  margin:      0;
+  padding:     0;
+  border:      0;
+  height:   100%;
+  position: relative;
 }
 
-  #base_image > img {
+  #image_front {
     position: absolute;
     width: 100%;
     height: 100%;
     opacity: 0;
     z-index: 2;
+    display: block;
+    margin: 0 auto;
   }
 
-  #base_image > div {
+  #image_back {
     position: relative;
     width: 100%;
     height: 100%;
@@ -182,26 +200,94 @@ html, body {
 
   .base_image_zoom {
     position: initial !important;
+    width:       auto !important;
     height:      auto !important;
     opacity:        1 !important;
   }
+
+  #image_info {
+    position:      fixed;
+    bottom:         20px;
+    margin-left:    20px;
+    width:         200px;
+    opacity:         0.7;
+
+    z-index: 3;
+    padding: 0;
+    color: white;
+    border-radius: 10px;
+    border: 1px solid black;
+  }
+    #image_info > div {
+      width: 100%;
+      padding: 5px;
+      margin: 0;
+    }
+
+    #image_info > div ul {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      text-align: center;
+    }
+
+    #image_info > div:first-child {
+      background: black;
+      border-radius: 10px 10px 0 0;
+    }
+
+    #image_info > div:last-child {
+      background: #E8DDCB;
+      border-radius: 0 0 10px 10px;
+      color: black;
+    }
+
+    #image_info > div:first-child > ul > li {
+      width: 100%;
+      font-size: 0.9em;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    #image_info > div:last-child > ul > li {
+      padding: 0 10px;
+      display: inline;
+      cursor: pointer;
+    }
+
+    #image_info > div:last-child > ul > li:hover {
+      background-color: black:
+      color: white;
+    }
+
 
 
 
 #base_listing {
   height: 100%;
-  background-image: linear-gradient(0deg, #010100, #000000);
-  padding: 20px 0;
+  background-image: linear-gradient(0deg, #000000, #333333);
+  z-index:   3;
+
+  /* Will be overriden be full-sidebar */
+  width: 200px; /* Size on page is managed through base_view  */
+  left:      0;
 }
+
+  #listing_grid {
+    width: 100%;
+    float: left;
+  }
 
   #page_prev { margin-top: -20px; } /* HACK, the absolute padding won't go up... */
 
   .page-button {
     text-align: center;
     border: 1px solid black;
-    overflow: hidden !important;
-    position: absolute;
+    color: white;
     width: 100%;
+    height: 20px;
+    float: left;
   }
 
   .page-button:hover {
@@ -213,24 +299,4 @@ html, body {
   .page-button-inactive {
     pointer-events: none !important;
     cursor: initial;
-  }
-
-#base_info {
-  height: 100px;
-  border: 1px solid black;
-  padding: 10px;
-  color: white;
-}
-
-  #info_details > ul {
-    padding: 0;
-    list-style-type: none;
-  }
-
-  #info_details > ul > li {
-    width: 100%;
-    font-size: 0.9em;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
   }

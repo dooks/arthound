@@ -11,14 +11,13 @@
     return {
       link: function(scope, element, attrs) {
         element.bind("keyup", function(ev) {
-          // Otherwise, send to "keyboard" service
           var key = ev.which || ev.keyCode;
           if(key < 32 && key !== 16) Keyboard.getKey(key);
         });
 
         element.bind("keypress", function(ev) {
-          // Otherwise, send to "keyboard" service
-          Keyboard.getKey(ev.which || ev.keyCode);
+          var key = ev.which || ev.keyCode;
+          if(key >= 32 && key <= 122) Keyboard.getKey(key);
         });
       }
     };
@@ -57,7 +56,44 @@
       restrict: "A",
       link: function(scope, element, attrs) {
         // Close search overlay when clicked
-        element.bind("click", function() { State.changeSubstate("NONE"); });
+        element.bind("click", function() { State.changeSubstate("SEARCH", false); });
+      }
+    };
+  }]);
+
+  ng_app.directive("navclick", ["State", function(State) {
+    return {
+      restrict: "A",
+      link: function(scope, element, attrs) {
+        var func = null;
+
+        switch(attrs.navclick) {
+          case "mini":
+            func = function() { /* do nothing */ }
+            break;
+          case "list":
+            func = function() {
+              State.toggleSubstate("LIST");
+              /* do nothing */ }
+            break;
+          case "full":
+            func = function() {
+              State.toggleSubstate("FULL");
+            }
+            break;
+          case "save":
+            func = function() { /* do nothing */ }
+            break;
+          case "info":
+            func = function() { /* do nothing */ }
+            break;
+          default:
+            func = function() { /* do nothing */ }
+            break;
+        }
+
+        // Close search overlay when clicked
+        element.bind("click", func);
       }
     };
   }]);

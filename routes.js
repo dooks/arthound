@@ -183,6 +183,7 @@ router.post('/request', function(req, response, next) {
       },
       function error(res) {
         console.log("Errors");
+        console.log(res);
         response.json({"message": "error fetching for some reason"});
       }
     );

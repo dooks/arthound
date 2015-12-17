@@ -10,31 +10,47 @@ function shuffle(o){
   ng_app.service("State", ["$rootScope", function($rootScope) {
     // TODO: why does initializing this make it persistent....?
     var self = this;
-    self.state    = "DEFAULT"; // DEFAULT | SEARCHING | ACTIVE
-    self.substate = "NONE";    //    NONE | INPUT
+    self.state     = "DEFAULT"; // DEFAULT | ACTIVE
+    self.substates = { "FULL":   false,
+                       "SEARCH": false,
+                       "LIST":   false,
+                       "LOAD":   false
+                     };
 
     self.changeState = function(state) {
-      self.state = state;
-
       switch(state) {
         case "DEFAULT":
-        case "SEARCHING":
         case "ACTIVE":
+          self.state = state;
           $rootScope.$broadcast("onstatechange");
           break;
       }
     };
 
-    self.changeSubstate = function(substate) {
-      self.substate = substate;
-
+    self.changeSubstate = function(substate, value) {
       switch(substate) {
-        case "NONE":
-        case "INPUT":
+        case "FULL":
+        case "SEARCH":
+        case "LOADING":
+        case "LIST":
+          self.substates[substate] = !!value; // Evaluate value as boolean
           $rootScope.$broadcast("onsubstatechange");
           break;
       }
     };
+
+    self.toggleSubstate = function(substate) {
+      switch(substate) {
+        case "FULL":
+        case "SEARCH":
+        case "LOADING":
+        case "LIST":
+          self.substates[substate] = !self.substates[substate]; // Evaluate value as boolean
+          $rootScope.$broadcast("onsubstatechange");
+          break;
+      }
+    };
+
   }]);
 
 
@@ -91,16 +107,22 @@ function shuffle(o){
     }
 
     self.broadcast = function() {
-      if(self.ord === "ESCAPE") {
-        $rootScope.$broadcast("onkeyesc");
-      } else if(self.ord === "ENTER") {
-        $rootScope.$broadcast("onkeyenter");
-      } else if(self.ord === "BACKSPACE") {
-        $rootScope.$broadcast("onkeybackspace");
-      } else if(self.ord) {
-        $rootScope.$broadcast("onkeyup");
-      } else {
-        // Do not broadcast anything
+      switch(self.ord) {
+        case "ESCAPE":
+          $rootScope.$broadcast("onkeyesc");
+          break;
+        case "ENTER":
+          $rootScope.$broadcast("onkeyenter");
+          break;
+        case "BACKSPACE":
+          $rootScope.$broadcast("onkeybackspace");
+          break;
+        case null:
+          // Do not do anything
+          break;
+        default:
+          $rootScope.$broadcast("onkeyup");
+          break;
       }
     };
 
@@ -113,16 +135,17 @@ function shuffle(o){
     self.sources      = {};
     self.limit        = 24;
 
-    self.clear         = function() { self.query = ""; }
+    self.clear         = function() { self.query = ""; };
     self.clearResponse = function() {
       if(self.response.length > 1)  { self.response = self.response.slice(1); }
       else                          { self.response.length = 0;               }
     };
+
     self.resetSources  = function(sources) {
       // Resets source statuses back to original search
       //   @sources: object containing { "source name": true/false if disabled }
       self.sources = $.extend({}, sources); // Clone object
-    }
+    };
 
     self.get = function(query, page, limit) {
       // Where the "magic" happens
@@ -130,7 +153,6 @@ function shuffle(o){
       //   @query: optional, self.last_query if blank
       //   @page: page number to check for in each source
       //   @limit: How many records to return for each source
-
       var new_page    = page || 0;
       self.limit      = limit || self.limit;
       self.last_query = query || self.last_query || self.query;
@@ -179,6 +201,8 @@ function shuffle(o){
         // Broadcast that search has been returned
         function returned() { $rootScope.$broadcast("onsearchreturned"); }
       );
+
+      return;
     }; // end of search function
   }]);
 
@@ -213,7 +237,7 @@ function shuffle(o){
       // Response should be in the format { page: n, data: chunk }
 
       if(response === null || response === undefined) {
-        console.error("response is null or undefined");
+        console.error("Response is null or undefined");
       }
       // TODO: check if response follows format
 
@@ -236,7 +260,7 @@ function shuffle(o){
 
         // if aspect ratio is ~ 1:2 or thinner...
         if(aspect < 0.5) response.data[i].zoom = true;
-        else               response.data[i].zoom = false;
+        else             response.data[i].zoom = false;
 
         // Index item
         response.data[i].index = start_index + i;
@@ -251,8 +275,6 @@ function shuffle(o){
       if(self.listing_buffer.length === 1) { self.broadcast("onnavigatepop"); }
       //console.log("Navigation Page Sizes", self.page_sizes);
       //console.log("Navigation Buffer",     self.listing_buffer);
-
-      self.broadcast("onnavigateappend");
     };
 
     self.checkDisplay = function(n) {

@@ -46,43 +46,50 @@
 <!-- viewport -->
 <div id="base_view" class="container-fluid relative-wrapper">
   <!-- listing -->
-  <div id="base_sidebar" class="hidden absolute-wrapper">
-    <div id="base_listing" ng-controller="ListingCtrl as listing">
-      <div id="page_prev" class="page-button page-button-inactive"><span class="glyphicon glyphicon-minus"></span></div>
+  <div id="base_listing" class="hidden absolute-wrapper"
+       ng-controller="ListingCtrl as listing">
+    <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
+    <!--<div id="page_prev" class="page-button page-button-inactive">-->
+      <!--<span class="glyphicon glyphicon-minus"></span>-->
+    <!--</div>-->
 
-      <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
-        <div ng-repeat="page in listing.listing">
-          <div ng-repeat="item in page.data">
-            <div tile index="{{ item.index }}" class="image-square-container">
-              <div style="background-image: url('{{item.thumbs}}')"></div>
-            </div>
+      <div id="listing_grid">
+      <div ng-repeat="page in listing.listing">
+        <div ng-repeat="item in page.data">
+          <div tile index="{{ item.index }}" class="image-square-container">
+            <div style="background-image: url('{{item.thumbs}}')"></div>
           </div>
         </div>
       </div>
-
-      <div id="page_next" class="page-button" pagebutton="next"><span class="glyphicon glyphicon-plus"></span></div>
-    </div>
-
-    <div id="base_info" ng-controller="InfoCtrl as info">
-      <div id="info_help">{{ info.message }}</div>
-      <div id="info_details" class="hidden">
-        <ul>
-          <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
-          <li>by: <a href="http://{{ info.current.author_link }}">
-                    {{ info.current.author }}
-                  </a>
-          </li>
-          <li>{{ info.date }}</li>
-        </ul>
       </div>
-    </div>
 
+      <div id="page_next" class="page-button" pagebutton="next">
+        <span class="glyphicon glyphicon-plus"></span>
+      </div>
+
+    </div>
   </div>
 
   <!-- image -->
-  <div id="base_image" ng-controller="ImageCtrl as image" class="no-click">
-       <img />
-       <div></div>
+  <div id="base_image" ng-controller="ImageCtrl as image" class="hidden">
+      <div id="image_info" ng-controller="InfoCtrl as info">
+        <div><ul>
+          <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
+          <li>by <a href="http://{{ info.current.author_link }}"> {{ info.current.author }}</a></li>
+          <li>{{ info.date }}</li>
+        </ul></div>
+
+        <div><ul>
+          <li><span navclick="mini" class="glyphicon glyphicon-minus">      </span></li>
+          <li><span navclick="list" class="glyphicon glyphicon-th">         </span></li>
+          <li><span navclick="full" class="glyphicon glyphicon-resize-full"></span></li>
+          <li><span navclick="save" class="glyphicon glyphicon-save">       </span></li>
+          <li><span navclick="info" class="glyphicon glyphicon-info-sign">  </span></li>
+        </ul></div>
+      </div>
+
+      <img id="image_front"/>
+      <div id="image_back"></div>
   </div>
 
 

@@ -6,7 +6,9 @@
 
     $scope.$on("onstatechange", function() {
       switch(State.state) {
-        case "SEARCHING":
+        case "DEFAULT":
+          ng_app.base_title.removeClass("hidden");
+          break;
         case "ACTIVE":
           ng_app.base_title.addClass("hidden");
           break;
@@ -20,31 +22,28 @@
     // Handles the searching overlay
     // Searching overlay appears when beginning to type
     var self = this;
-    self.sources = { "deviantart": true, "e926": true, "imgur": true };
+    self.sources = { "deviantart": true, "e926": false, "imgur": true };
 
     $scope.$on("onstatechange", function() {
       switch(State.state) {
-        case "SEARCHING":
+        case "ACTIVE":
+          ng_app.base_searchbar.addClass("hidden");
           break;
       }
     });
 
     $scope.$on("onsubstatechange", function() {
-      switch(State.substate) {
-        case "NONE":
-          ng_app.base_searchbar.addClass("hidden");
-          break;
-
-        case "INPUT":
-          ng_app.base_searchbar.removeClass("hidden");
-          break;
+      if(State.substates["SEARCH"]) {
+        ng_app.base_searchbar.removeClass("hidden");
+      } else if(!State.substates["SEARCH"]) {
+        ng_app.base_searchbar.addClass("hidden");
       }
     });
 
     $scope.$on("onkeyup", function() {
-      if(State.substate === "NONE") {
+      if(!State.substates["SEARCH"]) {
         // activate INPUT substate
-        State.changeSubstate("INPUT");
+        State.changeSubstate("SEARCH", true);
       }
 
       // Add letter to search term
@@ -56,10 +55,11 @@
     });
 
     $scope.$on("onkeybackspace", function() {
-      if(State.substate === "INPUT") {
+      if(State.substates["SEARCH"]) {
         // delete last letter of query
         Search.query = Search.query.slice(0, -1);
         self.query = Search.query;
+        if(self.query === "") { State.changeSubstate("SEARCH", false); }
 
         // Force $scope to update
         $scope.$apply();
@@ -67,28 +67,29 @@
     });
 
     $scope.$on("onkeyenter", function() {
-      if(State.substate === "INPUT") {
+      if(State.substates["SEARCH"] && State.state !== "LOAD") {
         // initiate Search
-        State.changeState("SEARCHING");
+        State.changeState("LOAD");
 
         // this is a new search, so...
         // clear the old listing_buffer
         Navigate.initialize();
+
         // Clear search responses
         Search.clearResponse();
+
         // Reset sources
         Search.resetSources(self.sources);
+
+        // Initiate search
         Search.get(Search.query);
-      } else {
-        // Open INPUT
-        State.changeSubstate("INPUT");
       }
     });
 
     $scope.$on("onkeyesc", function() {
-      if(State.substate === "INPUT") {
+      if(State.substates["SEARCH"]) {
         // switch to NONE substate
-        State.changeSubstate("NONE");
+        State.changeSubstate("SEARCH", false);
 
         // clear search
         Search.clear();
@@ -104,47 +105,53 @@
     function($scope, State, Search, Navigate, Bootstrap) {
     // Handles the searchlist overlay, which contains a grid list of searches found
     var self = this;
-    self.listing = [ ];
-
+    self.listing = [];
     self.scrollbar = { "onScroll": function(y, x) { } };
 
-    // Initialize state to DEFAULT
     $scope.$on("onstatechange", function() {
       switch(State.state) {
         case "DEFAULT":
-        case "SEARCHING":
-          ng_app.base_sidebar.addClass("hidden no-click");
+          ng_app.base_listing.addClass("hidden");
           break;
 
         case "ACTIVE":
           // show base_listing
-          ng_app.base_sidebar.removeClass("hidden no-click");
+          ng_app.base_listing.removeClass("hidden");
           break;
       }
     });
 
+    $scope.$on("onsubstatechange", function() {
+      if(State.substates["FULL"]) {
+        // Switch sidebar to full //ng_app.base_sidebar.addClass("full-sidebar");
+        //ng_app.base_view.addClass("no-padding");
+        //ng_app.base_info.addClass("hidden");
+        //$(".image-square-container").addClass("image-square-container-full");
+        console.log("Change sidebar and image to full screen");
+      } else if(!State.substates["FULL"]) {
+        console.log("Change sidebar and image to normal");
+      }
+
+      if(State.substates["LIST"])       {
+        ng_app.base_listing.removeClass("hidden");
+        ng_app.base_view.removeClass("no-list");
+      }
+      else if(!State.substates["LIST"]) {
+        ng_app.base_listing.addClass("hidden");
+        ng_app.base_view.addClass("no-list");
+      }
+    });
+
     $scope.$on("onviewportchange", function() {
-      /*
-      if(Bootstrap.state === "xs") {
-        // Switch sidebar to full
-        ng_app.base_sidebar.addClass("full-sidebar");
-        ng_app.base_view.addClass("no-padding");
-        ng_app.base_info.addClass("hidden");
-        $(".image-square-container").addClass("image-square-container-full");
-      }
+      if(Bootstrap.state === "xs") { State.changeSubstate("FULL", true); }
       if(Bootstrap.state === "sm" || Bootstrap.state === "md" || Bootstrap.state === "lg") {
-        // Switch sidebar to normal
-        ng_app.base_sidebar.removeClass("full-sidebar");
-        ng_app.base_view.removeClass("no-padding");
-        ng_app.base_info.removeClass("hidden");
-        $(".image-square-container").removeClass("image-square-container-full");
+        State.changeSubstate("FULL", false);
       }
-      */
     });
 
     $scope.$on("onnavigatepage", function() {
-      // Append search response to end of listing array
-      if(!Navigate.last_page) {
+      if(!Navigate.last_page && State.state !== "LOAD") {
+        State.changeState("LOAD");
         Search.get(Search.last_query, Navigate.current_page, Navigate.limit);
       }
     });
@@ -152,12 +159,13 @@
     $scope.$on("onnavigatepop", function() {
       Navigate.to(0);
       State.changeState("ACTIVE");
+      State.changeSubstate("LIST", true);
     });
 
     $scope.$on("onsearchreturned", function() {
       // Append response to Navigation service listing
       // If last result in queue has no length...
-      State.changeSubstate("NONE");
+      State.changeSubstate("SEARCH", false);
       Search.clear();
 
       if(Search.response[Search.response.length -1].data.length === 0) {
@@ -174,8 +182,6 @@
       } else {
         // Allow paging again
         Navigate.can_page = true;
-
-        // Disable next page button
         ng_app.page_next.removeClass("page-button-inactive");
 
         Navigate.append(Search.response[0]);
@@ -196,26 +202,13 @@
     var self = this;
     self.current = {};
     self.date    =  0;
-    var message  = "Type anywhere...";
-
-    $scope.$on("onstatechange", function() {
-      switch(State.state) {
-        case "DEFAULT":
-        case "SEARCHING":
-          // Display instructions for typing
-          ng_app.info_help.removeClass("hidden");
-          ng_app.info_details.addClass("hidden");
-          break;
-      }
-    });
 
     $scope.$on("onnavigate", function() {
       // Draw image info
       self.current = Navigate.findByIndex(Navigate.index);
 
       if(self.current) {
-        ng_app.info_details.removeClass("hidden");
-        ng_app.info_help.addClass("hidden");
+        ng_app.image_info.removeClass("hidden");
 
         // Convert date to readable Date
         var date = new Date(self.current.date * 1000);
@@ -237,17 +230,21 @@
     $scope.$on("onstatechange", function() {
       switch(State.state) {
         case "DEFAULT":
-          ng_app.base_image_info.addClass("no-click");
+          ng_app.base_image.addClass("hidden");
           break;
 
         case "ACTIVE":
           // show base_listing
-          ng_app.base_image_info.removeClass("no-click");
+          ng_app.base_image.removeClass("hidden");
           break;
       }
     });
 
     $scope.$on("onnavigate", function() {
+      // Blank out src
+      ng_app.image_img.attr("src", "");
+      ng_app.image_div.css("background-image", "url('')");
+
       // Display preview image if available, otherwise full resolution picture
       current = Navigate.findByIndex(Navigate.index);
       if(current) {
