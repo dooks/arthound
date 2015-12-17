@@ -21,15 +21,17 @@
 <body ng-app="ngHound" onkey>
 <!-- search bar -->
 <div id="base_searchbar" search ng-controller="SearchbarCtrl as searchbar"
-     class="hidden absolute-wrapper">
+  ng-class="{'absolute-wrapper': 1, hidden: !searchbar.substates['SEARCH']}">
   <div class="no-click col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
   <img class="img-responsive" src="img/spinner.gif" />
   <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
 </div>
 
 <!-- title -->
-<div id="base_title_container" ng-controller="TitleCtrl as title">
+<div id="base_title_container" ng-controller="TitleCtrl as title"
+     ng-class="{hidden: title.state == 'ACTIVE'}">
   <div id="base_title">
+
     <h1>Art Hound</h1>
     <p>Searches images across:</p>
     <p>
@@ -46,7 +48,8 @@
 <!-- viewport -->
 <div id="base_view" class="container-fluid relative-wrapper">
   <!-- listing -->
-  <div id="base_listing" class="hidden absolute-wrapper"
+  <div id="base_listing"
+    ng-class="{'hidden': 0, 'absolute-wrapper': 1, 'full-listing': listing.isFull}"
        ng-controller="ListingCtrl as listing">
     <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
     <!--<div id="page_prev" class="page-button page-button-inactive">-->
@@ -56,7 +59,8 @@
       <div id="listing_grid">
       <div ng-repeat="page in listing.listing">
         <div ng-repeat="item in page.data">
-          <div tile index="{{ item.index }}" class="image-square-container">
+          <div tile index="{{ item.index }}"
+            ng-class="{'image-square-container': true, 'image-square-container-full': listing.isFull}">
             <div style="background-image: url('{{item.thumbs}}')"></div>
           </div>
         </div>
