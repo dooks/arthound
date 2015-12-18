@@ -12,12 +12,12 @@
       link: function(scope, element, attrs) {
         element.bind("keyup", function(ev) {
           var key = ev.which || ev.keyCode;
-          if(key < 32 && key !== 16) Keyboard.getKey(key);
+          if(key === 27 || key === 13 || (key >= 37 && key <= 40)) Keyboard.getKey(key);
         });
 
         element.bind("keypress", function(ev) {
           var key = ev.which || ev.keyCode;
-          if(key >= 32 && key <= 122) Keyboard.getKey(key);
+          if(key === 32 || key >= 48 && key <= 122) Keyboard.getKey(key);
         });
       }
     };
@@ -28,53 +28,29 @@
       restrict: "A",
       link: function(scope, element, attrs) {
         // Navigate to selected index
-        element.bind("click", function() {
-          Navigate.to(attrs.index);
-
-          // Replace previously selected tile with this one
-          $("div.image-square-container-selected").removeClass("image-square-container-selected");
-          $(this).addClass("image-square-container-selected");
-        });
+        element.bind("click", function() { Navigate.to(attrs.index); });
       }
     };
   }]);
 
-  ng_app.directive("pagebutton", ["Navigate", function(Navigate) {
-    return {
-      restrict: "A",
-      link: function(scope, element, attrs) {
-        // Navigates to next page in listing
-        element.bind("click", function(ev) {
-          ev.stopPropagation();
-          if(attrs.pagebutton === "next") { Navigate.nextPage(); }
-        });
-      }
-    };
-  }]);
-
-
-  ng_app.directive("search", ["State", function(State) {
-    return {
-      restrict: "A",
-      link: function(scope, element, attrs) {
-        // Close search overlay when clicked
-        element.bind("click", function() { State.changeSubstate("SEARCH", false); });
-      }
-    };
-  }]);
-
-  ng_app.directive("navclick", ["State", function(State) {
+  ng_app.directive("navclick", ["State", "Search", "Navigate", function(State, Search, Navigate) {
     return {
       restrict: "A",
       link: function(scope, element, attrs) {
         var func = null;
 
         switch(attrs.navclick) {
+          case "overlay":
+            func = function() { State.toggleSubstate("OVERLAY"); };
+            break;
           case "search":
-            func = function() { State.toggleSubstate("SEARCH"); }
+            func = function() { State.changeSubstate("LOAD", true); Search.get(); };
+            break;
+          case "search_overlay":
+            func = function() { State.toggleSubstate("SEARCH"); };
             break;
           case "mini":
-            func = function() { /* do nothing */ }
+            func = function() { /* do nothing */ };
             break;
           case "list":
             func = function() {
@@ -85,16 +61,28 @@
             func = function() {
               State.toggleSubstate("FULL");
               if(State.substates["LIST"]) State.changeSubstate("LIST", false);
-            }
+            };
+            break;
+          case "next":
+            func = function() { Navigate.next(); };
+            break;
+          case "prev":
+            func = function() { Navigate.prev(); };
+            break;
+          case "page_next":
+            func = function() { Navigate.nextPage(); };
+            break;
+          case "page_prev":
+            func = function() { Navigate.prevPage(); };
             break;
           case "save":
-            func = function() { /* do nothing */ }
+            func = function() { /* do nothing */ };
             break;
           case "info":
-            func = function() { /* do nothing */ }
+            func = function() { /* do nothing */ };
             break;
           default:
-            func = function() { /* do nothing */ }
+            func = function() { /* do nothing */ };
             break;
         }
 

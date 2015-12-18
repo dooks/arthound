@@ -10,15 +10,19 @@ var ng_hound = (function(ng) {
   ng_app.base_view        = $("#base_view");
   ng_app.base_title       = $("#base_title_container");
 
-  ng_app.base_searchbar   = $("#base_searchbar");
-  ng_app.searchbar_search = $("#searchbar_search");
+  ng_app.base_searchbar      = $("#base_searchbar");
+    ng_app.searchbar_info    = $("#searchbar_info");
+    ng_app.searchbar_message = $("#searchbar_message");
+    ng_app.searchbar_search  = $("#searchbar_search");
 
   ng_app.base_image       = $("#base_image");
-  ng_app.base_image_info  = $("#base_image > h2");
-    ng_app.image_info     = $("#image_info");
-
-  ng_app.image_div        = $("#image_back");
-    ng_app.image_img      = $("#image_front");
+    ng_app.image_overlay  = $("#image_overlay");
+      ng_app.overlay_info   = $("#overlay_info");
+      ng_app.overlay_list   = $("#overlay_list");
+      ng_app.overlay_next   = $("#overlay_next");
+      ng_app.overlay_prev   = $("#overlay_prev");
+    ng_app.image_front  = $("#image_front");
+    ng_app.image_back     = $("#image_back");
 
   ng_app.base_listing     = $("#base_listing");
     ng_app.page_next      = $("#page_next");

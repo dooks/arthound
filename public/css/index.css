@@ -1,19 +1,14 @@
-/* Fonts */
-@font-face {
-  font-family: "Pokemon GB";
-  src: url("../fonts/Pokemon_GB.eot?")          format("eot"),
-       url("../fonts/Pokemon_GB.woff")          format("woff"),
-       url("../fonts/Pokemon_GB.ttf")           format("truetype"),
-       url("../fonts/Pokemon_GB.svg#PokemonGB") format("svg");
-  font-weight:normal;
-  font-style:normal;
-}
+/* color palette used
+ * http://www.colourlovers.com/palette/292482/Terra
+ */
 
 /* Bootstrap overrides */
 a {
   text-decoration: underline;
-  color: white;
+  color: #E8DDCB;
 }
+
+a:hover { color: #CDB380; }
 
 .absolute-wrapper {
   position: absolute;
@@ -51,12 +46,12 @@ html, body {
 .image-square-container {
   position: relative;
   margin:   0;
-  border:   1px solid black;
+  border:   1px solid #031634;
   float:    left;
   cursor:   pointer;
 
-  width:          33%;
-  padding-bottom: 33%;
+  width:          33.33%;
+  padding-bottom: 33.33%;
 }
 
 .image-square-container-full {
@@ -79,14 +74,14 @@ html, body {
   cursor: pointer;
 }
   .image-square-container > div:hover {
-    border: 1px solid white;
+    border: 1px solid #031634;
     filter:grayscale(0);
     -webkit-filter:grayscale(0);
     -moz-filter:grayscale(0);
   }
-  .image-square-container-selected { border: 1px solid white; }
+  .image-square-container-selected { border: 1px solid #CDB380; }
   .image-square-container-selected > div {
-    border: 1px solid white;
+    border: 1px solid #CDB380;
     filter:grayscale(0)         !important;
     -webkit-filter:grayscale(0) !important;
     -moz-filter:grayscale(0)    !important;
@@ -99,31 +94,53 @@ html, body {
   display: table;
   z-index: 6;
   width: 100%;
+  background-image: linear-gradient(0deg, rgba(3, 54, 73, 1), rgba(232, 221, 203, 0.1));
+  font-size: 2vw;
 }
 
-  #base_searchbar div {
-    height: 100%;
-    z-index: 7;
-
-    background-image: linear-gradient(0deg, rgba(232, 221, 203, 1), rgba(232, 221, 203, 0));
-    pointer-events: none;
-    opacity: 0.4;
+  #searchbar_view {
+    text-align: center;
+    display: table-cell;
+    vertical-align: middle;
+    width:     80%;
+    height:   100%;
+    z-index:     7;
+    margin: 0 auto;
+    opacity: 1;
   }
 
-  #searchbar_search {
+  #searchbar_info {
     height: 100px;
-    bottom:  15px;
-    z-index:    8;
-
-    background-color: rgba(0, 0, 0, 0);
-    border:    0;
-    outline:   0;
-    color: white;
-
-    text-align:        center;
-    font-size:            4vw;
-    font-family: "Pokemon GB";
   }
+
+  #searchbar_message {
+    height: 100px;
+  }
+
+  #searchbar_view > div {
+    width: 50%;
+    height: 50px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #searchbar_view > ul {
+    list-style-type: none;
+  }
+
+    #searchbar_search {
+      outline: 0;
+      background-color: 0;
+      border: 0;
+    }
+
+    #searchbar_search_button {
+      float: left;
+    }
+
+    .search_button_inactive {
+      pointer-events: none;
+    }
 
 
 
@@ -136,6 +153,10 @@ html, body {
   padding-right: 0;
 }
 
+  .base_view_loading {
+    cursor: progress;
+  }
+
   #base_title_container {
     display: table;
     position: absolute;
@@ -145,15 +166,19 @@ html, body {
   }
 
   #base_title {
+    font-family: "Arvo", serif;
     display:    table-cell;
     text-align:     center;
     vertical-align: middle;
     color: white;
   }
 
-  #base_title > p > span {
-    font-size: 4vw;
-  }
+  #base_title > h1 { font-size: 3.5vw; }
+
+  #base_title > p { font-size: 1.5vw; }
+
+  #base_title > p > span { cursor: pointer; font-size: 4vw; }
+  #base_title > p > span:hover { color: #CDB380; }
 
 
 
@@ -196,44 +221,67 @@ html, body {
     opacity:        1 !important;
   }
 
-  #image_info {
-    position:      fixed;
-    bottom:         20px;
-    margin-left:    20px;
-    width:         200px;
-    opacity:         0.7;
-
-    z-index: 3;
-    padding: 0;
-    color: white;
-    border-radius: 10px;
-    border: 1px solid black;
+  .overlay_back {
+    position: fixed;
+    opacity:    0.7;
+    z-index:      3;
+    padding:      0;
+    color:    white;
+    border: 1px solid #CDB380;
   }
-    #image_info > div {
+
+  .overlay_button {
+    background-color: #033649;
+    border-radius:       20px;
+    color:            #E8DDCB;
+    cursor:           pointer;
+  }
+
+  .overlay_button:hover {
+    background-color: #E8DDCB;
+    color:              black;
+  }
+    .overlay_button > span {
+      padding: 10px;
+      vertical-align: middle;
+      display: inline-block;
+    }
+
+  #overlay_list { top: 20px; margin-left: 20px; }
+  #overlay_prev { top: 50%;  margin-left: 20px; }
+  #overlay_next { top: 50%;        right: 20px; }
+
+  #overlay_info {
+    bottom:        20px;
+    margin-left:   20px;
+    border-radius: 10px;
+    width:        200px;
+  }
+    #overlay_info > div {
       width: 100%;
       padding: 5px;
       margin: 0;
     }
 
-    #image_info > div ul {
+    #overlay_info > div ul {
       margin: 0;
       padding: 0;
       list-style-type: none;
       text-align: center;
     }
 
-    #image_info > div:first-child {
+    #overlay_info > div:first-child {
       background: black;
       border-radius: 10px 10px 0 0;
     }
 
-    #image_info > div:last-child {
+    #overlay_info > div:last-child {
       background: #E8DDCB;
       border-radius: 0 0 10px 10px;
       color: black;
     }
 
-    #image_info > div:first-child > ul > li {
+    #overlay_info > div:first-child > ul > li {
       width: 100%;
       font-size: 0.9em;
       white-space: nowrap;
@@ -241,12 +289,12 @@ html, body {
       overflow: hidden;
     }
 
-    #image_info > div:last-child > ul > li {
+    #overlay_info > div:last-child > ul > li {
       padding:    3px;
       display: inline;
     }
 
-    #image_info > div:last-child > ul > li:hover {
+    #overlay_info > div:last-child > ul > li:hover {
       background-color: black !important;
       color:            white !important;
       user-select:                  none;
@@ -259,7 +307,7 @@ html, body {
 
 #base_listing {
   height: 100%;
-  background-image: linear-gradient(0deg, #000000, #333333);
+  background-image: linear-gradient(0deg, #031634, #036564);
   z-index:   4;
 
   /* Will be overriden be full-sidebar */
@@ -273,11 +321,9 @@ html, body {
     float: left;
   }
 
-  #page_prev { margin-top: -20px; } /* HACK, the absolute padding won't go up... */
-
   .page-button {
     text-align:  center;
-    border:      1px solid black;
+    border:      1px solid #036564;
     color:       white;
     width:       100%;
     HEIGHT:      40px;
@@ -293,8 +339,7 @@ html, body {
   }
 
   .page-button-inactive {
-    background-color: white;
-    color-color: black;
+    background-color: #222222;
+    color: black;
     pointer-events: none !important;
-    cursor: initial;
   }
