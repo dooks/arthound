@@ -7,6 +7,18 @@
     };
   });
 
+  ng_app.directive("search", ["State", function(State) {
+    return {
+      restrict: "A",
+      link: function(scope, element, attrs) {
+        element.bind("click", function(ev) {
+          if(ev.target !== this) { return; } // if haven't click children...
+          else { State.changeSubstate("SEARCH", false); }
+        });
+      }
+    };
+  }]);
+
   ng_app.directive("onkey", function(Keyboard, Search) {
     return {
       link: function(scope, element, attrs) {

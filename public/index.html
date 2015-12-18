@@ -16,20 +16,33 @@
 </head>
 
 <body ng-app="ngHound" onkey>
+<!-- loading -->
+<div id="base_loading" ng-controller="LoadingCtrl as loading"
+  ng-class="{'absolute-wrapper': 1, hidden: !loading.substates['LOAD']}">
+  <div id="fountainG">
+    <div id="fountainG_1" class="fountainG"></div>
+    <div id="fountainG_2" class="fountainG"></div>
+    <div id="fountainG_3" class="fountainG"></div>
+    <div id="fountainG_4" class="fountainG"></div>
+    <div id="fountainG_5" class="fountainG"></div>
+    <div id="fountainG_6" class="fountainG"></div>
+    <div id="fountainG_7" class="fountainG"></div>
+    <div id="fountainG_8" class="fountainG"></div>
+  </div>
+</div>
+
 <!-- search bar -->
 <div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar"
-  ng-class="{'absolute-wrapper': 1,
-             hidden: !searchbar.substates['SEARCH'],
-             'base_view_loading': searchbar.substates['LOAD']}">
+  ng-class="{'absolute-wrapper': 1, hidden: !searchbar.substates['SEARCH']}">
 
-  <div id="searchbar_view">
+  <div search id="searchbar_view">
     <div>
-      <input  id="searchbar_search" class="col-xs-11" ng-model="searchbar.query" />
       <button id="searchbar_search_button" navclick="search"
         ng-class="{'col-xs-1': true,
                 glyphicon: true,
                 'glyphicon-search': true,
                 search_button_inactive: searchbar.substates['LOAD']}" ></button>
+      <input  id="searchbar_search" class="col-xs-11" ng-model="searchbar.query" />
     </div>
 
     <span  id="searchbar_message"></span>
@@ -57,7 +70,6 @@
 <div id="base_view" ng-controller="ViewCtrl as view"
   ng-class="{'container-fluid': 1,
              'relative-wrapper': 1,
-             'base_view_loading': view.substates['LOAD'],
              'no-list': (!view.substates['LIST'])}">
 
   <!-- listing -->

@@ -10,6 +10,16 @@
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
   }]);
 
+  ng_app.controller("LoadingCtrl", ["$scope", "State",
+    function($scope, State) {
+    var self = this;
+    self.state     = State.state;
+    self.substates = State.substates;
+
+    $scope.$on("onstatechange",    function() { self.state = State.state;         });
+    $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
+  }]);
+
   ng_app.controller("TitleCtrl", ["$scope", "State",
     function($scope, State) {
     // Handles the title container
@@ -29,7 +39,7 @@
     self.query     = "";
     self.state     = State.state;
     self.substates = State.substates;
-    self.sources = { "deviantart": true, "e926": true, "imgur": false };
+    self.sources = { "deviantart": true, "e926": true, "imgur": true };
 
     $scope.$on("onstatechange",    function() { self.state = State.state;         });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -39,11 +49,9 @@
       Search.query = self.query;
 
       if(!State.substates["SEARCH"]) {
-        // Add letter to search term
-        self.query += Keyboard.ord.toLowerCase();
-        Search.query = self.query;
         $scope.$apply();
         State.changeSubstate("SEARCH", true);
+        ng_app.searchbar_search.focus();
       }
     });
 
