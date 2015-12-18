@@ -107,7 +107,6 @@
       else if(key_code === 38) { self.ord = "UP";        }
       else if(key_code === 39) { self.ord = "RIGHT";     }
       else if(key_code === 40) { self.ord = "DOWN";      }
-      else if(key_code === 8)  { self.ord = "BACKSPACE"; }
       else if(key_code === 13) { self.ord = "ENTER";     }
       else if(key_code === 27) { self.ord = "ESCAPE";    }
       else                     { self.ord = null;        }
@@ -307,9 +306,13 @@
     };
 
     self.next = function() {
-      if((self.index + 1) < self.last_index) {
-        self.index += 1; self.broadcast("onnavigate"); return true; }
-      else if((self.index + 1) === self.last_index) { self.nextPage(); }
+      if(self.index + 1 < self.last_index) {
+        self.index += 1;
+        self.broadcast("onnavigate");
+        return true;
+      } else if((self.index + 1) === self.last_index) {
+        self.nextPage();
+      }
       else { return false; }
     };
 
@@ -320,8 +323,9 @@
     };
 
     self.to = function(n) {
+      // Note: +n, because n might be a string!
       if(n >= 0 && n < self.page_sizes[self.page_sizes.length - 1])  {
-        self.index = n; self.broadcast("onnavigate"); return true;
+        self.index = +n; self.broadcast("onnavigate"); return true;
       } else { return false; }
     };
 

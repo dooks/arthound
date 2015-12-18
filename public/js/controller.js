@@ -26,6 +26,7 @@
     // Handles the searching overlay
     // Searching overlay appears when beginning to type
     var self = this;
+    self.query     = "";
     self.state     = State.state;
     self.substates = State.substates;
     self.sources = { "deviantart": true, "e926": true, "imgur": false };
@@ -34,23 +35,22 @@
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
     $scope.$on("onkeyup", function() {
-      // Add letter to search term
-      Search.query += Keyboard.ord.toLowerCase();
-      self.query = Search.query;
+      ng_app.searchbar_search.focus();
+      Search.query = self.query;
 
-      if(!State.substates["SEARCH"]) { State.changeSubstate("SEARCH", true); }
-      else { $scope.$apply(); }
+      if(!State.substates["SEARCH"]) {
+        // Add letter to search term
+        self.query += Keyboard.ord.toLowerCase();
+        Search.query = self.query;
+        $scope.$apply();
+        State.changeSubstate("SEARCH", true);
+      }
     });
 
     $scope.$on("onkeybackspace", function() {
-      if(State.substates["SEARCH"]) {
-        // delete last letter of query
-        Search.query = Search.query.slice(0, -1);
-        self.query = Search.query;
-
-        if(self.query === "") { State.changeSubstate("SEARCH", false); }
-        else { $scope.$apply(); }
-      }
+      if(self.query === "") State.changeSubstates("SEARCH", false);
+      Search.query = self.query;
+      $scope.$apply();
     });
 
     $scope.$on("onkeyenter", function() {
@@ -69,7 +69,7 @@
         Search.resetSources(self.sources);
 
         // Initiate search
-        Search.get(Search.query);
+        Search.get(self.query);
       }
     });
 
@@ -77,8 +77,17 @@
       if(State.substates["SEARCH"]) {
         // clear search
         Search.clear();
+        self.query = "";
 
         // switch to NONE substate
+        State.changeSubstate("SEARCH", false);
+      }
+    });
+
+    $scope.$on("onsearchreturned", function() {
+      if(Search.response[Search.response.length -1].data.length === 0) {
+        // No search results...
+      } else {
         State.changeSubstate("SEARCH", false);
       }
     });
@@ -128,17 +137,19 @@
     $scope.$on("onsearchreturned", function() {
       // Append response to Navigation service listing
       // If last result in queue has no length...
-      State.changeSubstate("SEARCH", false);
       State.changeSubstate("LOAD", false);
       Search.clear();
 
       if(Search.response[Search.response.length -1].data.length === 0) {
         Search.clearResponse();
-        console.log("Paging is now disabled, end of results");
+        console.log("End of results");
+
         // No search results, or we've reached the last page
         Navigate.last_page = true;
             self.last_page = true;
       } else {
+        State.changeSubstate("SEARCH", false);
+
         // Allow paging again
         Navigate.can_page = true;
         self.can_page     = true;
@@ -149,7 +160,7 @@
 
         // Update listing display
         self.listing = Navigate.getDisplay(Navigate.listing_buffer);
-        console.log("Listing", self.listing);
+        //console.log("Listing", self.listing);
       }
     });
   }]);
@@ -203,8 +214,12 @@
 
     $scope.$on("onkeyarrow", function() {
       switch(Keyboard.ord) {
-        case "LEFT":  Navigate.prev(); break;
-        case "RIGHT": Navigate.next(); break;
+        case "LEFT":
+          Navigate.prev();
+          break;
+        case "RIGHT":
+          Navigate.next();
+          break;
       }
     });
 

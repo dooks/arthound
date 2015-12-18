@@ -21,9 +21,25 @@
   ng-class="{'absolute-wrapper': 1,
              hidden: !searchbar.substates['SEARCH'],
              'base_view_loading': searchbar.substates['LOAD']}">
-  <div class="no-click col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
-  <img class="img-responsive" src="img/spinner.gif" />
-  <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
+
+  <div id="searchbar_view">
+    <p>Example tags you can search for...</p>
+    <ul>
+      <li>"Charizard Blastoise"</li>
+      <li>"Undertale Sans"</li>
+      <li>"Art"</li>
+      <li>"Astronaut blue"</li>
+      <li>"Garnet Pearl Amethyst"</li>
+    </ul>
+
+    <div>
+      <input  id="searchbar_search" class="col-xs-11" ng-model="searchbar.query" />
+      <button id="searchbar_search_button" navclick="search"
+              class="col-xs-1 glyphicon glyphicon-search" ></button>
+    </div>
+
+    <span  id="searchbar_message"></span>
+  </div>
 </div>
 
 <!-- title -->
@@ -38,7 +54,7 @@
       <a href="https://www.imgur.com">Imgur</a>
     </p>
     <p>Start typing anywhere on the page to search, or click the icon.</p>
-    <p><span navclick="search" class="glyphicon glyphicon-search"></span></p>
+    <p><span navclick="search_overlay" class="glyphicon glyphicon-search"></span></p>
   </div>
 </div>
 
@@ -62,7 +78,7 @@
           <div tile index="{{ item.index }}"
             ng-class="{'image-square-container-selected': item.index == listing.current,
                        'image-square-container': true,
-                       'image-square-container-full': listing.isFull}">
+                       'image-square-container-full': listing.substates['FULL']}">
             <div style="background-image: url('{{item.thumbs}}')"></div>
           </div>
         </div>
