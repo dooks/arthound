@@ -64,6 +64,7 @@ module.exports = {
     var now   = new Date(Date.now());
     var then  = new Date(module.exports["imgur"].user_reset * 1000);
     var timer = new Date(then.getTime() - now.getTime());
+    if(timer < 0) timer = 60000; // Wait a minute...
 
     console.log("Imgur User Limit resets at", then.toString(), then.getTime());
     console.log("Imgur user_remaining",   module.exports["imgur"].user_remaining);

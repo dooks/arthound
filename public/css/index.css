@@ -136,6 +136,10 @@ html, body {
   padding-right: 0;
 }
 
+  .base_view_loading {
+    cursor: progress;
+  }
+
   #base_title_container {
     display: table;
     position: absolute;
@@ -296,8 +300,6 @@ html, body {
     float: left;
   }
 
-  #page_prev { margin-top: -20px; } /* HACK, the absolute padding won't go up... */
-
   .page-button {
     text-align:  center;
     border:      1px solid black;
@@ -316,8 +318,7 @@ html, body {
   }
 
   .page-button-inactive {
-    background-color: white;
-    color-color: black;
+    background-color: #222222;
+    color: black;
     pointer-events: none !important;
-    cursor: initial;
   }

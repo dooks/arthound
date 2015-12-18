@@ -21,7 +21,9 @@
 <body ng-app="ngHound" onkey>
 <!-- search bar -->
 <div id="base_searchbar" search ng-controller="SearchbarCtrl as searchbar"
-  ng-class="{'absolute-wrapper': 1, hidden: !searchbar.substates['SEARCH']}">
+  ng-class="{'absolute-wrapper': 1,
+             hidden: !searchbar.substates['SEARCH'],
+             'base_view_loading': searchbar.substates['LOAD']}">
   <div class="no-click col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
   <img class="img-responsive" src="img/spinner.gif" />
   <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
@@ -49,6 +51,7 @@
 <div id="base_view" ng-controller="ViewCtrl as view"
   ng-class="{'container-fluid': 1,
              'relative-wrapper': 1,
+             'base_view_loading': view.substates['LOAD'],
              'no-list': (!view.substates['LIST'])}">
 
   <!-- listing -->
@@ -57,22 +60,23 @@
               'absolute-wrapper': 1,
               'full-listing': listing.substates['FULL']}">
     <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
-    <!--<div id="page_prev" class="page-button page-button-inactive">-->
-      <!--<span class="glyphicon glyphicon-minus"></span>-->
-    <!--</div>-->
-
       <div id="listing_grid">
       <div ng-repeat="page in listing.listing">
         <div ng-repeat="item in page.data">
           <div tile index="{{ item.index }}"
-            ng-class="{'image-square-container': true, 'image-square-container-full': listing.isFull}">
+            ng-class="{'image-square-container-selected': item.index == listing.current,
+                       'image-square-container': true,
+                       'image-square-container-full': listing.isFull}">
             <div style="background-image: url('{{item.thumbs}}')"></div>
           </div>
         </div>
       </div>
       </div>
 
-      <div id="page_next" class="page-button" pagebutton="next">
+      <div id="page_next" ng-class= "{'page-button': true,
+        'page-button-inactive': !listing.can_page,
+        'hidden': listing.last_page }"
+        navclick="page_next">
         <span class="glyphicon glyphicon-option-horizontal"></span>
       </div>
 
@@ -82,7 +86,8 @@
   <!-- image -->
   <div id="base_image" ng-controller="ImageCtrl as image"
     ng-class="{hidden: image.state != 'ACTIVE'}">
-    <div id="image_overlay">
+    <div id="image_overlay" ng-controller="OverlayCtrl as overlay"
+      ng-class="{hidden: !overlay.substates['OVERLAY']}">
       <div id="overlay_list" class="overlay_button overlay_back">
           <span navclick="list" class="glyphicon glyphicon-resize-full"></span>
       </div>
@@ -108,8 +113,8 @@
       </div>
     </div>
 
-    <img id="image_front" ng-class="{base_image_zoom: image.current.zoom}"/>
-    <div id="image_back" ng-class="{hidden: image.current.zoom}"></div>
+    <img id="image_front" navclick="overlay" ng-class="{base_image_zoom: image.current.zoom}"/>
+    <div id="image_back"  ng-class="{hidden: image.current.zoom}"></div>
   </div>
 
 

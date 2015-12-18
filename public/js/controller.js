@@ -28,7 +28,7 @@
     var self = this;
     self.state     = State.state;
     self.substates = State.substates;
-    self.sources = { "deviantart": true, "imgur": true };
+    self.sources = { "deviantart": true, "e926": true, "imgur": false };
 
     $scope.$on("onstatechange",    function() { self.state = State.state;         });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -56,7 +56,7 @@
     $scope.$on("onkeyenter", function() {
       if(State.substates["SEARCH"] && State.state !== "LOAD") {
         // initiate Search
-        State.changeState("LOAD");
+        State.changeSubstate("LOAD", true);
 
         // this is a new search, so...
         // clear the old listing_buffer
@@ -90,8 +90,10 @@
     // Handles the searchlist overlay, which contains a grid list of searches found
     var self = this;
     self.listing   = [];
+    self.index     =  0;
     self.state     = State.state;
     self.substates = State.substates;
+    self.last_page = false;
     self.scrollbar = { "onScroll": function(y, x) { } };
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
@@ -104,18 +106,21 @@
     });
 
     $scope.$on("onnavigate", function() {
+      self.current = Navigate.index;
       if(State.substates["FULL"]) { State.changeSubstate("LIST", false); }
     });
 
     $scope.$on("onnavigatepage", function() {
-      if(!Navigate.last_page && State.state !== "LOAD") {
-        State.changeState("LOAD");
+      if(State.state !== "LOAD") {
+        self.can_page = false;
+        State.changeSubstate("LOAD", true);
         Search.get(Search.last_query, Navigate.current_page, Navigate.limit);
       }
     });
 
     $scope.$on("onnavigatepop", function() {
       Navigate.to(0);
+      Navigate.first_page = true;
       State.changeState("ACTIVE");
       State.changeSubstate("LIST", true);
     });
@@ -124,6 +129,7 @@
       // Append response to Navigation service listing
       // If last result in queue has no length...
       State.changeSubstate("SEARCH", false);
+      State.changeSubstate("LOAD", false);
       Search.clear();
 
       if(Search.response[Search.response.length -1].data.length === 0) {
@@ -131,23 +137,19 @@
         console.log("Paging is now disabled, end of results");
         // No search results, or we've reached the last page
         Navigate.last_page = true;
-
-        // Disallow next paging
-        Navigate.can_page = false;
-
-        // Disable next page button
-        ng_app.page_next.addClass("page-button-inactive");
+            self.last_page = true;
       } else {
         // Allow paging again
         Navigate.can_page = true;
-        ng_app.page_next.removeClass("page-button-inactive");
+        self.can_page     = true;
+        self.last_page    = false;
 
         Navigate.append(Search.response[0]);
         Search.clearResponse(); // Clear oldest response
 
         // Update listing display
         self.listing = Navigate.getDisplay(Navigate.listing_buffer);
-        //console.log("Listing", self.listing);
+        console.log("Listing", self.listing);
       }
     });
   }]);
@@ -156,6 +158,12 @@
     ["$scope", "State", "Navigate",
     function($scope, State, Navigate) {
     var self = this;
+    self.state     = State.state;
+    self.substates = State.substates;
+
+    $scope.$on("onstatechange",    function() { self.state     = State.state;     });
+    $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
+    $scope.$on("onsearchreturned", function() { State.changeSubstate("OVERLAY", true); });
   }]);
 
   ng_app.controller("InfoCtrl",
@@ -188,7 +196,6 @@
     self.current = {};
     self.state     = State.state;
     self.substates = State.substates;
-
     self.scrollbar = { "onScroll": function(y, x) { /* Options... */ } };
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
