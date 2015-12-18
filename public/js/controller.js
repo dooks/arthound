@@ -100,7 +100,7 @@
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
     $scope.$on("onkeyesc", function() {
-      if(State.substates["LIST"] && State.substate["FULL"]) {
+      if(State.substates["LIST"] && State.substates["FULL"]) {
         State.changeSubstate("LIST", false);
       }
     });
