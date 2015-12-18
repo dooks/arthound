@@ -1,0 +1,345 @@
+/* color palette used
+ * http://www.colourlovers.com/palette/292482/Terra
+ */
+
+/* Bootstrap overrides */
+a {
+  text-decoration: underline;
+  color: #E8DDCB;
+}
+
+a:hover { color: #CDB380; }
+
+.absolute-wrapper {
+  position: absolute;
+  height: 100%;
+}
+
+.relative-wrapper {
+  position: relative;
+  height: 100%;
+}
+
+.full-listing {
+  padding: 0    !important;
+  width:   100% !important;
+  left:    0    !important;
+}
+
+.scroll-wrapper {
+  position: relative;
+  height: 100%;
+}
+
+.no-list {
+  padding: 0 !important;
+}
+
+/* User defined */
+html, body {
+  height:   100%;
+  width:    100%;
+  overflow: hidden;
+  background-image: linear-gradient(0deg, #031634, #033649);
+}
+
+.image-square-container {
+  position: relative;
+  margin:   0;
+  border:   1px solid #031634;
+  float:    left;
+  cursor:   pointer;
+
+  width:          33.33%;
+  padding-bottom: 33.33%;
+}
+
+.image-square-container-full {
+  width:          16.66%;
+  padding-bottom: 16.66%;
+}
+
+.image-square-container > div {
+  position: absolute;
+  width:  100%;
+  height: 100%;
+  padding: 0;
+
+  filter:grayscale(1);
+  -webkit-filter:grayscale(1);
+  -moz-filter:grayscale(1);
+  background-size:     cover;
+  background-repeat:   no-repeat;
+  background-position: center;
+  cursor: pointer;
+}
+  .image-square-container > div:hover {
+    border: 1px solid #031634;
+    filter:grayscale(0);
+    -webkit-filter:grayscale(0);
+    -moz-filter:grayscale(0);
+  }
+  .image-square-container-selected { border: 1px solid #CDB380; }
+  .image-square-container-selected > div {
+    border: 1px solid #CDB380;
+    filter:grayscale(0)         !important;
+    -webkit-filter:grayscale(0) !important;
+    -moz-filter:grayscale(0)    !important;
+  }
+
+
+
+/* User defined IDs */
+#base_searchbar {
+  display: table;
+  z-index: 6;
+  width: 100%;
+  background-image: linear-gradient(0deg, rgba(3, 54, 73, 1), rgba(232, 221, 203, 0.1));
+  font-size: 2vw;
+}
+
+  #searchbar_view {
+    text-align: center;
+    display: table-cell;
+    vertical-align: middle;
+    width:     80%;
+    height:   100%;
+    z-index:     7;
+    margin: 0 auto;
+    opacity: 1;
+  }
+
+  #searchbar_info {
+    height: 100px;
+  }
+
+  #searchbar_message {
+    height: 100px;
+  }
+
+  #searchbar_view > div {
+    width: 50%;
+    height: 50px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #searchbar_view > ul {
+    list-style-type: none;
+  }
+
+    #searchbar_search {
+      outline: 0;
+      background-color: 0;
+      border: 0;
+    }
+
+    #searchbar_search_button {
+      float: left;
+    }
+
+    .search_button_inactive {
+      pointer-events: none;
+    }
+
+
+
+
+
+
+
+#base_view {
+  padding-left: 200px;
+  padding-right: 0;
+}
+
+  .base_view_loading {
+    cursor: progress;
+  }
+
+  #base_title_container {
+    display: table;
+    position: absolute;
+    width:  100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  #base_title {
+    font-family: "Arvo", serif;
+    display:    table-cell;
+    text-align:     center;
+    vertical-align: middle;
+    color: white;
+  }
+
+  #base_title > h1 { font-size: 3.5vw; }
+
+  #base_title > p { font-size: 1.5vw; }
+
+  #base_title > p > span { cursor: pointer; font-size: 4vw; }
+  #base_title > p > span:hover { color: #CDB380; }
+
+
+
+
+
+
+#base_image {
+  overflow: auto;
+  margin:      0;
+  padding:     0;
+  border:      0;
+  height:   100%;
+  position: relative;
+}
+
+  #image_front {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 2;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #image_back {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 1;
+  }
+
+  .base_image_zoom {
+    position: initial !important;
+    width:       auto !important;
+    height:      auto !important;
+    opacity:        1 !important;
+  }
+
+  .overlay_back {
+    position: fixed;
+    opacity:    0.7;
+    z-index:      3;
+    padding:      0;
+    color:    white;
+    border: 1px solid #CDB380;
+  }
+
+  .overlay_button {
+    background-color: #033649;
+    border-radius:       20px;
+    color:            #E8DDCB;
+    cursor:           pointer;
+  }
+
+  .overlay_button:hover {
+    background-color: #E8DDCB;
+    color:              black;
+  }
+    .overlay_button > span {
+      padding: 10px;
+      vertical-align: middle;
+      display: inline-block;
+    }
+
+  #overlay_list { top: 20px; margin-left: 20px; }
+  #overlay_prev { top: 50%;  margin-left: 20px; }
+  #overlay_next { top: 50%;        right: 20px; }
+
+  #overlay_info {
+    bottom:        20px;
+    margin-left:   20px;
+    border-radius: 10px;
+    width:        200px;
+  }
+    #overlay_info > div {
+      width: 100%;
+      padding: 5px;
+      margin: 0;
+    }
+
+    #overlay_info > div ul {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      text-align: center;
+    }
+
+    #overlay_info > div:first-child {
+      background: black;
+      border-radius: 10px 10px 0 0;
+    }
+
+    #overlay_info > div:last-child {
+      background: #E8DDCB;
+      border-radius: 0 0 10px 10px;
+      color: black;
+    }
+
+    #overlay_info > div:first-child > ul > li {
+      width: 100%;
+      font-size: 0.9em;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    #overlay_info > div:last-child > ul > li {
+      padding:    3px;
+      display: inline;
+    }
+
+    #overlay_info > div:last-child > ul > li:hover {
+      background-color: black !important;
+      color:            white !important;
+      user-select:                  none;
+      -moz-user-select:             none;
+      -webkit-user-select:          none;
+    }
+
+
+
+
+#base_listing {
+  height: 100%;
+  background-image: linear-gradient(0deg, #031634, #036564);
+  z-index:   4;
+
+  /* Will be overriden be full-sidebar */
+  width:   200px; /* Size on page is managed through base_view  */
+  left:        0;
+  overflow: none;
+}
+
+  #listing_grid {
+    width: 100%;
+    float: left;
+  }
+
+  .page-button {
+    text-align:  center;
+    border:      1px solid #036564;
+    color:       white;
+    width:       100%;
+    HEIGHT:      40px;
+    line-height: 40px;
+    float:       left;
+    vertical-align: middle;
+  }
+
+  .page-button:hover {
+    background-color: white;
+    color: black;
+    cursor: pointer;
+  }
+
+  .page-button-inactive {
+    background-color: #222222;
+    color: black;
+    pointer-events: none !important;
+  }
