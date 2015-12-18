@@ -230,7 +230,7 @@
 
     self.initialize = function(limit) {
       // reinitialize values based on page limit
-      self.current_limit  = limit || 10; // How far ahead or behind to buffer
+      self.current_limit  = limit || 3; // How far ahead or behind to buffer
       self.current_index  = 0; // Index of image to be displayed
       self.current_page   = 0;
       self.last_index     = 0; // Last index
