@@ -61,9 +61,9 @@ module.exports = {
     module.exports["imgur"].client_remaining = parsed_body.data["ClientRemaining"];
 
     // Determine when to run this function again
-    var now   = Date.now();
+    var now   = new Date(Date.now());
     var then  = new Date(module.exports["imgur"].user_reset * 1000);
-    var timer = new Date(then - now);
+    var timer = new Date(then.getTime() - now.getTime());
 
     console.log("Imgur User Limit resets at", then.toString(), then.getTime());
     console.log("Imgur user_remaining",   module.exports["imgur"].user_remaining);
