@@ -196,44 +196,67 @@ html, body {
     opacity:        1 !important;
   }
 
-  #image_info {
-    position:      fixed;
-    bottom:         20px;
-    margin-left:    20px;
-    width:         200px;
-    opacity:         0.7;
-
-    z-index: 3;
-    padding: 0;
-    color: white;
-    border-radius: 10px;
+  .overlay_back {
+    position: fixed;
+    opacity:    0.7;
+    z-index:      3;
+    padding:      0;
+    color:    white;
     border: 1px solid black;
   }
-    #image_info > div {
+
+  .overlay_button {
+    background-color: black;
+    border-radius:     20px;
+    color:          #E8DDCB;
+    cursor:         pointer;
+  }
+
+  .overlay_button:hover {
+    background-color: #E8DDCB;
+    color:              black;
+  }
+    .overlay_button > span {
+      padding: 10px;
+      vertical-align: middle;
+      display: inline-block;
+    }
+
+  #overlay_list { top: 20px; margin-left: 20px; }
+  #overlay_prev { top: 50%;  margin-left: 20px; }
+  #overlay_next { top: 50%;        right: 20px; }
+
+  #overlay_info {
+    bottom:        20px;
+    margin-left:   20px;
+    border-radius: 10px;
+    width:        200px;
+  }
+    #overlay_info > div {
       width: 100%;
       padding: 5px;
       margin: 0;
     }
 
-    #image_info > div ul {
+    #overlay_info > div ul {
       margin: 0;
       padding: 0;
       list-style-type: none;
       text-align: center;
     }
 
-    #image_info > div:first-child {
+    #overlay_info > div:first-child {
       background: black;
       border-radius: 10px 10px 0 0;
     }
 
-    #image_info > div:last-child {
+    #overlay_info > div:last-child {
       background: #E8DDCB;
       border-radius: 0 0 10px 10px;
       color: black;
     }
 
-    #image_info > div:first-child > ul > li {
+    #overlay_info > div:first-child > ul > li {
       width: 100%;
       font-size: 0.9em;
       white-space: nowrap;
@@ -241,12 +264,12 @@ html, body {
       overflow: hidden;
     }
 
-    #image_info > div:last-child > ul > li {
+    #overlay_info > div:last-child > ul > li {
       padding:    3px;
       display: inline;
     }
 
-    #image_info > div:last-child > ul > li:hover {
+    #overlay_info > div:last-child > ul > li:hover {
       background-color: black !important;
       color:            white !important;
       user-select:                  none;

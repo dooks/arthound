@@ -152,19 +152,20 @@
     });
   }]);
 
-  ng_app.controller("InfoCtrl",
+  ng_app.controller("OverlayCtrl",
     ["$scope", "State", "Navigate",
     function($scope, State, Navigate) {
+    var self = this;
+  }]);
+
+  ng_app.controller("InfoCtrl",
+    ["$scope", "Navigate",
+    function($scope, Navigate) {
     // Handles display info for current image
     // How many images got returned
     var self       = this;
-    self.state     = State.state;
-    self.substates = State.substates;
     self.current   = {};
     self.date      =  0;
-
-    $scope.$on("onstatechange",    function() { self.state     = State.state;     });
-    $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
     $scope.$on("onnavigate", function() {
       // Update image info box
@@ -174,6 +175,7 @@
         // Convert date to readable Date
         var date = new Date(self.current.date * 1000);
         self.date = date.toDateString();
+        $scope.$apply();
       }
     });
   }]);
@@ -183,7 +185,7 @@
     function($scope, State, Navigate) {
     // Handles current image being shown
     var self = this;
-    var current = {};
+    self.current = {};
     self.state     = State.state;
     self.substates = State.substates;
 
@@ -194,28 +196,22 @@
 
     $scope.$on("onnavigate", function() {
       // Blank out src
-      ng_app.image_img.attr("src", "");
-      ng_app.image_div.css("background-image", "url('')");
+      ng_app.image_front.attr("src", "");
+      ng_app.image_back.css("background-image", "url('')");
 
       // Display preview image if available, otherwise full resolution picture
-      current = Navigate.findByIndex(Navigate.index);
-      if(current) {
-        var image = (current.preview || current.content || current.thumbs);
+      self.current = Navigate.findByIndex(Navigate.index);
+      if(self.current) {
+        var image = (self.current.preview || self.current.content || self.current.thumbs);
 
 
-        if(current.zoom) {
+        if(self.current.zoom) {
           // View full resolution picture instead
-          image = current.content;
-          ng_app.image_img.attr("src", image);
-
-          ng_app.image_img.addClass("base_image_zoom");
-          ng_app.image_div.addClass("hidden");
+          image = self.current.content;
+          ng_app.image_front.attr("src", image);
         } else {
-          ng_app.image_img.attr("src", image);
-
-          ng_app.image_img.removeClass("base_image_zoom");
-          ng_app.image_div.removeClass("hidden");
-          ng_app.image_div.css("background-image", "url('" + image + "')");
+          ng_app.image_front.attr("src", image);
+          ng_app.image_back.css("background-image", "url('" + image + "')");
         }
       } else {
         // Do not update
