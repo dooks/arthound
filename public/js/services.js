@@ -3,10 +3,11 @@
     // TODO: why does initializing this make it persistent....?
     var self = this;
     self.state     = "DEFAULT"; // DEFAULT | ACTIVE
-    self.substates = { "FULL":   false,
-                       "SEARCH": false,
-                       "LIST":   false,
-                       "LOAD":   false
+    self.substates = { "FULL":    false,
+                       "SEARCH":  false,
+                       "LIST":    false,
+                       "LOAD":    false,
+                       "OVERLAY": false
                      };
 
     self.changeState = function(state) {
@@ -23,7 +24,8 @@
       switch(substate) {
         case "FULL":
         case "SEARCH":
-        case "LOADING":
+        case "LOAD":
+        case "OVERLAY":
         case "LIST":
           self.substates[substate] = (!!value); // Evaluate value as boolean
           $rootScope.$apply();
@@ -36,7 +38,8 @@
       switch(substate) {
         case "FULL":
         case "SEARCH":
-        case "LOADING":
+        case "LOAD":
+        case "OVERLAY":
         case "LIST":
           self.substates[substate] = (!self.substates[substate]); // Evaluate value as boolean
           $rootScope.$apply();
@@ -49,7 +52,7 @@
     self.view_state      = "";
     self.view_last_state = "";
     self.viewport   = viewport;
-    self.view_interval   = 1000;
+    self.view_interval   = 200;
     self.view_can_change = true;
 
     $(document).ready(function() {
@@ -98,9 +101,12 @@
       //  @shift: event.shiftKey
       self.key = key_code;
 
-      if(key_code >= 32 && key_code <= 122)
+      if(key_code === 32 || key_code >= 48 && key_code <= 122)
                                { self.ord = String.fromCharCode(key_code); }
-      else if(key_code === 8)  { self.ord = "BACKSPACE"; }
+      else if(key_code === 37) { self.ord = "LEFT";      }
+      else if(key_code === 38) { self.ord = "UP";        }
+      else if(key_code === 39) { self.ord = "RIGHT";     }
+      else if(key_code === 40) { self.ord = "DOWN";      }
       else if(key_code === 13) { self.ord = "ENTER";     }
       else if(key_code === 27) { self.ord = "ESCAPE";    }
       else                     { self.ord = null;        }
@@ -109,6 +115,12 @@
 
     self.broadcast = function() {
       switch(self.ord) {
+        case "LEFT":
+        case "UP":
+        case "RIGHT":
+        case "DOWN":
+          $rootScope.$broadcast("onkeyarrow");
+          break;
         case "ESCAPE":
           $rootScope.$broadcast("onkeyesc");
           break;
@@ -218,18 +230,20 @@
 
     self.initialize = function(limit) {
       // reinitialize values based on page limit
-      self.current_limit  =  limit || 3; // How far ahead or behind to buffer
-      self.current_index  =  0; // Index of image to be displayed
-      self.current_page   =  0;
-      self.display_low    =  0 - self.current_limit; // How far ahead to buffer
-      self.display_high   =  0 + self.current_limit; // How far behind to buffer
+      self.current_limit  = limit || 3; // How far ahead or behind to buffer
+      self.current_index  = 0; // Index of image to be displayed
+      self.current_page   = 0;
+      self.last_index     = 0; // Last index
+      self.display_low    = 0 - self.current_limit; // How far ahead to buffer
+      self.display_high   = 0 + self.current_limit; // How far behind to buffer
 
       self.can_page       = false; // If next/prev page can execute
-      self.last_page      = false; // Disables next page
+      self.first_page     = false; // If on first page
+      self.last_page      = false; // If on last page
       self.listing_buffer = []; // Contains entire listing data
       self.page_sizes     = []; // Used for searching indices
     }
-    self.initialize(3); // Default limit of 3
+    self.initialize();
 
 
 
@@ -254,17 +268,23 @@
       } // else index starts zero
 
       // Process response data
-      for(var i = 0; i < response.data.length; i++) {
-        // set zoom flag based on aspect ratio
-        // also prevent divide by zero for height...
-        var aspect = response.data[i].width / (response.data[i].height || 1);
+      {
+        var i = 0;
+        while(i < response.data.length) {
+          // set zoom flag based on aspect ratio
+          // also prevent divide by zero for height...
+          var aspect = response.data[i].width / (response.data[i].height || 1);
 
-        // if aspect ratio is ~ 1:2 or thinner...
-        if(aspect < 0.5) response.data[i].zoom = true;
-        else             response.data[i].zoom = false;
+          // if aspect ratio is ~ 1:2 or thinner...
+          if(aspect < 0.5) response.data[i].zoom = true;
+          else             response.data[i].zoom = false;
 
-        // Index item
-        response.data[i].index = start_index + i;
+          // Index item
+          response.data[i].index = start_index + i;
+          i++;
+        }
+
+        self.last_index = start_index + i;
       }
 
       // Add response to listing_buffer
@@ -286,20 +306,44 @@
     };
 
     self.next = function() {
-      if((self.index + 1) < self.listing_buffer.length) {
-        self.index += 1; self.broadcast("onnavigate"); return true;
+      if(self.index + 1 < self.last_index) {
+        self.index += 1;
+        self.broadcast("onnavigate");
+        return true;
+      } else if((self.index + 1) === self.last_index) {
+        self.nextPage();
+      }
+      else { return false; }
+    };
+
+    self.prev = function() {
+      if((self.index - 1) >= 0) {
+        self.index -= 1; self.broadcast("onnavigate"); return true;
       } else { return false; }
     };
 
     self.to = function(n) {
+      // Note: +n, because n might be a string!
       if(n >= 0 && n < self.page_sizes[self.page_sizes.length - 1])  {
-        self.index = n; self.broadcast("onnavigate"); return true;
+        self.index = +n; self.broadcast("onnavigate"); return true;
       } else { return false; }
+    };
+
+    self.prevPage = function() {
+      if(!self.first_page && self.can_page) {
+        self.can_page = false;
+
+        if(self.last_page) self.last_page = false;
+        self._calcPage(--self.current_page);
+        self.broadcast("onnavigatepage");
+      }
     };
 
     self.nextPage = function() {
       if(!self.last_page && self.can_page) {
         self.can_page = false;
+
+        if(self.first_page) self.first_page = false;
         self._calcPage(++self.current_page);
         self.broadcast("onnavigatepage");
       }
@@ -317,6 +361,10 @@
       retval = buffer.slice(low, high);
 
       return retval;
+    }
+
+    self.getLastIndex = function() {
+      // Return last index
     }
 
     self.getPageByIndex = function(n) {
