@@ -11,26 +11,27 @@
     return {
       link: function(scope, element, attrs) {
         element.bind("keyup", function(ev) {
-          // Otherwise, send to "keyboard" service
           var key = ev.which || ev.keyCode;
           if(key < 32 && key !== 16) Keyboard.getKey(key);
         });
 
         element.bind("keypress", function(ev) {
-          // Otherwise, send to "keyboard" service
-          Keyboard.getKey(ev.which || ev.keyCode);
+          var key = ev.which || ev.keyCode;
+          if(key >= 32 && key <= 122) Keyboard.getKey(key);
         });
       }
     };
   });
 
-  ng_app.directive("tile", ["Navigate", function(Navigate) {
+  ng_app.directive("tile", ["State", "Navigate", function(State, Navigate) {
     return {
       restrict: "A",
       link: function(scope, element, attrs) {
         // Navigate to selected index
         element.bind("click", function() {
           Navigate.to(attrs.index);
+
+          // Replace previously selected tile with this one
           $("div.image-square-container-selected").removeClass("image-square-container-selected");
           $(this).addClass("image-square-container-selected");
         });
@@ -57,7 +58,48 @@
       restrict: "A",
       link: function(scope, element, attrs) {
         // Close search overlay when clicked
-        element.bind("click", function() { State.changeSubstate("NONE"); });
+        element.bind("click", function() { State.changeSubstate("SEARCH", false); });
+      }
+    };
+  }]);
+
+  ng_app.directive("navclick", ["State", function(State) {
+    return {
+      restrict: "A",
+      link: function(scope, element, attrs) {
+        var func = null;
+
+        switch(attrs.navclick) {
+          case "search":
+            func = function() { State.toggleSubstate("SEARCH"); }
+            break;
+          case "mini":
+            func = function() { /* do nothing */ }
+            break;
+          case "list":
+            func = function() {
+              State.toggleSubstate("LIST");
+              /* do nothing */ }
+            break;
+          case "full":
+            func = function() {
+              State.toggleSubstate("FULL");
+              if(State.substates["LIST"]) State.changeSubstate("LIST", false);
+            }
+            break;
+          case "save":
+            func = function() { /* do nothing */ }
+            break;
+          case "info":
+            func = function() { /* do nothing */ }
+            break;
+          default:
+            func = function() { /* do nothing */ }
+            break;
+        }
+
+        // Close search overlay when clicked
+        element.bind("click", func);
       }
     };
   }]);

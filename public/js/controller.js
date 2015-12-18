@@ -1,17 +1,23 @@
 (function(ng_app) {
+  ng_app.controller("ViewCtrl", ["$scope", "State",
+    function($scope, State) {
+    // Handles the title container
+    var self       = this;
+    self.state     = State.state;
+    self.substates = State.substates;
+
+    $scope.$on("onstatechange",    function() { self.state = State.state;         });
+    $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
+  }]);
+
   ng_app.controller("TitleCtrl", ["$scope", "State",
     function($scope, State) {
     // Handles the title container
-    var self = this;
+    var self       = this;
+    self.state     = State.state;
+    self.substates = State.substates;
 
-    $scope.$on("onstatechange", function() {
-      switch(State.state) {
-        case "SEARCHING":
-        case "ACTIVE":
-          ng_app.base_title.addClass("hidden");
-          break;
-      }
-    });
+    $scope.$on("onstatechange", function() { self.state = State.state; });
   }]);
 
   ng_app.controller("SearchbarCtrl",
@@ -20,131 +26,90 @@
     // Handles the searching overlay
     // Searching overlay appears when beginning to type
     var self = this;
-    self.sources = { "deviantart": true, "e926": true, "imgur": true };
+    self.state     = State.state;
+    self.substates = State.substates;
+    self.sources = { "deviantart": true, "imgur": true };
 
-    $scope.$on("onstatechange", function() {
-      switch(State.state) {
-        case "SEARCHING":
-          break;
-      }
-    });
-
-    $scope.$on("onsubstatechange", function() {
-      switch(State.substate) {
-        case "NONE":
-          ng_app.base_searchbar.addClass("hidden");
-          break;
-
-        case "INPUT":
-          ng_app.base_searchbar.removeClass("hidden");
-          break;
-      }
-    });
+    $scope.$on("onstatechange",    function() { self.state = State.state;         });
+    $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
     $scope.$on("onkeyup", function() {
-      if(State.substate === "NONE") {
-        // activate INPUT substate
-        State.changeSubstate("INPUT");
-      }
-
       // Add letter to search term
       Search.query += Keyboard.ord.toLowerCase();
       self.query = Search.query;
 
-      // Force $scope to update
-      $scope.$apply();
+      if(!State.substates["SEARCH"]) { State.changeSubstate("SEARCH", true); }
+      else { $scope.$apply(); }
     });
 
     $scope.$on("onkeybackspace", function() {
-      if(State.substate === "INPUT") {
+      if(State.substates["SEARCH"]) {
         // delete last letter of query
         Search.query = Search.query.slice(0, -1);
         self.query = Search.query;
 
-        // Force $scope to update
-        $scope.$apply();
+        if(self.query === "") { State.changeSubstate("SEARCH", false); }
+        else { $scope.$apply(); }
       }
     });
 
     $scope.$on("onkeyenter", function() {
-      if(State.substate === "INPUT") {
+      if(State.substates["SEARCH"] && State.state !== "LOAD") {
         // initiate Search
-        State.changeState("SEARCHING");
+        State.changeState("LOAD");
 
         // this is a new search, so...
         // clear the old listing_buffer
         Navigate.initialize();
+
         // Clear search responses
         Search.clearResponse();
+
         // Reset sources
         Search.resetSources(self.sources);
+
+        // Initiate search
         Search.get(Search.query);
-      } else {
-        // Open INPUT
-        State.changeSubstate("INPUT");
       }
     });
 
     $scope.$on("onkeyesc", function() {
-      if(State.substate === "INPUT") {
-        // switch to NONE substate
-        State.changeSubstate("NONE");
-
+      if(State.substates["SEARCH"]) {
         // clear search
         Search.clear();
 
-        // Force $scope to update
-        $scope.$apply();
+        // switch to NONE substate
+        State.changeSubstate("SEARCH", false);
       }
     });
   }]);
 
   ng_app.controller("ListingCtrl",
-    ["$scope", "State", "Search", "Navigate", "Bootstrap",
-    function($scope, State, Search, Navigate, Bootstrap) {
+    ["$scope", "State", "Search", "Navigate",
+    function($scope, State, Search, Navigate) {
     // Handles the searchlist overlay, which contains a grid list of searches found
     var self = this;
-    self.listing = [ ];
-
+    self.listing   = [];
+    self.state     = State.state;
+    self.substates = State.substates;
     self.scrollbar = { "onScroll": function(y, x) { } };
 
-    // Initialize state to DEFAULT
-    $scope.$on("onstatechange", function() {
-      switch(State.state) {
-        case "DEFAULT":
-        case "SEARCHING":
-          ng_app.base_sidebar.addClass("hidden no-click");
-          break;
+    $scope.$on("onstatechange",    function() { self.state     = State.state;     });
+    $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
-        case "ACTIVE":
-          // show base_listing
-          ng_app.base_sidebar.removeClass("hidden no-click");
-          break;
+    $scope.$on("onkeyesc", function() {
+      if(State.substates["LIST"] && State.substate["FULL"]) {
+        State.changeSubstate("LIST", false);
       }
     });
 
-    $scope.$on("onviewportchange", function() {
-      /*
-      if(Bootstrap.state === "xs") {
-        // Switch sidebar to full
-        ng_app.base_sidebar.addClass("full-sidebar");
-        ng_app.base_view.addClass("no-padding");
-        ng_app.base_info.addClass("hidden");
-        $(".image-square-container").addClass("image-square-container-full");
-      }
-      if(Bootstrap.state === "sm" || Bootstrap.state === "md" || Bootstrap.state === "lg") {
-        // Switch sidebar to normal
-        ng_app.base_sidebar.removeClass("full-sidebar");
-        ng_app.base_view.removeClass("no-padding");
-        ng_app.base_info.removeClass("hidden");
-        $(".image-square-container").removeClass("image-square-container-full");
-      }
-      */
+    $scope.$on("onnavigate", function() {
+      if(State.substates["FULL"]) { State.changeSubstate("LIST", false); }
     });
 
     $scope.$on("onnavigatepage", function() {
-      // Append search response to end of listing array
-      if(!Navigate.last_page) {
+      if(!Navigate.last_page && State.state !== "LOAD") {
+        State.changeState("LOAD");
         Search.get(Search.last_query, Navigate.current_page, Navigate.limit);
       }
     });
@@ -152,12 +117,13 @@
     $scope.$on("onnavigatepop", function() {
       Navigate.to(0);
       State.changeState("ACTIVE");
+      State.changeSubstate("LIST", true);
     });
 
     $scope.$on("onsearchreturned", function() {
       // Append response to Navigation service listing
       // If last result in queue has no length...
-      State.changeSubstate("NONE");
+      State.changeSubstate("SEARCH", false);
       Search.clear();
 
       if(Search.response[Search.response.length -1].data.length === 0) {
@@ -174,8 +140,6 @@
       } else {
         // Allow paging again
         Navigate.can_page = true;
-
-        // Disable next page button
         ng_app.page_next.removeClass("page-button-inactive");
 
         Navigate.append(Search.response[0]);
@@ -193,34 +157,23 @@
     function($scope, State, Navigate) {
     // Handles display info for current image
     // How many images got returned
-    var self = this;
-    self.current = {};
-    self.date    =  0;
-    var message  = "Type anywhere...";
+    var self       = this;
+    self.state     = State.state;
+    self.substates = State.substates;
+    self.current   = {};
+    self.date      =  0;
 
-    $scope.$on("onstatechange", function() {
-      switch(State.state) {
-        case "DEFAULT":
-        case "SEARCHING":
-          // Display instructions for typing
-          ng_app.info_help.removeClass("hidden");
-          ng_app.info_details.addClass("hidden");
-          break;
-      }
-    });
+    $scope.$on("onstatechange",    function() { self.state     = State.state;     });
+    $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
     $scope.$on("onnavigate", function() {
-      // Draw image info
+      // Update image info box
       self.current = Navigate.findByIndex(Navigate.index);
 
       if(self.current) {
-        ng_app.info_details.removeClass("hidden");
-        ng_app.info_help.addClass("hidden");
-
         // Convert date to readable Date
         var date = new Date(self.current.date * 1000);
         self.date = date.toDateString();
-        $scope.$apply();
       }
     });
   }]);
@@ -231,23 +184,19 @@
     // Handles current image being shown
     var self = this;
     var current = {};
+    self.state     = State.state;
+    self.substates = State.substates;
 
     self.scrollbar = { "onScroll": function(y, x) { /* Options... */ } };
 
-    $scope.$on("onstatechange", function() {
-      switch(State.state) {
-        case "DEFAULT":
-          ng_app.base_image_info.addClass("no-click");
-          break;
-
-        case "ACTIVE":
-          // show base_listing
-          ng_app.base_image_info.removeClass("no-click");
-          break;
-      }
-    });
+    $scope.$on("onstatechange",    function() { self.state     = State.state;     });
+    $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
     $scope.$on("onnavigate", function() {
+      // Blank out src
+      ng_app.image_img.attr("src", "");
+      ng_app.image_div.css("background-image", "url('')");
+
       // Display preview image if available, otherwise full resolution picture
       current = Navigate.findByIndex(Navigate.index);
       if(current) {

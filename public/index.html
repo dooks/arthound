@@ -21,15 +21,17 @@
 <body ng-app="ngHound" onkey>
 <!-- search bar -->
 <div id="base_searchbar" search ng-controller="SearchbarCtrl as searchbar"
-     class="hidden absolute-wrapper">
+  ng-class="{'absolute-wrapper': 1, hidden: !searchbar.substates['SEARCH']}">
   <div class="no-click col-xs-12 absolute-wrapper"></div> <!-- searchbar background -->
   <img class="img-responsive" src="img/spinner.gif" />
   <span id="searchbar_search" class="col-xs-12 absolute-wrapper">{{ searchbar.query }}</span>
 </div>
 
 <!-- title -->
-<div id="base_title_container" ng-controller="TitleCtrl as title">
+<div id="base_title_container" ng-controller="TitleCtrl as title"
+     ng-class="{hidden: title.state != 'DEFAULT'}">
   <div id="base_title">
+
     <h1>Art Hound</h1>
     <p>Searches images across:</p>
     <p>
@@ -38,63 +40,70 @@
       <a href="https://www.imgur.com">Imgur</a>
     </p>
     <p>Start typing anywhere on the page to search, or click the icon.</p>
-    <p><span class="glyphicon glyphicon-search"></span></p>
+    <p><span navclick="search" class="glyphicon glyphicon-search"></span></p>
   </div>
 </div>
 
 
 <!-- viewport -->
-<div id="base_view" class="container-fluid relative-wrapper">
-  <!-- listing -->
-  <div id="base_sidebar" class="hidden absolute-wrapper">
-    <div id="base_listing" ng-controller="ListingCtrl as listing">
-      <div id="page_prev" class="page-button page-button-inactive"><span class="glyphicon glyphicon-minus"></span></div>
+<div id="base_view" ng-controller="ViewCtrl as view"
+  ng-class="{'container-fluid': 1,
+             'relative-wrapper': 1,
+             'no-list': (!view.substates['LIST'])}">
 
-      <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
-        <div ng-repeat="page in listing.listing">
-          <div ng-repeat="item in page.data">
-            <div tile index="{{ item.index }}" class="image-square-container">
-              <div style="background-image: url('{{item.thumbs}}')"></div>
-            </div>
+  <!-- listing -->
+  <div id="base_listing" ng-controller="ListingCtrl as listing"
+    ng-class="{hidden: !(listing.substates['LIST']),
+              'absolute-wrapper': 1,
+              'full-listing': listing.substates['FULL']}">
+    <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
+    <!--<div id="page_prev" class="page-button page-button-inactive">-->
+      <!--<span class="glyphicon glyphicon-minus"></span>-->
+    <!--</div>-->
+
+      <div id="listing_grid">
+      <div ng-repeat="page in listing.listing">
+        <div ng-repeat="item in page.data">
+          <div tile index="{{ item.index }}"
+            ng-class="{'image-square-container': true, 'image-square-container-full': listing.isFull}">
+            <div style="background-image: url('{{item.thumbs}}')"></div>
           </div>
         </div>
       </div>
-
-      <div id="page_next" class="page-button" pagebutton="next"><span class="glyphicon glyphicon-plus"></span></div>
-    </div>
-
-    <div id="base_info" ng-controller="InfoCtrl as info">
-      <div id="info_help">{{ info.message }}</div>
-      <div id="info_details" class="hidden">
-        <ul>
-          <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
-          <li>by: <a href="http://{{ info.current.author_link }}">
-                    {{ info.current.author }}
-                  </a>
-          </li>
-          <li>{{ info.date }}</li>
-        </ul>
       </div>
-    </div>
 
+      <div id="page_next" class="page-button" pagebutton="next">
+        <span class="glyphicon glyphicon-option-horizontal"></span>
+      </div>
+
+    </div>
   </div>
 
   <!-- image -->
-  <div id="base_image" ng-controller="ImageCtrl as image" class="no-click">
-       <img />
-       <div></div>
+  <div id="base_image" ng-controller="ImageCtrl as image"
+    ng-class="{hidden: image.state != 'ACTIVE'}">
+    <div id="image_info" ng-controller="InfoCtrl as info"
+      ng-class="{hidden: info.state != 'ACTIVE'}">
+      <div><ul>
+        <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
+        <li>by <a href="http://{{ info.current.author_link }}"> {{ info.current.author }}</a></li>
+        <li>{{ info.date }}</li>
+      </ul></div>
+
+      <div><ul>
+        <li><span navclick="list" class="glyphicon glyphicon-th">         </span></li>
+        <li><span navclick="full" class="glyphicon glyphicon-resize-full"></span></li>
+        <!--<li><span navclick="save" class="glyphicon glyphicon-save">       </span></li>-->
+        <!--<li><span navclick="info" class="glyphicon glyphicon-info-sign">  </span></li>-->
+      </ul></div>
+    </div>
+
+    <img id="image_front"/>
+    <div id="image_back"></div>
   </div>
 
 
 </div>
-
-  <!-- info -->
-  <!--<div id="base_info" ng-controller="InfoCtrl as info" class="absolute-wrapper"> </div>-->
-
-<!-- Jasmine testing -->
-<!--<script type="text/javascript" src="tests/jasmine.js"></script>-->
-<!--<script type="text/javascript" src="tests/jasmine-html.js"></script>-->
-<!--<script type="text/javascript" src="tests/boot.js"></script>-->
 
 <!-- jQuery includes -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
