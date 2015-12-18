@@ -29,7 +29,7 @@
 
 <!-- title -->
 <div id="base_title_container" ng-controller="TitleCtrl as title"
-     ng-class="{hidden: title.state == 'ACTIVE'}">
+     ng-class="{hidden: title.state != 'DEFAULT'}">
   <div id="base_title">
 
     <h1>Art Hound</h1>
@@ -46,11 +46,16 @@
 
 
 <!-- viewport -->
-<div id="base_view" class="container-fluid relative-wrapper">
+<div id="base_view" ng-controller="ViewCtrl as view"
+  ng-class="{'container-fluid': 1,
+             'relative-wrapper': 1,
+             'no-list': (!view.substates['LIST'])}">
+
   <!-- listing -->
-  <div id="base_listing"
-    ng-class="{'hidden': 0, 'absolute-wrapper': 1, 'full-listing': listing.isFull}"
-       ng-controller="ListingCtrl as listing">
+  <div id="base_listing" ng-controller="ListingCtrl as listing"
+    ng-class="{hidden: !(listing.substates['LIST']),
+              'absolute-wrapper': 1,
+              'full-listing': listing.substates['FULL']}">
     <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
     <!--<div id="page_prev" class="page-button page-button-inactive">-->
       <!--<span class="glyphicon glyphicon-minus"></span>-->
@@ -75,36 +80,30 @@
   </div>
 
   <!-- image -->
-  <div id="base_image" ng-controller="ImageCtrl as image" class="hidden">
-      <div id="image_info" ng-controller="InfoCtrl as info">
-        <div><ul>
-          <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
-          <li>by <a href="http://{{ info.current.author_link }}"> {{ info.current.author }}</a></li>
-          <li>{{ info.date }}</li>
-        </ul></div>
+  <div id="base_image" ng-controller="ImageCtrl as image"
+    ng-class="{hidden: image.state != 'ACTIVE'}">
+    <div id="image_info" ng-controller="InfoCtrl as info"
+      ng-class="{hidden: info.state != 'ACTIVE'}">
+      <div><ul>
+        <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
+        <li>by <a href="http://{{ info.current.author_link }}"> {{ info.current.author }}</a></li>
+        <li>{{ info.date }}</li>
+      </ul></div>
 
-        <div><ul>
-          <li><span navclick="list" class="glyphicon glyphicon-th">         </span></li>
-          <li><span navclick="full" class="glyphicon glyphicon-resize-full"></span></li>
-          <!--<li><span navclick="save" class="glyphicon glyphicon-save">       </span></li>-->
-          <!--<li><span navclick="info" class="glyphicon glyphicon-info-sign">  </span></li>-->
-        </ul></div>
-      </div>
+      <div><ul>
+        <li><span navclick="list" class="glyphicon glyphicon-th">         </span></li>
+        <li><span navclick="full" class="glyphicon glyphicon-resize-full"></span></li>
+        <!--<li><span navclick="save" class="glyphicon glyphicon-save">       </span></li>-->
+        <!--<li><span navclick="info" class="glyphicon glyphicon-info-sign">  </span></li>-->
+      </ul></div>
+    </div>
 
-      <img id="image_front"/>
-      <div id="image_back"></div>
+    <img id="image_front"/>
+    <div id="image_back"></div>
   </div>
 
 
 </div>
-
-  <!-- info -->
-  <!--<div id="base_info" ng-controller="InfoCtrl as info" class="absolute-wrapper"> </div>-->
-
-<!-- Jasmine testing -->
-<!--<script type="text/javascript" src="tests/jasmine.js"></script>-->
-<!--<script type="text/javascript" src="tests/jasmine-html.js"></script>-->
-<!--<script type="text/javascript" src="tests/boot.js"></script>-->
 
 <!-- jQuery includes -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
