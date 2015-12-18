@@ -3,10 +3,11 @@
     // TODO: why does initializing this make it persistent....?
     var self = this;
     self.state     = "DEFAULT"; // DEFAULT | ACTIVE
-    self.substates = { "FULL":   false,
-                       "SEARCH": false,
-                       "LIST":   false,
-                       "LOAD":   false
+    self.substates = { "FULL":    false,
+                       "SEARCH":  false,
+                       "LIST":    false,
+                       "LOAD":    false,
+                       "OVERLAY": false
                      };
 
     self.changeState = function(state) {
@@ -23,7 +24,8 @@
       switch(substate) {
         case "FULL":
         case "SEARCH":
-        case "LOADING":
+        case "LOAD":
+        case "OVERLAY":
         case "LIST":
           self.substates[substate] = (!!value); // Evaluate value as boolean
           $rootScope.$apply();
@@ -36,7 +38,8 @@
       switch(substate) {
         case "FULL":
         case "SEARCH":
-        case "LOADING":
+        case "LOAD":
+        case "OVERLAY":
         case "LIST":
           self.substates[substate] = (!self.substates[substate]); // Evaluate value as boolean
           $rootScope.$apply();
@@ -228,7 +231,7 @@
 
     self.initialize = function(limit) {
       // reinitialize values based on page limit
-      self.current_limit  = limit || 3; // How far ahead or behind to buffer
+      self.current_limit  = limit || 10; // How far ahead or behind to buffer
       self.current_index  = 0; // Index of image to be displayed
       self.current_page   = 0;
       self.last_index     = 0; // Last index
@@ -236,11 +239,12 @@
       self.display_high   = 0 + self.current_limit; // How far behind to buffer
 
       self.can_page       = false; // If next/prev page can execute
-      self.last_page      = false; // Disables next page
+      self.first_page     = false; // If on first page
+      self.last_page      = false; // If on last page
       self.listing_buffer = []; // Contains entire listing data
       self.page_sizes     = []; // Used for searching indices
     }
-    self.initialize(3); // Default limit of 3
+    self.initialize();
 
 
 
@@ -303,9 +307,10 @@
     };
 
     self.next = function() {
-      if((self.index + 1) <= self.last_index) {
-        self.index += 1; self.broadcast("onnavigate"); return true;
-      } else { return false; }
+      if((self.index + 1) < self.last_index) {
+        self.index += 1; self.broadcast("onnavigate"); return true; }
+      else if((self.index + 1) === self.last_index) { self.nextPage(); }
+      else { return false; }
     };
 
     self.prev = function() {
@@ -320,9 +325,21 @@
       } else { return false; }
     };
 
+    self.prevPage = function() {
+      if(!self.first_page && self.can_page) {
+        self.can_page = false;
+
+        if(self.last_page) self.last_page = false;
+        self._calcPage(--self.current_page);
+        self.broadcast("onnavigatepage");
+      }
+    };
+
     self.nextPage = function() {
       if(!self.last_page && self.can_page) {
         self.can_page = false;
+
+        if(self.first_page) self.first_page = false;
         self._calcPage(++self.current_page);
         self.broadcast("onnavigatepage");
       }
