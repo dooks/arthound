@@ -82,24 +82,34 @@
   <!-- image -->
   <div id="base_image" ng-controller="ImageCtrl as image"
     ng-class="{hidden: image.state != 'ACTIVE'}">
-    <div id="image_info" ng-controller="InfoCtrl as info"
-      ng-class="{hidden: info.state != 'ACTIVE'}">
-      <div><ul>
-        <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
-        <li>by <a href="http://{{ info.current.author_link }}"> {{ info.current.author }}</a></li>
-        <li>{{ info.date }}</li>
-      </ul></div>
+    <div id="image_overlay">
+      <div id="overlay_list" class="overlay_button overlay_back">
+          <span navclick="list" class="glyphicon glyphicon-resize-full"></span>
+      </div>
 
-      <div><ul>
-        <li><span navclick="list" class="glyphicon glyphicon-th">         </span></li>
-        <li><span navclick="full" class="glyphicon glyphicon-resize-full"></span></li>
-        <!--<li><span navclick="save" class="glyphicon glyphicon-save">       </span></li>-->
-        <!--<li><span navclick="info" class="glyphicon glyphicon-info-sign">  </span></li>-->
-      </ul></div>
+      <div id="overlay_prev" class="overlay_button overlay_back">
+          <span navclick="prev" class="glyphicon glyphicon-menu-left"></span>
+      </div>
+      <div id="overlay_next" class="overlay_button overlay_back">
+          <span navclick="next" class="glyphicon glyphicon-menu-right"></span>
+      </div>
+
+      <div id="overlay_info" class="overlay_back" ng-controller="InfoCtrl as info">
+        <div><ul>
+          <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
+          <li>by <a href="http://{{ info.current.author_link }}"> {{ info.current.author }}</a></li>
+          <li>{{ info.date }}</li>
+        </ul></div>
+
+        <div><ul>
+          <li><span navclick="save" class="glyphicon glyphicon-save">       </span></li>
+          <li><span navclick="info" class="glyphicon glyphicon-info-sign">  </span></li>
+        </ul></div>
+      </div>
     </div>
 
-    <img id="image_front"/>
-    <div id="image_back"></div>
+    <img id="image_front" ng-class="{base_image_zoom: image.current.zoom}"/>
+    <div id="image_back" ng-class="{hidden: image.current.zoom}"></div>
   </div>
 
 

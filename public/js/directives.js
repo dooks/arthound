@@ -63,7 +63,7 @@
     };
   }]);
 
-  ng_app.directive("navclick", ["State", function(State) {
+  ng_app.directive("navclick", ["State", "Navigate", function(State, Navigate) {
     return {
       restrict: "A",
       link: function(scope, element, attrs) {
@@ -86,6 +86,12 @@
               State.toggleSubstate("FULL");
               if(State.substates["LIST"]) State.changeSubstate("LIST", false);
             }
+            break;
+          case "next":
+            func = function() { Navigate.next(); }
+            break;
+          case "prev":
+            func = function() { Navigate.prev(); }
             break;
           case "save":
             func = function() { /* do nothing */ }
