@@ -39,6 +39,7 @@
       self.query = Search.query;
 
       if(!State.substates["SEARCH"]) { State.changeSubstate("SEARCH", true); }
+      else { $scope.$apply(); }
     });
 
     $scope.$on("onkeybackspace", function() {
@@ -46,7 +47,9 @@
         // delete last letter of query
         Search.query = Search.query.slice(0, -1);
         self.query = Search.query;
+
         if(self.query === "") { State.changeSubstate("SEARCH", false); }
+        else { $scope.$apply(); }
       }
     });
 

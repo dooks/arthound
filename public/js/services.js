@@ -39,7 +39,6 @@
         case "LOADING":
         case "LIST":
           self.substates[substate] = (!self.substates[substate]); // Evaluate value as boolean
-          console.log(self.substates);
           $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
           break;
