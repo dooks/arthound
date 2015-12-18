@@ -33,16 +33,6 @@
     };
   }]);
 
-  ng_app.directive("search", ["State", function(State) {
-    return {
-      restrict: "A",
-      link: function(scope, element, attrs) {
-        // Close search overlay when clicked
-        element.bind("click", function() { State.changeSubstate("SEARCH", false); });
-      }
-    };
-  }]);
-
   ng_app.directive("navclick", ["State", "Navigate", function(State, Navigate) {
     return {
       restrict: "A",
