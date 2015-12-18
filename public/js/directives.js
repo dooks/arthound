@@ -33,7 +33,7 @@
     };
   }]);
 
-  ng_app.directive("navclick", ["State", "Navigate", function(State, Navigate) {
+  ng_app.directive("navclick", ["State", "Search", "Navigate", function(State, Search, Navigate) {
     return {
       restrict: "A",
       link: function(scope, element, attrs) {
@@ -44,7 +44,7 @@
             func = function() { State.toggleSubstate("OVERLAY"); };
             break;
           case "search":
-            func = function() { Search.get(); };
+            func = function() { State.changeSubstate("LOAD", true); Search.get(); };
             break;
           case "search_overlay":
             func = function() { State.toggleSubstate("SEARCH"); };

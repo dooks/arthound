@@ -94,7 +94,7 @@ html, body {
   display: table;
   z-index: 6;
   width: 100%;
-  background-image: linear-gradient(0deg, rgba(232, 221, 203, 1), rgba(232, 221, 203, 0.7));
+  background-image: linear-gradient(0deg, rgba(3, 54, 73, 1), rgba(232, 221, 203, 0.1));
   font-size: 2vw;
 }
 
@@ -136,6 +136,10 @@ html, body {
 
     #searchbar_search_button {
       float: left;
+    }
+
+    .search_button_inactive {
+      pointer-events: none;
     }
 
 

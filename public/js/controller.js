@@ -55,7 +55,6 @@
 
     $scope.$on("onkeyenter", function() {
       if(State.substates["SEARCH"] && State.state !== "LOAD") {
-        // initiate Search
         State.changeSubstate("LOAD", true);
 
         // this is a new search, so...
@@ -87,8 +86,10 @@
     $scope.$on("onsearchreturned", function() {
       if(Search.response[Search.response.length -1].data.length === 0) {
         // No search results...
+        self.query = "No search results..."
       } else {
         State.changeSubstate("SEARCH", false);
+        self.query = "";
       }
     });
   }]);

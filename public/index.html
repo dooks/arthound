@@ -23,19 +23,13 @@
              'base_view_loading': searchbar.substates['LOAD']}">
 
   <div id="searchbar_view">
-    <p>Example tags you can search for...</p>
-    <ul>
-      <li>"Charizard Blastoise"</li>
-      <li>"Undertale Sans"</li>
-      <li>"Art"</li>
-      <li>"Astronaut blue"</li>
-      <li>"Garnet Pearl Amethyst"</li>
-    </ul>
-
     <div>
       <input  id="searchbar_search" class="col-xs-11" ng-model="searchbar.query" />
       <button id="searchbar_search_button" navclick="search"
-              class="col-xs-1 glyphicon glyphicon-search" ></button>
+        ng-class="{'col-xs-1': true,
+                glyphicon: true,
+                'glyphicon-search': true,
+                search_button_inactive: searchbar.substates['LOAD']}" ></button>
     </div>
 
     <span  id="searchbar_message"></span>
