@@ -98,8 +98,12 @@
       //  @shift: event.shiftKey
       self.key = key_code;
 
-      if(key_code >= 32 && key_code <= 122)
+      if(key_code === 32 || key_code >= 48 && key_code <= 122)
                                { self.ord = String.fromCharCode(key_code); }
+      else if(key_code === 37) { self.ord = "LEFT";      }
+      else if(key_code === 38) { self.ord = "UP";        }
+      else if(key_code === 39) { self.ord = "RIGHT";     }
+      else if(key_code === 40) { self.ord = "DOWN";      }
       else if(key_code === 8)  { self.ord = "BACKSPACE"; }
       else if(key_code === 13) { self.ord = "ENTER";     }
       else if(key_code === 27) { self.ord = "ESCAPE";    }
@@ -109,6 +113,12 @@
 
     self.broadcast = function() {
       switch(self.ord) {
+        case "LEFT":
+        case "UP":
+        case "RIGHT":
+        case "DOWN":
+          $rootScope.$broadcast("onkeyarrow");
+          break;
         case "ESCAPE":
           $rootScope.$broadcast("onkeyesc");
           break;

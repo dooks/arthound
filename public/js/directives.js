@@ -12,12 +12,12 @@
       link: function(scope, element, attrs) {
         element.bind("keyup", function(ev) {
           var key = ev.which || ev.keyCode;
-          if(key < 32 && key !== 16) Keyboard.getKey(key);
+          if(key < 47 && key !== 32) Keyboard.getKey(key);
         });
 
         element.bind("keypress", function(ev) {
           var key = ev.which || ev.keyCode;
-          if(key >= 32 && key <= 122) Keyboard.getKey(key);
+          if(key === 32 || key >= 48 && key <= 122) Keyboard.getKey(key);
         });
       }
     };

@@ -181,8 +181,8 @@
   }]);
 
   ng_app.controller("ImageCtrl",
-    ["$scope", "State", "Navigate",
-    function($scope, State, Navigate) {
+    ["$scope", "State", "Navigate", "Keyboard",
+    function($scope, State, Navigate, Keyboard) {
     // Handles current image being shown
     var self = this;
     self.current = {};
@@ -193,6 +193,13 @@
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
+
+    $scope.$on("onkeyarrow", function() {
+      switch(Keyboard.ord) {
+        case "LEFT":  Navigate.prev(); break;
+        case "RIGHT": Navigate.next(); break;
+      }
+    });
 
     $scope.$on("onnavigate", function() {
       // Blank out src
