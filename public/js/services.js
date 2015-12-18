@@ -1,11 +1,3 @@
-function shuffle(o){
-  // Shuffle array o
-  for(var j, x, i = o.length;
-      i;
-      j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-  return o;
-}
-
 (function(ng_app, viewport) {
   ng_app.service("State", ["$rootScope", function($rootScope) {
     // TODO: why does initializing this make it persistent....?
@@ -33,7 +25,8 @@ function shuffle(o){
         case "SEARCH":
         case "LOADING":
         case "LIST":
-          self.substates[substate] = !!value; // Evaluate value as boolean
+          self.substates[substate] = (!!value); // Evaluate value as boolean
+          $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
           break;
       }
@@ -45,45 +38,53 @@ function shuffle(o){
         case "SEARCH":
         case "LOADING":
         case "LIST":
-          self.substates[substate] = !self.substates[substate]; // Evaluate value as boolean
+          self.substates[substate] = (!self.substates[substate]); // Evaluate value as boolean
+          console.log(self.substates);
+          $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
           break;
       }
     };
 
-  }]);
-
-
-  ng_app.service("Bootstrap", ["$rootScope", function ($rootScope) {
-    var self = this;
-    self.state      = "";
-    self.last_state = "";
+    // Responsive Bootstrap Toolkit
+    self.view_state      = "";
+    self.view_last_state = "";
     self.viewport   = viewport;
-    self.interval   = 1000;
-    self.can_change = true;
+    self.view_interval   = 1000;
+    self.view_can_change = true;
 
     $(document).ready(function() {
-      self.state      = viewport.current();
-      self.last_state = self.state;
+      self.view_state      = viewport.current();
+      self.view_last_state = self.view_state;
       $rootScope.$broadcast("onviewportchange");
 
-      $(window).resize(function() {
-        if(self.can_change) {
-          self.can_change = false;
-          self.state = viewport.current();
+      // If "xs", switch to FULL substate
+      if(self.view_state === "xs") { self.changeSubstate("FULL", true); }
+      if(self.view_state === "sm" || self.view_state === "md" || self.view_state === "lg") {
+        self.changeSubstate("FULL", false);
+      }
 
-          if(self.state !== self.last_state) {
-            self.last_state = self.state;
-            $rootScope.$broadcast("onviewportchange");
+      $(window).resize(function() {
+        if(self.view_can_change) {
+          self.view_can_change = false;
+          self.view_state = viewport.current();
+
+          if(self.view_state !== self.view_last_state) {
+            self.view_last_state = self.view_state;
+
+            // If "xs", switch to FULL substate
+            if(self.view_state === "xs") { self.changeSubstate("FULL", true); }
+            if(self.view_state === "sm" || self.view_state === "md" || self.view_state === "lg") {
+              self.changeSubstate("FULL", false);
+            }
           }
 
           setTimeout(function() {
-            self.can_change = true;
-          }, self.interval);
+            self.view_can_change = true;
+          }, self.view_interval);
         }
       });
     });
-
   }]);
 
 
