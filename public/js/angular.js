@@ -10,8 +10,10 @@ var ng_hound = (function(ng) {
   ng_app.base_view        = $("#base_view");
   ng_app.base_title       = $("#base_title_container");
 
-  ng_app.base_searchbar   = $("#base_searchbar");
-  ng_app.searchbar_search = $("#searchbar_search");
+  ng_app.base_searchbar      = $("#base_searchbar");
+    ng_app.searchbar_info    = $("#searchbar_info");
+    ng_app.searchbar_message = $("#searchbar_message");
+    ng_app.searchbar_search  = $("#searchbar_search");
 
   ng_app.base_image       = $("#base_image");
     ng_app.image_overlay  = $("#image_overlay");

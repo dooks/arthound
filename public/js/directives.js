@@ -12,7 +12,7 @@
       link: function(scope, element, attrs) {
         element.bind("keyup", function(ev) {
           var key = ev.which || ev.keyCode;
-          if(key < 47 && key !== 32) Keyboard.getKey(key);
+          if(key === 27 || key === 13 || (key >= 37 && key <= 40)) Keyboard.getKey(key);
         });
 
         element.bind("keypress", function(ev) {
@@ -44,6 +44,9 @@
             func = function() { State.toggleSubstate("OVERLAY"); };
             break;
           case "search":
+            func = function() { Search.get(); };
+            break;
+          case "search_overlay":
             func = function() { State.toggleSubstate("SEARCH"); };
             break;
           case "mini":
