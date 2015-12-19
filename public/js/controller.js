@@ -74,7 +74,7 @@
     $scope.$on("onkeyenter", function() {
       if(State.substates["SEARCH"] && State.state !== "LOAD") {
         State.changeSubstate("LOAD", true);
-        $location.search("q", encodeURIComponent(self.query));
+        $location.search("q", self.query);
 
         // this is a new search, so...
         // clear the old listing_buffer
@@ -108,7 +108,7 @@
         self.query = "No search results..."
       } else {
         State.changeSubstate("SEARCH", false);
-        $location.search("page", encodeURIComponent(Navigate.current_page));
+        $location.search("page", Navigate.current_page);
         self.query = "";
       }
     });

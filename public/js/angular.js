@@ -16,6 +16,9 @@ var ng_hound = (function(ng) {
   ng_app.base_view        = $("#base_view");
   ng_app.base_title       = $("#base_title_container");
 
+  ng_app.modal_about      = $("#modal_about");
+  ng_app.modal_info       = $("#modal_info");
+
   ng_app.base_searchbar      = $("#base_searchbar");
     ng_app.searchbar_info    = $("#searchbar_info");
     ng_app.searchbar_message = $("#searchbar_message");

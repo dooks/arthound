@@ -61,8 +61,8 @@
           case "search_overlay":
             func = function() { State.toggleSubstate("SEARCH"); };
             break;
-          case "mini":
-            func = function() { /* do nothing */ };
+          case "about":
+            func = function() { ng_app.modal_about.modal({ keyboard: true }); };
             break;
           case "list":
             func = function() {
@@ -87,11 +87,8 @@
           case "page_prev":
             func = function() { Navigate.prevPage(); };
             break;
-          case "save":
-            func = function() { /* do nothing */ };
-            break;
           case "info":
-            func = function() { /* do nothing */ };
+            func = function() { ng_app.modal_info.modal({ keyboard: true }); };
             break;
           default:
             func = function() { /* do nothing */ };
