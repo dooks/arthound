@@ -31,8 +31,8 @@
   }]);
 
   ng_app.controller("SearchbarCtrl",
-    ["$scope", "State", "Keyboard", "Search", "Navigate",
-    function($scope, State, Keyboard, Search, Navigate) {
+    ["$scope", "State", "Keyboard", "Search", "Navigate", "$location",
+    function($scope, State, Keyboard, Search, Navigate, $location) {
     // Handles the searching overlay
     // Searching overlay appears when beginning to type
     var self = this;
@@ -43,6 +43,16 @@
 
     $scope.$on("onstatechange",    function() { self.state = State.state;         });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
+
+    // Initialize search query on page load, if exists
+    $(document).ready(function() {
+      var query = $location.search();
+      if(query.q) {
+        Search.resetSources(self.sources);
+        State.changeSubstate("LOAD", true);
+        Search.get(query.q, query.page || undefined, query.limit || undefined)
+      }
+    });
 
     $scope.$on("onkeyup", function() {
       ng_app.searchbar_search.focus();
@@ -64,6 +74,7 @@
     $scope.$on("onkeyenter", function() {
       if(State.substates["SEARCH"] && State.state !== "LOAD") {
         State.changeSubstate("LOAD", true);
+        $location.search("q", encodeURIComponent(self.query));
 
         // this is a new search, so...
         // clear the old listing_buffer
@@ -97,6 +108,7 @@
         self.query = "No search results..."
       } else {
         State.changeSubstate("SEARCH", false);
+        $location.search("page", encodeURIComponent(Navigate.current_page));
         self.query = "";
       }
     });
