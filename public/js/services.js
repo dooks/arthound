@@ -173,7 +173,7 @@
 
       $http({
         method: "GET",
-        url: "http://dev.stardust.red:7050/get/request",
+        url: "https://arthound-server.herokuapp.com/get/request",
         params:   {
           "tags":    encodeURIComponent(self.last_query),
           "page":    new_page,
