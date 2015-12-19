@@ -120,7 +120,7 @@
       <div id="overlay_info" class="overlay_back" ng-controller="InfoCtrl as info">
         <div><ul>
           <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
-          <li>by <a href="http://{{ info.current.author_link }}"> {{ info.current.author }}</a></li>
+          <li>by <a ng-href="{{ info.current.author_link }}">{{ info.current.author }}</a></li>
           <li>{{ info.date }}</li>
         </ul></div>
 
