@@ -2,6 +2,7 @@
 
 <head>
 <title>ArtHound</title>
+<base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1,
                                maximum-scale=1 user-scalable=no">
 
@@ -120,7 +121,7 @@
       <div id="overlay_info" class="overlay_back" ng-controller="InfoCtrl as info">
         <div><ul>
           <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
-          <li>by <a href="http://{{ info.current.author_link }}"> {{ info.current.author }}</a></li>
+          <li>by <a ng-href="{{ info.current.author_link }}">{{ info.current.author }}</a></li>
           <li>{{ info.date }}</li>
         </ul></div>
 
@@ -143,6 +144,7 @@
 
 <!-- Angular includes -->
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-route.min.js"></script>
 <script src="js/angular-mocks.js"></script>
 
 <!-- Bootstrap includes -->

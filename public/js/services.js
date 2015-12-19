@@ -55,6 +55,7 @@
     self.view_interval   = 200;
     self.view_can_change = true;
 
+    // Initialize Bootstrap states
     $(document).ready(function() {
       self.view_state      = viewport.current();
       self.view_last_state = self.view_state;
