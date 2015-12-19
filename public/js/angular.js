@@ -3,7 +3,13 @@ var ng_hound = (function(ng) {
     console.error("Angular not found");
   }
 
-  var ng_app = ng.module("ngHound", ["jQueryScrollbar"]);
+  var ng_app = ng.module("ngHound", ["jQueryScrollbar", "ngRoute"]);
+
+  ng_app.config(["$locationProvider", "$routeProvider",
+      function($locationProvider, $routeProvider) {
+    $locationProvider.html5Mode(true);
+    $routeProvider.when("/", { reloadOnSearch: false });
+  }]);
 
   // Store references to important elements on document...
   ng_app.base_back        = $("#base_back");
