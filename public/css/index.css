@@ -35,6 +35,24 @@ a:hover { color: #CDB380; }
   padding: 0 !important;
 }
 
+.close { color: #E8DDCB; }
+.modal-content {
+  color: #E8DDCB;
+  background-color: black;
+  opacity: 0.7;
+  border: 1px solid #E8DDCB;
+  border-radius: 10px;
+}
+.modal-content ul        { list-style-type: none;   }
+.modal-body label        { width: 100px;            }
+.modal-body li           { word-wrap: break-word;   }
+.modal-footer ul li      { display: inline;         }
+.modal-content ul li img { height: 50px;            }
+
+
+
+
+
 /* User defined */
 html, body {
   height:   100%;
@@ -264,9 +282,11 @@ html, body {
       display: inline-block;
     }
 
-  #overlay_list { top: 20px; margin-left: 20px; }
-  #overlay_prev { top: 50%;  margin-left: 20px; }
-  #overlay_next { top: 50%;        right: 20px; }
+  #overlay_list   { top:  20px; margin-left: 20px; }
+  #overlay_prev   { top:   50%; margin-left: 20px; }
+  #overlay_next   { top:   50%;       right: 20px; }
+  #overlay_search { top:  70px; margin-left: 20px; }
+  #overlay_about  { top: 120px; margin-left: 20px; }
 
   #overlay_info {
     bottom:        20px;
@@ -312,13 +332,12 @@ html, body {
     }
 
     #overlay_info > div:last-child > ul > li:hover {
-      background-color: black !important;
-      color:            white !important;
-      user-select:                  none;
-      -moz-user-select:             none;
-      -webkit-user-select:          none;
+      cursor: pointer;
     }
 
+    #overlay_info > div:last-child > ul > li > a {
+      color: black !important;
+    }
 
 
 

@@ -172,10 +172,10 @@
       self.last_query = query || self.last_query || self.query;
 
       $http({
-        method: "POST",
-        url: "/get/request",
-        data:   {
-          "tags":    self.last_query,
+        method: "GET",
+        url: "https://arthound-server.herokuapp.com/get/request",
+        params:   {
+          "tags":    encodeURIComponent(self.last_query),
           "page":    new_page,
           "limit":   self.limit,
           "sources": self.sources
