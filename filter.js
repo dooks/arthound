@@ -1,4 +1,5 @@
 /* Normalizing filter functions for each source */
+var path = require("path");
 
 // Base:
 // author: "grachiel"
@@ -48,6 +49,7 @@ module.exports.deviantart = function(body) {
     new_body[i].height      = new_body[i].content.height  ||  1;
     new_body[i].content     = new_body[i].content.src     || "";
     new_body[i].favorites   = new_body[i].stats.favorites ||  0;
+    new_body[i].comments    = new_body[i].stats.comments  ||  0;
     new_body[i].preview     = new_body[i].preview.src     || null;
     new_body[i].deviationid = new_body[i].deviationid     || "";
     new_body[i].title       = new_body[i].title           || "";
@@ -98,9 +100,11 @@ module.exports.e926 = function(body) {
     new_body[i].width       = new_body[i].width       ||   1;
     new_body[i].height      = new_body[i].height      ||   1;
     new_body[i].favorites   = new_body[i].fav_count   ||  "";
+    new_body[i].comments    = new_body[i].has_comments ? "+" : "0";
     new_body[i].preview     = new_body[i].sample_url  ||  "";
     new_body[i].title       = new_body[i].id          ||   0;
-    new_body[i].url         = new_body[i].source      ||  "#";
+    new_body[i].url         = new_body[i].source      ||
+                              "https://e926.net/post/show/" + new_body[i].id;
     new_body[i].date        = new_body[i].date.s      ||  null;
     new_body[i].rating      = new_body[i].rating      || "e"; // Default to explicit
     new_body[i].thumbs      = new_body[i].preview_url ||  "";
@@ -143,8 +147,6 @@ module.exports.imgur = function(body) {
   for(var i = 0; i < new_body.length; i++) {
     // thumbnail suffixes:    s, b, t, m, l, h
     // https://api.imgur.com/models/gallery_image
-
-    var s = "Courses/Assess/Responsive_Cousre_1_1.png";
     var link = new_body[i].link;
 
     // Normalize
@@ -153,21 +155,33 @@ module.exports.imgur = function(body) {
       new_body[i].author_link = "https://imgur.com/user/" +
                                 new_body[i].account_url;
     } else { new_body[i].author_link = "" }
-    new_body[i].content     = new_body[i].link        || "";
-    new_body[i].date        = new_body[i].datetime    ||  0;
-    new_body[i].favorites   = new_body[i].ups         ||  0;
-    new_body[i].width       = new_body[i].width       ||  1;
-    new_body[i].height      = new_body[i].height      ||  1; // Prevent divide by zero
-    new_body[i].id          = new_body[i].id          ||  0;
-    new_body[i].title       = new_body[i].title       || "";
-    new_body[i].url         = new_body[i].link        || "#";
-    new_body[i].thumbs      = new_body[i].link        || "";
-    //new_body[i].preview     = link.substring(0, link.lastIndexOf(".")) +
-                              //"h" + link.substring(link.lastIndexOf("."))
-                              //|| ""; // Imgur Huge Thumbnail
-    //new_body[i].thumbs      = link.substring(0, link.lastIndexOf(".")) +
-                              //"b" + link.substring(link.lastIndexOf("."))
-                              //|| ""; // Imgur Big Square thumbnail
+
+    if(new_body[i].is_album) {
+      new_body[i].content     = "https://i.imgur.com/" + new_body[i].cover + ".png";
+      new_body[i].width       = new_body[i].cover_width  ||  1;
+      new_body[i].height      = new_body[i].cover_height ||  1;
+      new_body[i].url         = new_body[i].link         || "";
+      new_body[i].preview     = "https://i.imgur.com/" + new_body[i].cover + "h.png";
+                                // Imgur Huge Thumbnail
+      new_body[i].thumbs      = "https://i.imgur.com/" + new_body[i].cover + "b.png";
+                                // Imgur Big Square thumbnail
+    } else {
+      new_body[i].content     = new_body[i].link        || "";
+      new_body[i].width       = new_body[i].width       ||  1;
+      new_body[i].height      = new_body[i].height      ||  1;
+      new_body[i].url         = "https://imgur.com/" + new_body[i].id;
+      new_body[i].preview     = "https://i.imgur.com/" + new_body[i].id + "h.png";
+                                // Imgur Huge Thumbnail
+      new_body[i].thumbs      = "https://i.imgur.com/" + new_body[i].id + "b.png";
+                                // Imgur Big Square thumbnail
+    }
+
+    new_body[i].date        = new_body[i].datetime      ||  0;
+    new_body[i].favorites   = new_body[i].ups           ||  0;
+    new_body[i].id          = new_body[i].id            ||  0;
+    new_body[i].title       = new_body[i].title         || "";
+    new_body[i].comments    = new_body[i].comment_count ||  0;
+
 
     // Strip
     delete new_body[i].description;
@@ -187,7 +201,6 @@ module.exports.imgur = function(body) {
     delete new_body[i].topic;
     delete new_body[i].topic_id;
     delete new_body[i].link;
-    delete new_body[i].comment_count;
     delete new_body[i].ups;
     delete new_body[i].downs;
     delete new_body[i].points;
