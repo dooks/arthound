@@ -1,4 +1,4 @@
-var ng_hound = (function(ng) {
+window.ng_hound = (function(ng) {
   if(ng === undefined || ng === null) {
     console.error("Angular not found");
   }
