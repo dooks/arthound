@@ -3,10 +3,12 @@
   "version": "0.7.4",
   "private": true,
   "scripts": {
-    "start": "./browserify.sh",
+    "start": "./browserify.sh"
   },
   "dependencies": {
     "uglifyjs": "~2.4.10",
-    "browserify": "~12.0.1"
+    "browserify": "~12.0.1",
+    "html-minifier": "~1.0.0",
+    "clean-css": "~3.4.8"
   }
 }
