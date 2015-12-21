@@ -15,6 +15,7 @@
         case "DEFAULT":
         case "ACTIVE":
           self.state = state;
+          $rootScope.$apply();
           $rootScope.$broadcast("onstatechange");
           break;
       }
@@ -146,6 +147,7 @@
     var self = this;
     self.query        = "";
     self.response     = [];
+    self.response_new = [];
     self.sources      = {};
     self.limit        = 24;
 
@@ -154,12 +156,17 @@
       if(self.response.length > 1)  { self.response = self.response.slice(1); }
       else                          { self.response.length = 0;               }
     };
+    self.clearResponseNew = function() {
+      if(self.response_new.length > 1)  { self.response_new = self.response_new.slice(1); }
+      else                              { self.response_new.length = 0;               }
+    };
 
     self.resetSources  = function(sources) {
       // Resets source statuses back to original search
       //   @sources: object containing { "source name": true/false if disabled }
       self.sources = $.extend({}, sources); // Clone object
     };
+
 
     self.get = function(query, page, limit) {
       // Where the "magic" happens
@@ -173,7 +180,7 @@
 
       $http({
         method: "GET",
-        url: "https://arthound-server.herokuapp.com/get/request",
+        url: "http://dev.stardust.red:7050/get/request",
         params:   {
           "tags":    encodeURIComponent(self.last_query),
           "page":    new_page,
@@ -218,6 +225,81 @@
 
       return;
     }; // end of search function
+
+    self.get_new = function(query, page, limit) {
+      // Where the "magic" happens
+      // Requests "get" data; a page is cumulative of all defined sources
+      //   @query: optional, self.last_query if blank
+      //   @page: page number to check for in each source
+      //   @limit: How many records to return for each source
+      var new_page    = page || 0;
+      self.last_query = query || self.last_query || self.query;
+
+      function request(url, data_type, source, options) {
+        $.ajax({
+          method:   "GET",
+          dataType: data_type,
+          url:      url,
+          data:     options,
+        }).then(
+          function success(res) {
+            // Normalize returned data, or not
+            if(res.length === 0) { return $.Deferred().resolve([]).promise(); }
+            if(res.query) { res = res.query.results.rss.channel.item; }
+
+            return $.ajax({
+              method: "POST",
+              url: "http://dev.stardust.red:7050/get/normalize",
+              data: { source: source, body: res }
+            });
+          }
+        ).then(
+          function success(res) {
+            // Broadcast search returned
+            //console.log("Search Response", res);
+            self.response_new.push({ source: source, page: new_page, data: res});
+            $rootScope.$broadcast("onsearchreturnednew");
+          }
+        );
+      }
+
+      for(var key in self.sources) {
+        if(self.sources[key]) {
+          switch(key) {
+            case "e926":
+              var source = "e926";
+              var options = {
+                "tags":  self.last_query, // TODO: normalize query
+                "page":  new_page,
+                "limit": self.limit,
+              }
+              request("https://e926.net/post/index.json", "jsonp", source, options);
+
+              break;
+
+            case "deviantart":
+              var source = "deviantart";
+              var options = {
+                "q":  self.last_query, // TODO: normalize query
+                "page":  new_page,
+                "limit": self.limit,
+              }
+              var url = "http://backend.deviantart.com/rss.xml"
+              var yqlURL = [
+                "http://query.yahooapis.com/v1/public/yql",
+                "?q=" + encodeURIComponent("select * from xml where url='" + url + "'"),
+                "&format=json&callback=?"
+              ].join("");
+
+              request(yqlURL, "json", source, options);
+
+              break;
+          }
+        }
+      }
+
+      return;
+    }; // end of search function
   }]);
 
 
@@ -242,6 +324,7 @@
       self.first_page     = false; // If on first page
       self.last_page      = false; // If on last page
       self.listing_buffer = []; // Contains entire listing data
+      self.listing_buffer_new = []; // Contains entire listing data
       self.page_sizes     = []; // Used for searching indices
     }
     self.initialize();
@@ -296,7 +379,24 @@
 
       if(self.listing_buffer.length === 1) { self.broadcast("onnavigatepop"); }
       //console.log("Navigation Page Sizes", self.page_sizes);
-      //console.log("Navigation Buffer",     self.listing_buffer);
+      //console.log("Orig Navigation Buffer",     self.listing_buffer);
+    };
+
+    self.appendNew = function(response) {
+      if(response === null || response === undefined) {
+        console.error("Response is null or undefined");
+      }
+
+      // Check if page number exists in listing_buffer_new
+      if(self.listing_buffer_new[response.page]) {
+        // Concat array
+        self.listing_buffer_new[response.page].data.push.apply(
+          self.listing_buffer_new[response.page].data, response.data);
+      } else {
+        self.listing_buffer_new[response.page] = { page: response.page, data: response.data };
+      }
+
+      //console.log("New Navigation Buffer", self.listing_buffer_new);
     };
 
     self.checkDisplay = function(n) {

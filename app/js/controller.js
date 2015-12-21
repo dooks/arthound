@@ -51,6 +51,7 @@
         Search.resetSources(self.sources);
         State.changeSubstate("LOAD", true);
         Search.get(query.q, query.page || undefined, query.limit || undefined)
+        Search.get_new(query.q, query.page || undefined, query.limit || undefined)
       }
     });
 
@@ -88,6 +89,7 @@
 
         // Initiate search
         Search.get(self.query);
+        Search.get_new(self.query);
       }
     });
 
@@ -119,12 +121,22 @@
     function($scope, State, Search, Navigate) {
     // Handles the searchlist overlay, which contains a grid list of searches found
     var self = this;
-    self.listing   = [];
+    self.listing     = [];
+    self.listing_new = [];
     self.index     =  0;
     self.state     = State.state;
     self.substates = State.substates;
     self.last_page = false;
     self.scrollbar = { "onScroll": function(y, x) { } };
+
+    self.reindex   = function(page) {
+      // Reindex listing starting at page
+    };
+
+    self.findStartIndex = function(page) {
+      // Find starting index for page
+      return 0;
+    };
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -145,6 +157,7 @@
         self.can_page = false;
         State.changeSubstate("LOAD", true);
         Search.get(Search.last_query, Navigate.current_page, Navigate.limit);
+        Search.get_new(Search.last_query, Navigate.current_page, Navigate.limit);
       }
     });
 
@@ -153,6 +166,20 @@
       Navigate.first_page = true;
       State.changeState("ACTIVE");
       State.changeSubstate("LIST", true);
+    });
+
+    $scope.$on("onsearchreturnednew", function() {
+      if(Search.response_new[0].data.length === 0) {
+        // Turn off this source
+        Search.sources[Search.response_new.source] = false;
+      }
+      else {
+        Navigate.appendNew(Search.response_new[0]);
+        self.listing = Navigate.getDisplay(Navigate.listing_buffer_new);
+        $scope.$apply();
+      }
+
+      Search.clearResponseNew(); // Clear oldest response
     });
 
     $scope.$on("onsearchreturned", function() {
@@ -180,7 +207,7 @@
         Search.clearResponse(); // Clear oldest response
 
         // Update listing display
-        self.listing = Navigate.getDisplay(Navigate.listing_buffer);
+        //self.listing = Navigate.getDisplay(Navigate.listing_buffer);
         //console.log("Listing", self.listing);
       }
     });
