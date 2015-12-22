@@ -15,6 +15,7 @@
         case "DEFAULT":
         case "ACTIVE":
           self.state = state;
+          $rootScope.$apply();
           $rootScope.$broadcast("onstatechange");
           break;
       }
@@ -27,6 +28,7 @@
         case "LOAD":
         case "OVERLAY":
         case "LIST":
+        case "LAST":
           self.substates[substate] = (!!value); // Evaluate value as boolean
           $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
@@ -41,6 +43,7 @@
         case "LOAD":
         case "OVERLAY":
         case "LIST":
+        case "LAST":
           self.substates[substate] = (!self.substates[substate]); // Evaluate value as boolean
           $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
@@ -146,75 +149,196 @@
     var self = this;
     self.query        = "";
     self.response     = [];
-    self.sources      = {};
-    self.limit        = 24;
+    self.sources      = { "deviantart": true, "e926": true, "imgur": true };
+    self.mature       = false;
+    self.temp_sources = {};
+    self.limit        = 24; // Default hard limit
 
     self.clear         = function() { self.query = ""; };
     self.clearResponse = function() {
       if(self.response.length > 1)  { self.response = self.response.slice(1); }
       else                          { self.response.length = 0;               }
+
+      if(self.response.length === 0) $rootScope.$broadcast("onsearchend");
     };
 
-    self.resetSources  = function(sources) {
+    self.disableSource  = function(source) {
       // Resets source statuses back to original search
       //   @sources: object containing { "source name": true/false if disabled }
-      self.sources = $.extend({}, sources); // Clone object
+      self.temp_sources[source] = false;
+
+      var ignore = true;
+      for(var key in self.temp_sources) {
+        if(source === key) self.temp_sources[key] = false;
+        else if (self.temp_sources[key]) ignore = false;
+      }
+
+      if(ignore) { $rootScope.$broadcast("onnosources"); }
+    };
+
+    self.resetSources  = function() {
+      // Resets source statuses back to original search
+      //   @sources: object containing { "source name": true/false if disabled }
+      self.temp_sources = $.extend({}, self.sources); // Clone object
     };
 
     self.get = function(query, page, limit) {
       // Where the "magic" happens
       // Requests "get" data; a page is cumulative of all defined sources
-      //   @query: optional, self.last_query if blank
+      //   @query: optional, self.last_query if blank. This should not be encoded
       //   @page: page number to check for in each source
       //   @limit: How many records to return for each source
       var new_page    = page || 0;
+      self.last_query = query || self.last_query;
       self.limit      = limit || self.limit;
-      self.last_query = query || self.last_query || self.query;
 
-      $http({
-        method: "GET",
-        url: "https://arthound-server.herokuapp.com/get/request",
-        params:   {
-          "tags":    encodeURIComponent(self.last_query),
-          "page":    new_page,
-          "limit":   self.limit,
-          "sources": self.sources
-        }
-      }).then(
+      function request(url, data_type, source, options, headers) {
+        $.ajax({
+          method:   "GET",
+          dataType: data_type,
+          url:      url,
+          data:     options,
+          headers:  headers || {},
+        }).then(
           function success(res) {
-            console.log("Server query:", "\"" + self.last_query + "\"",
-                        "Page", new_page,
-                        "Response", res);
-
-            // Normalize response to new_data
-            // { page: #, data: array }
-            var new_data = [];
-            for(var i = 0; i < res.data.length; i++) {
-              // Turn off sources if res.data[i].stop returns true
-              if(res.data[i].stop === true) {
-                self.sources[res.data[i].name] = false;
-              }
-
-              new_data.push.apply(new_data, res.data[i].results);
+            // Normalize returned data, or not
+            if(res === undefined) res = [];
+            if(res.query) {
+              var item = res.query.results.rss.channel.item || [];
+              if(Array.isArray(item)) res = item;
+              else res = [item];
             }
+            if(res.data)  { res = res.data || [];                             }
+            if(res.length === 0) { return $.Deferred().resolve([]).promise(); }
+            console.log("Search Response", query, source, res);
 
-            // Sort new_data.data results
-            new_data.sort(function(a, b) {
-              // Sort in descending order by date
-              return b.date - a.date;
-            });
+            if(res.length > 25) { // TODO: magic number...
+              // Split response in fourths if too big...
+              return ($.when(
+                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                  data: { source: source, body: res.slice(0, res.length*(1/4)) }
+                }),
+                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                  data: { source: source, body: res.slice(res.length*(1/4), res.length*(2/4)) }
+                }),
+                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                  data: { source: source, body: res.slice(res.length*(2/4), res.length*(3/4)) }
+                }),
+                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                  data: { source: source, body: res.slice(res.length*(3/4)) }
+                })
+              ).then(function success(res1, res2, res3, res4) {
+                var res_concat = res1[0].concat(res2[0], res3[0], res4[0]);
+                return res_concat;
+              }));
 
-            self.response.push({ page: new_page, data: new_data });
-          },
-
-          function error(res) {
-            self.response.push({ page: null, data: []});
-            console.error("Search responses", self.response);
+            } else {
+              return $.ajax({
+                method: "POST",
+                url: "http://dev.stardust.red:7050/get/normalize",
+                data: { source: source, body: res }
+              });
+            }
           }
-      ).finally(
-        // Broadcast that search has been returned
-        function returned() { $rootScope.$broadcast("onsearchreturned"); }
-      );
+        ).then(
+          function success(res) {
+            // Broadcast search returned
+            self.response.push({ source: source, page: new_page, data: res});
+            $rootScope.$broadcast("onsearchreturned");
+          },
+          function error(res) {
+            console.error(res);
+            self.response.push({ source: source, page: new_page, data: []});
+            $rootScope.$broadcast("onsearchreturned");
+          }
+        );
+      }
+
+      for(var key in self.temp_sources) {
+        if(self.temp_sources[key]) {
+          switch(key) {
+            case "e926":
+              var query = self.last_query.split(" ");
+              var new_query = "";
+              for(var i = query.length - 2; i > 0; i--) {
+                if(query[i] === "or" || query[i] === "OR") {
+                  query[i-1] = "~" + query[i-1];
+                  query[i+1] = "~" + query[i+1];
+                  query.splice(i, 1);
+                } else if(query[i] === "not" || query[i] === "NOT") {
+                  query[i+1] = "-" + query[i+1];
+                  query.splice(i, 1);
+                } else if(query[i] === "and" || query[i] === "AND") {
+                  query.splice(i, 1);
+                }
+              }
+              new_query = query.join(" ");
+
+              var options = {
+                "tags":  new_query, // TODO: normalize query
+                "page":  new_page + 1, // e926 starts paging at 1....
+                "limit": self.limit,
+              }
+              if(self.mature) {
+                request("https://e621.net/post/index.json", "jsonp", "e926", options);
+              } else {
+                request("https://e926.net/post/index.json", "jsonp", "e926", options);
+              }
+              break;
+
+            case "deviantart":
+              var query = self.last_query.split(" ");
+              var new_query = "";
+              for(var i = query.length - 2; i > 0; i--) {
+                if(query[i] === "or")       { query[i] =  "OR"; }
+                else if(query[i] === "not") { query[i] = "NOT"; }
+                else if(query[i] === "and") { query[i] = "AND"; }
+              }
+              new_query = query.join(" ");
+
+              var options = [
+                "?q=boost%3apopular%20" + encodeURIComponent(new_query),
+                "&mature_content="  + self.mature.toString(),
+                "&limit="  + self.limit,
+                "&offset=" + new_page * self.limit,
+                "&order=9" // browse, sorted by popularity
+              ].join("");
+
+              // Use Yahoo API as a proxy to retrieve rss.xml as a JSON
+              var url = "http://backend.deviantart.com/rss.xml" + options;
+              var yqlURL = [
+                "http://query.yahooapis.com/v1/public/yql",
+                "?q=" + encodeURIComponent("select * from xml where url='" + url + "'"),
+                "&format=json&callback=?"
+              ].join("");
+
+              request(yqlURL, "json", "deviantart");
+
+              break;
+
+            case "imgur":
+              var query = self.last_query.split(" ");
+              var new_query = "";
+              for(var i = query.length - 2; i > 0; i--) {
+                if(query[i] === "or")       { query[i] =  "OR"; }
+                else if(query[i] === "not") { query[i] = "NOT"; }
+                else if(query[i] === "and") { query[i] = "AND"; }
+              }
+              new_query = query.join(" ");
+
+              var options = {
+                "sort": "viral",
+                "q":    "tag:"+ new_query,
+                "page": new_page,
+              }
+              var headers = { "Authorization": "Client-ID 1f63c77eaec2b1c" };
+              request("https://api.imgur.com/3/gallery/search/", "json",
+                      "imgur", options, headers);
+
+              break;
+          }
+        }
+      }
 
       return;
     }; // end of search function
@@ -231,73 +355,64 @@
 
     self.initialize = function(limit) {
       // reinitialize values based on page limit
+      self.current        = {};
       self.current_limit  = limit || 3; // How far ahead or behind to buffer
       self.current_index  = 0; // Index of image to be displayed
       self.current_page   = 0;
+      self.index          = 0;
       self.last_index     = 0; // Last index
       self.display_low    = 0 - self.current_limit; // How far ahead to buffer
       self.display_high   = 0 + self.current_limit; // How far behind to buffer
 
       self.can_page       = false; // If next/prev page can execute
-      self.first_page     = false; // If on first page
-      self.last_page      = false; // If on last page
       self.listing_buffer = []; // Contains entire listing data
       self.page_sizes     = []; // Used for searching indices
     }
     self.initialize();
 
-
-
     self.append = function(response) {
-      // Append a search resposne to self.listing_buffer
-      // Response should be in the format { page: n, data: chunk }
-
       if(response === null || response === undefined) {
         console.error("Response is null or undefined");
       }
-      // TODO: check if response follows format
 
-      // Already exists in listing_buffer
-      if(self.listing_buffer[response.page] !== undefined) { return false; }
+      // Check if page number exists in listing_buffer
+      var a = self.listing_buffer[response.page];
+      if(self.listing_buffer[response.page]) {
+        // Concat array
+        self.listing_buffer[response.page].data.push.apply(
+          self.listing_buffer[response.page].data, response.data
+        );
+      } else {
+        self.listing_buffer[response.page] = { page: response.page, data: response.data };
+      }
+    };
 
-      // Determine start index
+    self.reindex = function() {
       var start_index = 0;
-      if(self.listing_buffer.length > 0) {
-        // Get index of last item...
-        var last_buffer = self.listing_buffer[self.listing_buffer.length - 1].data;
-        start_index = last_buffer[last_buffer.length - 1].index + 1;
-      } // else index starts zero
 
-      // Process response data
-      {
-        var i = 0;
-        while(i < response.data.length) {
-          // set zoom flag based on aspect ratio
-          // also prevent divide by zero for height...
-          var aspect = response.data[i].width / (response.data[i].height || 1);
+      // Reindex buffer from beginning, updating page sizes
+      for(var i = 0; i < self.listing_buffer.length; i++) {
+        // self.listing_buffer[i] = { page: 0, data: {} }
+        if(self.listing_buffer[i]) { // Paging may not start at 1
+          var b = self.listing_buffer[i];
 
-          // if aspect ratio is ~ 1:2 or thinner...
-          if(aspect < 0.5) response.data[i].zoom = true;
-          else             response.data[i].zoom = false;
+          if(i > 0) {
+            self.page_sizes[b.page] = b.data.length + self.page_sizes[i-1];
+          } else {
+            self.page_sizes[b.page] = b.data.length;
+          }
 
-          // Index item
-          response.data[i].index = start_index + i;
-          i++;
+          for(var j = 0; j < b.data.length; j++) {
+            b.data[j].index = start_index++;
+          }
+        } else {
+          self.page_sizes[i]     = 0;
+          self.listing_buffer[i] = { page: i, data: [] };
         }
-
-        self.last_index = start_index + i;
       }
 
-      // Add response to listing_buffer
-      self.listing_buffer.push(response);
-      // Add size of response to page_sizes + previous size, or 0 if it doesn't exist
-      self.page_sizes.push(response.data.length +
-        (self.page_sizes[self.page_sizes.length - 1] || 0));
-
-      if(self.listing_buffer.length === 1) { self.broadcast("onnavigatepop"); }
-      //console.log("Navigation Page Sizes", self.page_sizes);
-      //console.log("Navigation Buffer",     self.listing_buffer);
-    };
+      self.last_index = start_index;
+    }
 
     self.checkDisplay = function(n) {
       // Check if page is within display range of current page...
@@ -309,6 +424,7 @@
     self.next = function() {
       if(self.index + 1 < self.last_index) {
         self.index += 1;
+        self.current = self.findByIndex(self.index);
         self.broadcast("onnavigate");
         return true;
       } else if((self.index + 1) === self.last_index) {
@@ -319,14 +435,21 @@
 
     self.prev = function() {
       if((self.index - 1) >= 0) {
-        self.index -= 1; self.broadcast("onnavigate"); return true;
+        self.index -= 1;
+        self.current = self.findByIndex(self.index);
+        self.broadcast("onnavigate");
+        return true;
       } else { return false; }
     };
 
     self.to = function(n) {
       // Note: +n, because n might be a string!
+      n = Number(n);
       if(n >= 0 && n < self.page_sizes[self.page_sizes.length - 1])  {
-        self.index = +n; self.broadcast("onnavigate"); return true;
+        self.index = n;
+        self.current = self.findByIndex(self.index);
+        self.broadcast("onnavigate");
+        return true;
       } else { return false; }
     };
 
@@ -334,14 +457,13 @@
       if(!self.first_page && self.can_page) {
         self.can_page = false;
 
-        if(self.last_page) self.last_page = false;
         self._calcPage(--self.current_page);
         self.broadcast("onnavigatepage");
       }
     };
 
     self.nextPage = function() {
-      if(!self.last_page && self.can_page) {
+      if(self.can_page) {
         self.can_page = false;
 
         if(self.first_page) self.first_page = false;
@@ -364,10 +486,6 @@
       return retval;
     }
 
-    self.getLastIndex = function() {
-      // Return last index
-    }
-
     self.getPageByIndex = function(n) {
       // Return page number of item
       // warning: can return 0 or null. be explicit when checking
@@ -384,7 +502,7 @@
 
     self.findByIndex = function(index) {
       // Return item in listing_buffer based on index
-      if(index > self.page_sizes[0]) {
+      if(index >= self.page_sizes[0]) {
 
         for(var i = 1; i < self.page_sizes.length; i++) {
           if(self.page_sizes[i] > index) {

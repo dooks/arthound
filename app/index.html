@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 
 <head>
-<title>ArtHound</title>
-<base href="/">
+<title>Art Hound</title>
+<base href=".">
 <meta name="viewport" content="width=device-width, initial-scale=1,
-                               maximum-scale=1 user-scalable=no">
+                               maximum-scale=1, user-scalable=no">
 
 <!-- Bootstrap includes -->
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
@@ -14,6 +14,7 @@
 <!-- User includes -->
 <link rel="stylesheet" type="text/css" href="css/index.min.css" />
 <link rel="stylesheet" type="text/css" href="css/jquery.scrollbar.css" />
+<link rel="stylesheet" type="text/css" href="css/rzslider.min.css" />
 </head>
 
 <body ng-app="ngHound" onkey>
@@ -40,7 +41,7 @@
       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>
-      <h4 class="modal-title" id="AboutModal">Art Hound v0.7</h4>
+      <h4 class="modal-title" id="AboutModal">Art Hound v0.8.4</h4>
     </div>
 
     <div class="modal-body">
@@ -104,18 +105,71 @@
 </div>
 </div>
 
+<!-- Help Modal -->
+<div class="modal fade" id="modal_help" tabindex="-1" role="dialog" aria-labelledby="HelpModal">
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <h4 class="modal-title" id="HelpModal">Search Options</h4>
+    </div>
+
+    <div class="modal-body">
+      <label>Examples:</label>
+      <ul>
+        <li>cats AND dogs</li>
+        <li>steven_universe and amethyst</li>
+        <li>charizard or blastoise</li>
+        <li>riku not sora</li>
+      </ul>
+
+      <label>Options:</label>
+      <div class="container-fluid" ng-controller="HelpCtrl as help">
+        <div class="col-xs-3"><label>Sources:</label></div>
+        <div class="col-xs-3">
+          Deviant Art: <input type="checkbox" ng-model="help.Search.sources.deviantart"/>
+        </div>
+        <div class="col-xs-3 text-center">
+          e926: <input type="checkbox" ng-model="help.Search.sources.e926"/>
+        </div>
+        <div class="col-xs-3 text-center">
+          Imgur: <input type="checkbox" ng-model="help.Search.sources.imgur"/>
+        </div>
+
+        <div class="col-xs-3"><label>Mature:</label></div>
+        <div class="col-xs-9">
+          <input type="checkbox" ng-model="help.Search.mature"/>
+          <span class="highlight">(Beware!)</span>
+        </div>
+
+        <div class="col-xs-3"><label>Limit:</label></div>
+        <div class="col-xs-9">
+          <rzslider class="rzslider-trimmed"
+                    rz-slider-model="help.Search.limit"
+                    rz-slider-options="help.limit_options"></rzslider>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
 <!-- search bar -->
 <div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar" ng-cloak
   ng-class="{'absolute-wrapper': 1, hidden: !searchbar.substates['SEARCH']}">
 
   <div search id="searchbar_view">
+
     <div>
-      <button id="searchbar_search_button" navclick="search"
+      <button id="searchbar_search_button" navclick="search" query="{{searchbar.query}}"
         ng-class="{'col-xs-1': true,
-                glyphicon: true,
-                'glyphicon-search': true,
-                search_button_inactive: searchbar.substates['LOAD']}" ></button>
-      <input  id="searchbar_search" class="col-xs-11" ng-model="searchbar.query" />
+                   glyphicon: true,
+                  'glyphicon-search': true,
+                   search_button_inactive: searchbar.substates['LOAD']}" ></button>
+      <input id="searchbar_search" autocomplete="on" class="col-xs-11"
+             ng-model="searchbar.query" />
     </div>
 
     <span  id="searchbar_message"></span>
@@ -128,7 +182,8 @@
   <div id="base_title">
 
     <h1>Art Hound</h1>
-    <p>Type anywhere, at any time, to search.</p>
+    <p>Discover art.</p>
+    <p>Type anywhere, any time, to search.</p>
     <p><span navclick="search_overlay" class="glyphicon glyphicon-search"></span></p>
   </div>
 </div>
@@ -145,11 +200,11 @@
     ng-class="{hidden: !(listing.substates['LIST']),
               'absolute-wrapper': 1,
               'full-listing': listing.substates['FULL']}">
-    <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
+    <div id="page_scrollbar" class="scrollbar-inner" data-jquery-scrollbar="listing.scrollbar">
       <div id="listing_grid">
       <div ng-repeat="page in listing.listing">
         <div ng-repeat="item in page.data">
-          <div tile index="{{ item.index }}"
+          <div navclick="tile"  index="{{ item.index }}"
             ng-class="{'image-square-container-selected': item.index == listing.current,
                        'image-square-container': true,
                        'image-square-container-full': listing.substates['FULL']}">
@@ -159,11 +214,13 @@
       </div>
       </div>
 
-      <div id="page_next" title="Load Next Page" ng-class= "{'page-button': true,
+      <div id="page_next" title="Load Next Page"
+        ng-class=
+        "{'page-button': true,
         'page-button-inactive': !listing.can_page,
-        'hidden': listing.last_page }"
+        'hidden': listing.substates['LAST'] }"
         navclick="page_next">
-        <span class="glyphicon glyphicon-option-horizontal"></span>
+        <span>Load More...</span>
       </div>
 
     </div>
@@ -189,13 +246,17 @@
           <span navclick="search_overlay" class="glyphicon glyphicon-search"></span>
       </div>
 
+      <div id="overlay_help" class="overlay_button overlay_back" title="Options">
+          <span navclick="help" class="glyphicon glyphicon-option-vertical"></span>
+      </div>
+
       <div id="overlay_about" class="overlay_button overlay_back" title="About this Site">
           <span navclick="about" class="glyphicon glyphicon-question-sign"></span>
       </div>
 
       <div id="overlay_info" class="overlay_back" ng-controller="InfoCtrl as info">
         <div><ul>
-          <li><a href="{{ info.current.url }}">{{ info.current.title }}</a></li>
+          <li><a href="{{ info.current.url }}" title="{{ info.current.title }}">{{ info.current.title }}</a></li>
           <li>by <a ng-href="{{ info.current.author_link }}">{{ info.current.author }}</a></li>
           <li>{{ info.date }}</li>
         </ul></div>
@@ -224,6 +285,7 @@
 
 <!-- Plugin includes -->
 <script src="js/jquery.scrollbar.js"></script>
+<script src="js/rzslider.js"></script>
 
 <!-- User includes -->
 <script type="text/javascript" src="js/index.min.js"></script>
