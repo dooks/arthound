@@ -1,12 +1,293 @@
-<!DOCTYPE html><head><title>Art Hound</title><base href="."><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1user-scalable=no"><link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"><link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css"><link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet" type="text/css"><link rel="stylesheet" type="text/css" href="css/index.min.css"><link rel="stylesheet" type="text/css" href="css/jquery.scrollbar.css"><body ng-app="ngHound" onkey><div id="base_loading" ng-controller="LoadingCtrl as loading" ng-cloak ng-class="{'absolute-wrapper': 1, hidden: !loading.substates['LOAD']}"><div id="fountainG"><div id="fountainG_1" class="fountainG"></div><div id="fountainG_2" class="fountainG"></div><div id="fountainG_3" class="fountainG"></div><div id="fountainG_4" class="fountainG"></div><div id="fountainG_5" class="fountainG"></div><div id="fountainG_6" class="fountainG"></div><div id="fountainG_7" class="fountainG"></div><div id="fountainG_8" class="fountainG"></div></div></div><div class="modal fade" id="modal_about" tabindex="-1" role="dialog" aria-labelledby="AboutModal"><div class="modal-dialog" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="AboutModal">Art Hound v0.7.7</h4></div><div class="modal-body"><p>This site utilizes... <a href="https://deviantart.com">DeviantArt</a> <a href="https://e926.net">e926.net</a> <a href="https://imgur.com">Imgur</a></p><p>Developed to learn about AngularJS by:</p><ul><li><label><a href="https://linkedin.com/in/DylanLotivio">Dylan Lotivio</a></label>Developer</li><li><label><a href="https://www.linkedin.com/in/todd-crump-13486198">Todd Crump</a></label>UX Design/QA Testing</li><li><label><a href="https://www.linkedin.com/in/hereisryan">Ryan Jones</a></label>UI Design/QA Testing</li></ul></div><div class="modal-footer"><ul><li><label>Powered by:</label></li><li><a href="https://angularjs.org/"><img src="img/angular-logo.svg"></a></li><li><a href="http://getbootstrap.com/"><img src="img/bootstrap-logo.png"></a></li><li><a href="https://www.heroku.com/"><img src="img/heroku-logo.png"></a></li><li><a href="https://nodejs.org/en/"><img src="img/nodejs-logo.png"></a></li></ul></div></div></div></div><div class="modal fade" id="modal_info" tabindex="-1" role="dialog" aria-labelledby="InfoModal"><div class="modal-dialog" role="document"><div class="modal-content" ng-controller="InfoCtrl as info"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="InfoModal">{{ info.current.title }}</h4></div><div class="modal-body"><ul><li ng-repeat="(key, val) in info.current"><label>{{ key }}</label>{{ val }}</li></ul></div></div></div></div><div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar" ng-cloak ng-class="{'absolute-wrapper': 1, hidden: !searchbar.substates['SEARCH']}"><div search id="searchbar_view"><div><button id="searchbar_search_button" navclick="search" ng-class="{'col-xs-1': true,
-                glyphicon: true,
-                'glyphicon-search': true,
-                search_button_inactive: searchbar.substates['LOAD']}"></button> <input id="searchbar_search" class="col-xs-11" ng-model="searchbar.query"></div><span id="searchbar_message"></span></div></div><div id="base_title_container" ng-controller="TitleCtrl as title" ng-class="{hidden: title.state != 'DEFAULT'}"><div id="base_title"><h1>Art Hound</h1><p>Type anywhere, at any time, to search.</p><p><span navclick="search_overlay" class="glyphicon glyphicon-search"></span></p></div></div><div id="base_view" ng-controller="ViewCtrl as view" ng-cloak ng-class="{'container-fluid': 1,
+<!DOCTYPE html>
+
+<head>
+<title>Art Hound</title>
+<base href=".">
+<meta name="viewport" content="width=device-width, initial-scale=1,
+                               maximum-scale=1, user-scalable=no">
+
+<!-- Bootstrap includes -->
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
+<link href='https://fonts.googleapis.com/css?family=Arvo' rel='stylesheet' type='text/css'>
+
+<!-- User includes -->
+<link rel="stylesheet" type="text/css" href="css/index.min.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery.scrollbar.css" />
+<link rel="stylesheet" type="text/css" href="css/rzslider.min.css" />
+</head>
+
+<body ng-app="ngHound" onkey>
+<!-- loading -->
+<div id="base_loading" ng-controller="LoadingCtrl as loading" ng-cloak
+  ng-class="{'absolute-wrapper': 1, hidden: !loading.substates['LOAD']}">
+  <div id="fountainG">
+    <div id="fountainG_1" class="fountainG"></div>
+    <div id="fountainG_2" class="fountainG"></div>
+    <div id="fountainG_3" class="fountainG"></div>
+    <div id="fountainG_4" class="fountainG"></div>
+    <div id="fountainG_5" class="fountainG"></div>
+    <div id="fountainG_6" class="fountainG"></div>
+    <div id="fountainG_7" class="fountainG"></div>
+    <div id="fountainG_8" class="fountainG"></div>
+  </div>
+</div>
+
+<!-- About Modal -->
+<div class="modal fade" id="modal_about" tabindex="-1" role="dialog" aria-labelledby="AboutModal">
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <h4 class="modal-title" id="AboutModal">Art Hound v0.8.4</h4>
+    </div>
+
+    <div class="modal-body">
+      <p>This site utilizes...
+        <a href="https://deviantart.com">DeviantArt</a>
+        <a href="https://e926.net">e926.net</a>
+        <a href="https://imgur.com">Imgur</a>
+      </p>
+      <p>Developed to learn about AngularJS by:</p>
+      <ul>
+        <li>
+          <label><a href="https://linkedin.com/in/DylanLotivio">Dylan Lotivio</a></label>
+          Developer
+        </li>
+        <li>
+          <label><a href="https://www.linkedin.com/in/todd-crump-13486198">Todd Crump</a></label>
+          UX Design/QA Testing
+        </li>
+        <li>
+          <label><a href="https://www.linkedin.com/in/hereisryan">Ryan Jones</a></label>
+          UI Design/QA Testing
+        </li>
+      </ul>
+    </div>
+
+    <div class="modal-footer">
+      <ul>
+        <li><label>Powered by:</label></li>
+        <li><a href="https://angularjs.org/">  <img src="img/angular-logo.svg"   /></a></li>
+        <li><a href="http://getbootstrap.com/"><img src="img/bootstrap-logo.png" /></a></li>
+        <li><a href="https://www.heroku.com/"> <img src="img/heroku-logo.png"    /></a></li>
+        <li><a href="https://nodejs.org/en/">  <img src="img/nodejs-logo.png"    /></a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Info Modal -->
+<div class="modal fade" id="modal_info" tabindex="-1" role="dialog" aria-labelledby="InfoModal">
+<div class="modal-dialog" role="document">
+  <div class="modal-content" ng-controller="InfoCtrl as info">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <h4 class="modal-title" id="InfoModal">{{ info.current.title }}</h4>
+    </div>
+
+    <div class="modal-body">
+      <ul>
+        <li ng-repeat="(key, val) in info.current">
+          <label>{{ key }}</label>
+          {{ val }}
+        </li>
+      </ul>
+    </div>
+
+    <!--<div class="modal-footer"> </div>-->
+  </div>
+</div>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="modal_help" tabindex="-1" role="dialog" aria-labelledby="HelpModal">
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <h4 class="modal-title" id="HelpModal">Search Options</h4>
+    </div>
+
+    <div class="modal-body">
+      <label>Examples:</label>
+      <ul>
+        <li>cats AND dogs</li>
+        <li>steven_universe and amethyst</li>
+        <li>charizard or blastoise</li>
+        <li>riku not sora</li>
+      </ul>
+
+      <label>Options:</label>
+      <div class="container-fluid" ng-controller="HelpCtrl as help">
+        <div class="col-xs-3"><label>Sources:</label></div>
+        <div class="col-xs-3">
+          Deviant Art: <input type="checkbox" ng-model="help.Search.sources.deviantart"/>
+        </div>
+        <div class="col-xs-3 text-center">
+          e926: <input type="checkbox" ng-model="help.Search.sources.e926"/>
+        </div>
+        <div class="col-xs-3 text-center">
+          Imgur: <input type="checkbox" ng-model="help.Search.sources.imgur"/>
+        </div>
+
+        <div class="col-xs-3"><label>Mature:</label></div>
+        <div class="col-xs-9">
+          <input type="checkbox" ng-model="help.Search.mature"/>
+          <span class="highlight">(Beware!)</span>
+        </div>
+
+        <div class="col-xs-3"><label>Limit:</label></div>
+        <div class="col-xs-9">
+          <rzslider class="rzslider-trimmed"
+                    rz-slider-model="help.Search.limit"
+                    rz-slider-options="help.limit_options"></rzslider>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- search bar -->
+<div id="base_searchbar" ng-controller="SearchbarCtrl as searchbar" ng-cloak
+  ng-class="{'absolute-wrapper': 1, hidden: !searchbar.substates['SEARCH']}">
+
+  <div search id="searchbar_view">
+    <div>
+      <h3 navclick="help"><a class="highlight">Search Options</a></h3>
+    </div>
+
+    <div>
+      <button id="searchbar_search_button" navclick="search" query="{{searchbar.query}}"
+        ng-class="{'col-xs-1': true,
+                   glyphicon: true,
+                  'glyphicon-search': true,
+                   search_button_inactive: searchbar.substates['LOAD']}" ></button>
+      <input id="searchbar_search" autocomplete="on" class="col-xs-11"
+             ng-model="searchbar.query" />
+    </div>
+
+    <span  id="searchbar_message"></span>
+  </div>
+</div>
+
+<!-- title -->
+<div id="base_title_container" ng-controller="TitleCtrl as title"
+     ng-class="{hidden: title.state != 'DEFAULT'}">
+  <div id="base_title">
+
+    <h1>Art Hound</h1>
+    <p>Discover art.</p>
+    <p>Type anywhere, any time, to search.</p>
+    <p><span navclick="search_overlay" class="glyphicon glyphicon-search"></span></p>
+  </div>
+</div>
+
+
+<!-- viewport -->
+<div id="base_view" ng-controller="ViewCtrl as view" ng-cloak
+  ng-class="{'container-fluid': 1,
              'relative-wrapper': 1,
-             'no-list': (!view.substates['LIST'])}"><div id="base_listing" ng-controller="ListingCtrl as listing" ng-class="{hidden: !(listing.substates['LIST']),
+             'no-list': (!view.substates['LIST'])}">
+
+  <!-- listing -->
+  <div id="base_listing" ng-controller="ListingCtrl as listing"
+    ng-class="{hidden: !(listing.substates['LIST']),
               'absolute-wrapper': 1,
-              'full-listing': listing.substates['FULL']}"><div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar"><div id="listing_grid"><div ng-repeat="page in listing.listing"><div ng-repeat="item in page.data"><div tile index="{{ item.index }}" ng-class="{'image-square-container-selected': item.index == listing.current,
+              'full-listing': listing.substates['FULL']}">
+    <div id="page_scrollbar" data-jquery-scrollbar="listing.scrollbar">
+      <div id="listing_grid">
+      <div ng-repeat="page in listing.listing">
+        <div ng-repeat="item in page.data">
+          <div navclick="tile"  index="{{ item.index }}"
+            ng-class="{'image-square-container-selected': item.index == listing.current,
                        'image-square-container': true,
-                       'image-square-container-full': listing.substates['FULL']}"><div style="background-image: url('{{item.thumbs}}')"></div></div></div></div></div><div id="page_next" title="Load Next Page" ng-class="{'page-button': true,
+                       'image-square-container-full': listing.substates['FULL']}">
+            <div style="background-image: url('{{item.thumbs}}')"></div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div id="page_next" title="Load Next Page"
+        ng-class=
+        "{'page-button': true,
         'page-button-inactive': !listing.can_page,
-        'hidden': listing.last_page }" navclick="page_next"><span class="glyphicon glyphicon-option-horizontal"></span></div></div></div><div id="base_image" ng-controller="ImageCtrl as image" ng-class="{hidden: image.state != 'ACTIVE'}"><div id="image_overlay" ng-controller="OverlayCtrl as overlay" ng-class="{hidden: !overlay.substates['OVERLAY']}"><div id="overlay_list" class="overlay_button overlay_back" title="Toggle List"><span navclick="list" class="glyphicon glyphicon-resize-full"></span></div><div id="overlay_prev" class="overlay_button overlay_back" title="Previous"><span navclick="prev" class="glyphicon glyphicon-menu-left"></span></div><div id="overlay_next" class="overlay_button overlay_back" title="Next"><span navclick="next" class="glyphicon glyphicon-menu-right"></span></div><div id="overlay_search" class="overlay_button overlay_back" title="New Search"><span navclick="search_overlay" class="glyphicon glyphicon-search"></span></div><div id="overlay_about" class="overlay_button overlay_back" title="About this Site"><span navclick="about" class="glyphicon glyphicon-question-sign"></span></div><div id="overlay_info" class="overlay_back" ng-controller="InfoCtrl as info"><div><ul><li><a href="{{ info.current.url }}" title="{{ info.current.title }}">{{ info.current.title }}</a></li><li>by <a ng-href="{{ info.current.author_link }}">{{ info.current.author }}</a></li><li>{{ info.date }}</li></ul></div><div><ul><li><a ng-href="{{ info.current.content }}" title="Download" download="" class="glyphicon glyphicon-save"></a></li><li><span navclick="info" class="glyphicon glyphicon-info-sign" title="More Info"></span></li></ul></div></div></div><img id="image_front" navclick="overlay" ng-class="{base_image_zoom: image.current.zoom}"><div id="image_back" ng-class="{hidden: image.current.zoom}"></div></div></div><script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script><script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script><script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-route.min.js"></script><script src="js/jquery.scrollbar.js"></script><script type="text/javascript" src="js/index.min.js"></script>
+        'hidden': listing.substates['LAST'] }"
+        navclick="page_next">
+        <span>Load More...</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- image -->
+  <div id="base_image" ng-controller="ImageCtrl as image"
+    ng-class="{hidden: image.state != 'ACTIVE'}">
+    <div id="image_overlay" ng-controller="OverlayCtrl as overlay"
+      ng-class="{hidden: !overlay.substates['OVERLAY']}">
+      <div id="overlay_list" class="overlay_button overlay_back" title="Toggle List">
+          <span navclick="list" class="glyphicon glyphicon-resize-full"></span>
+      </div>
+
+      <div id="overlay_prev" class="overlay_button overlay_back" title="Previous">
+          <span navclick="prev" class="glyphicon glyphicon-menu-left"></span>
+      </div>
+      <div id="overlay_next" class="overlay_button overlay_back" title="Next">
+          <span navclick="next" class="glyphicon glyphicon-menu-right"></span>
+      </div>
+
+      <div id="overlay_search" class="overlay_button overlay_back" title="New Search">
+          <span navclick="search_overlay" class="glyphicon glyphicon-search"></span>
+      </div>
+
+      <div id="overlay_about" class="overlay_button overlay_back" title="About this Site">
+          <span navclick="about" class="glyphicon glyphicon-question-sign"></span>
+      </div>
+
+      <div id="overlay_info" class="overlay_back" ng-controller="InfoCtrl as info">
+        <div><ul>
+          <li><a href="{{ info.current.url }}" title="{{ info.current.title }}">{{ info.current.title }}</a></li>
+          <li>by <a ng-href="{{ info.current.author_link }}">{{ info.current.author }}</a></li>
+          <li>{{ info.date }}</li>
+        </ul></div>
+
+        <div><ul>
+          <li><a ng-href="{{ info.current.content }}" title="Download"
+                 download="" class="glyphicon glyphicon-save"></a></li>
+          <li><span navclick="info" class="glyphicon glyphicon-info-sign" title="More Info"></span></li>
+        </ul></div>
+      </div>
+    </div>
+
+    <img id="image_front" navclick="overlay" ng-class="{base_image_zoom: image.current.zoom}"/>
+    <div id="image_back"  ng-class="{hidden: image.current.zoom}"></div>
+  </div>
+
+
+</div>
+
+<!-- jQuery includes -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+<!-- Angular includes -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-route.min.js"></script>
+
+<!-- Plugin includes -->
+<script src="js/jquery.scrollbar.js"></script>
+<script src="js/rzslider.js"></script>
+
+<!-- User includes -->
+<script type="text/javascript" src="js/index.min.js"></script>
+</body>
+
+</html>
