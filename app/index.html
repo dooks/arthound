@@ -149,7 +149,7 @@
       <div id="listing_grid">
       <div ng-repeat="page in listing.listing">
         <div ng-repeat="item in page.data">
-          <div tile index="{{ item.index }}"
+          <div navclick="tile"  index="{{ item.index }}"
             ng-class="{'image-square-container-selected': item.index == listing.current,
                        'image-square-container': true,
                        'image-square-container-full': listing.substates['FULL']}">

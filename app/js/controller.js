@@ -39,7 +39,7 @@
     self.query     = "";
     self.state     = State.state;
     self.substates = State.substates;
-    self.sources = { "deviantart": true, "e926": true, "imgur": true };
+    self.sources = { "deviantart": true, "e926": false, "imgur": true };
 
     $scope.$on("onstatechange",    function() { self.state = State.state;         });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -48,16 +48,16 @@
     $(document).ready(function() {
       var query = $location.search();
       if(query.q) {
+        if(query.page) Navigate.current_page = query.page;
+
         Search.resetSources(self.sources);
         State.changeSubstate("LOAD", true);
-        Search.get(query.q, query.page || undefined, query.limit || undefined)
-        Search.get_new(query.q, query.page || undefined, query.limit || undefined)
+        Search.get(encodeURIComponent(query.q), query.page || undefined, query.limit || undefined)
       }
     });
 
     $scope.$on("onkeyup", function() {
       ng_app.searchbar_search.focus();
-      Search.query = self.query;
 
       if(!State.substates["SEARCH"]) {
         $scope.$apply();
@@ -68,7 +68,6 @@
 
     $scope.$on("onkeybackspace", function() {
       if(self.query === "") State.changeSubstates("SEARCH", false);
-      Search.query = self.query;
       $scope.$apply();
     });
 
@@ -81,15 +80,11 @@
         // clear the old listing_buffer
         Navigate.initialize();
 
-        // Clear search responses
-        Search.clearResponse();
-
         // Reset sources
         Search.resetSources(self.sources);
 
         // Initiate search
-        Search.get(self.query);
-        Search.get_new(self.query);
+        Search.get(encodeURIComponent(self.query));
       }
     });
 
@@ -104,39 +99,29 @@
       }
     });
 
-    $scope.$on("onsearchreturned", function() {
-      if(Search.response[Search.response.length -1].data.length === 0) {
-        // No search results...
-        self.query = "No search results..."
+    $scope.$on("onsearchend", function() {
+      if(Navigate.listing_buffer.length === 0) {
+        State.changeSubstate("SEARCH", true);
+        self.query = "No search results...";
       } else {
         State.changeSubstate("SEARCH", false);
-        $location.search("page", Navigate.current_page);
+        State.changeSubstate("LOAD", false); // No requests in flight, end loading
         self.query = "";
       }
     });
   }]);
 
   ng_app.controller("ListingCtrl",
-    ["$scope", "State", "Search", "Navigate",
-    function($scope, State, Search, Navigate) {
+    ["$scope", "State", "Search", "Navigate", "$location",
+    function($scope, State, Search, Navigate, $location) {
     // Handles the searchlist overlay, which contains a grid list of searches found
     var self = this;
-    self.listing     = [];
-    self.listing_new = [];
+    self.listing   = [];
     self.index     =  0;
     self.state     = State.state;
     self.substates = State.substates;
     self.last_page = false;
     self.scrollbar = { "onScroll": function(y, x) { } };
-
-    self.reindex   = function(page) {
-      // Reindex listing starting at page
-    };
-
-    self.findStartIndex = function(page) {
-      // Find starting index for page
-      return 0;
-    };
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -157,58 +142,45 @@
         self.can_page = false;
         State.changeSubstate("LOAD", true);
         Search.get(Search.last_query, Navigate.current_page, Navigate.limit);
-        Search.get_new(Search.last_query, Navigate.current_page, Navigate.limit);
       }
-    });
-
-    $scope.$on("onnavigatepop", function() {
-      Navigate.to(0);
-      Navigate.first_page = true;
-      State.changeState("ACTIVE");
-      State.changeSubstate("LIST", true);
-    });
-
-    $scope.$on("onsearchreturnednew", function() {
-      if(Search.response_new[0].data.length === 0) {
-        // Turn off this source
-        Search.sources[Search.response_new.source] = false;
-      }
-      else {
-        Navigate.appendNew(Search.response_new[0]);
-        self.listing = Navigate.getDisplay(Navigate.listing_buffer_new);
-        $scope.$apply();
-      }
-
-      Search.clearResponseNew(); // Clear oldest response
     });
 
     $scope.$on("onsearchreturned", function() {
-      // Append response to Navigation service listing
-      // If last result in queue has no length...
-      State.changeSubstate("LOAD", false);
-      Search.clear();
+      if(Search.response[0].data.length === 0) {
+        // Turn off this source
+        Search.disableSource(Search.response.source);
+      }
+      else {
+        Navigate.append(Search.response[0]);
+        self.listing = Navigate.getDisplay(Navigate.listing_buffer);
+      }
 
-      if(Search.response[Search.response.length -1].data.length === 0) {
-        Search.clearResponse();
-        console.log("End of results");
+      Search.clearResponse(); // Clear oldest response
+    });
 
-        // No search results, or we've reached the last page
-        Navigate.last_page = true;
-            self.last_page = true;
+    $scope.$on("onsearchend", function() {
+      if(Navigate.listing_buffer.length === 0) {
+        // Change state to ACTIVE and LIST
+        State.changeState("DEFAULT");
+        State.changeSubstate("LIST", false);
+        Navigate.listing_buffer.length = 0;
+        self.listing.length            = 0;
       } else {
-        State.changeSubstate("SEARCH", false);
+        Navigate.reindex(); // Re-index all pages
 
         // Allow paging again
         Navigate.can_page = true;
         self.can_page     = true;
-        self.last_page    = false;
+        $location.search("page", Navigate.current_page);
 
-        Navigate.append(Search.response[0]);
-        Search.clearResponse(); // Clear oldest response
+        // Change state to ACTIVE and LIST
+        State.changeState("ACTIVE");
+        State.changeSubstate("LIST", true);
 
         // Update listing display
         //self.listing = Navigate.getDisplay(Navigate.listing_buffer);
-        //console.log("Listing", self.listing);
+        self.listing = Navigate.listing_buffer;
+        console.log("Listing", self.listing);
       }
     });
   }]);
@@ -236,14 +208,18 @@
 
     $scope.$on("onnavigate", function() {
       // Update image info box
-      self.current = Navigate.findByIndex(Navigate.index);
+      self.current = Navigate.current;
 
       if(self.current) {
-        // Convert date to readable Date
-        var date = new Date(self.current.date * 1000);
-        self.date = date.toDateString();
-        $scope.$apply();
+        if(typeof self.current.date === "string") { self.date = self.current.date; }
+        else {
+          // Convert date to readable Date
+          var date = new Date(self.current.date * 1000);
+          self.date = date.toDateString();
+        }
       }
+
+      $scope.$apply();
     });
   }]);
 
@@ -277,10 +253,10 @@
       ng_app.image_back.css("background-image", "url('')");
 
       // Display preview image if available, otherwise full resolution picture
-      self.current = Navigate.findByIndex(Navigate.index);
+      self.current = Navigate.current;
+
       if(self.current) {
         var image = (self.current.preview || self.current.content || self.current.thumbs);
-
 
         if(self.current.zoom) {
           // View full resolution picture instead
@@ -290,6 +266,8 @@
           ng_app.image_front.attr("src", image);
           ng_app.image_back.css("background-image", "url('" + image + "')");
         }
+
+        $scope.$apply();
       } else {
         // Do not update
         console.log("Could not find image", Navigate.index);

@@ -35,16 +35,6 @@
     };
   });
 
-  ng_app.directive("tile", ["State", "Navigate", function(State, Navigate) {
-    return {
-      restrict: "A",
-      link: function(scope, element, attrs) {
-        // Navigate to selected index
-        element.bind("click", function() { Navigate.to(attrs.index); });
-      }
-    };
-  }]);
-
   ng_app.directive("navclick", ["State", "Search", "Navigate", function(State, Search, Navigate) {
     return {
       restrict: "A",
@@ -52,6 +42,9 @@
         var func = null;
 
         switch(attrs.navclick) {
+          case "tile":
+            func = function() { Navigate.to(attrs.index); };
+            break;
           case "overlay":
             func = function() { State.toggleSubstate("OVERLAY"); };
             break;
