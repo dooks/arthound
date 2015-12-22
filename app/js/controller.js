@@ -39,7 +39,6 @@
     self.query     = "";
     self.state     = State.state;
     self.substates = State.substates;
-    self.sources = { "deviantart": true, "e926": false, "imgur": true };
 
     $scope.$on("onstatechange",    function() { self.state = State.state;         });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -50,9 +49,21 @@
       if(query.q) {
         if(query.page) Navigate.current_page = query.page;
 
-        Search.resetSources(self.sources);
+        Search.resetSources();
+        State.changeSubstate("LAST", false);
         State.changeSubstate("LOAD", true);
-        Search.get(encodeURIComponent(query.q), query.page || undefined, query.limit || undefined)
+        Search.get(query.q, query.page || undefined, query.limit || undefined)
+      }
+    });
+
+    $scope.$on("onkeyarrow", function() {
+      if(State.substates["SEARCH"]) {
+        if(Keyboard.ord === "UP") {
+          self.query = Search.last_query;
+          $scope.$apply();
+        } else {
+          ng_app.searchbar_search.focus();
+        }
       }
     });
 
@@ -73,6 +84,7 @@
 
     $scope.$on("onkeyenter", function() {
       if(State.substates["SEARCH"] && State.state !== "LOAD") {
+        State.changeSubstate("LAST", false);
         State.changeSubstate("LOAD", true);
         $location.search("q", self.query);
 
@@ -81,10 +93,12 @@
         Navigate.initialize();
 
         // Reset sources
-        Search.resetSources(self.sources);
+        Search.resetSources();
 
         // Initiate search
-        Search.get(encodeURIComponent(self.query));
+        Search.get(self.query);
+      } else {
+        State.changeSubstate("SEARCH", true);
       }
     });
 
@@ -100,12 +114,18 @@
     });
 
     $scope.$on("onsearchend", function() {
+      State.changeSubstate("LOAD", false);
+      State.changeSubstate("SEARCH", false);
+      Search.query = "";
+      self.query = "";
+    });
+
+    $scope.$on("onnosources", function() {
       if(Navigate.listing_buffer.length === 0) {
         State.changeSubstate("SEARCH", true);
         self.query = "No search results...";
       } else {
         State.changeSubstate("SEARCH", false);
-        State.changeSubstate("LOAD", false); // No requests in flight, end loading
         self.query = "";
       }
     });
@@ -132,6 +152,8 @@
       }
     });
 
+    $scope.$on("onnosources", function() { State.changeSubstate("LAST", true); });
+
     $scope.$on("onnavigate", function() {
       self.current = Navigate.index;
       if(State.substates["FULL"]) { State.changeSubstate("LIST", false); }
@@ -141,14 +163,14 @@
       if(State.state !== "LOAD") {
         self.can_page = false;
         State.changeSubstate("LOAD", true);
-        Search.get(Search.last_query, Navigate.current_page, Navigate.limit);
+        Search.get(Search.last_query, Navigate.current_page);
       }
     });
 
     $scope.$on("onsearchreturned", function() {
       if(Search.response[0].data.length === 0) {
         // Turn off this source
-        Search.disableSource(Search.response.source);
+        Search.disableSource(Search.response[0].source);
       }
       else {
         Navigate.append(Search.response[0]);
@@ -171,7 +193,12 @@
         // Allow paging again
         Navigate.can_page = true;
         self.can_page     = true;
-        $location.search("page", Navigate.current_page);
+
+        if(!self.substates["LAST"]) {
+          $location.search("page", Navigate.current_page);
+        }
+
+        if(Navigate.index === 0) Navigate.to(0);
 
         // Change state to ACTIVE and LIST
         State.changeState("ACTIVE");
@@ -223,6 +250,22 @@
     });
   }]);
 
+  ng_app.controller("HelpCtrl",
+    ["$scope", "$rootScope", "Search",
+    function($scope, $rootScope, Search) {
+    // Toggles for search options
+    var self = this;
+    self.Search  = Search;
+
+    self.limit_options = {
+      ceil: 100,
+      hideLimitLabels: true
+    };
+
+    $scope.$broadcast("rzSliderForceRender");
+  }]);
+
+
   ng_app.controller("ImageCtrl",
     ["$scope", "State", "Navigate", "Keyboard",
     function($scope, State, Navigate, Keyboard) {
@@ -237,13 +280,15 @@
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
     $scope.$on("onkeyarrow", function() {
-      switch(Keyboard.ord) {
-        case "LEFT":
-          Navigate.prev();
-          break;
-        case "RIGHT":
-          Navigate.next();
-          break;
+      if(!State.substates["SEARCH"]) {
+        switch(Keyboard.ord) {
+          case "LEFT":
+            Navigate.prev();
+            break;
+          case "RIGHT":
+            Navigate.next();
+            break;
+        }
       }
     });
 

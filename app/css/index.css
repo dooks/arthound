@@ -44,10 +44,14 @@ a:hover { color: #CDB380; }
   border-radius: 10px;
 }
 .modal-content ul        { list-style-type: none;   }
-.modal-body label        { width: 100px;            }
 .modal-body li           { word-wrap: break-word;   }
+.modal-body ul li span   { margin: 10px;            }
 .modal-footer ul li      { display: inline;         }
 .modal-content ul li img { height: 50px;            }
+
+.modal-body .container-fluid > div { height: 30px;  }
+.rzslider-trimmed        { margin-top: 15px;        }
+.highlight               { color: red;              }
 
 
 
@@ -152,6 +156,8 @@ html, body {
     display: block;
     margin: 0 auto;
   }
+
+  #searchbar_view > div > h3   { cursor: pointer; color: white; }
 
     #searchbar_search {
       font-size: 15pt;

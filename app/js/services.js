@@ -28,6 +28,7 @@
         case "LOAD":
         case "OVERLAY":
         case "LIST":
+        case "LAST":
           self.substates[substate] = (!!value); // Evaluate value as boolean
           $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
@@ -42,6 +43,7 @@
         case "LOAD":
         case "OVERLAY":
         case "LIST":
+        case "LAST":
           self.substates[substate] = (!self.substates[substate]); // Evaluate value as boolean
           $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
@@ -147,8 +149,10 @@
     var self = this;
     self.query        = "";
     self.response     = [];
-    self.sources      = {};
-    self.limit        = 24;
+    self.sources      = { "deviantart": true, "e926": true, "imgur": true };
+    self.mature       = false;
+    self.temp_sources = {};
+    self.limit        = 24; // Default hard limit
 
     self.clear         = function() { self.query = ""; };
     self.clearResponse = function() {
@@ -161,33 +165,32 @@
     self.disableSource  = function(source) {
       // Resets source statuses back to original search
       //   @sources: object containing { "source name": true/false if disabled }
-      self.sources[source] = false;
+      self.temp_sources[source] = false;
 
-      var ignore = false;
-      for(var key in self.sources) {
-        if(source === key) self.sources[key] = false;
-        else if (self.sources[key]) ignore = true;
+      var ignore = true;
+      for(var key in self.temp_sources) {
+        if(source === key) self.temp_sources[key] = false;
+        else if (self.temp_sources[key]) ignore = false;
       }
 
-      if(ignore) {
-        $rootScope.$broadcast("onnosources");
-      }
+      if(ignore) { $rootScope.$broadcast("onnosources"); }
     };
 
-    self.resetSources  = function(sources) {
+    self.resetSources  = function() {
       // Resets source statuses back to original search
       //   @sources: object containing { "source name": true/false if disabled }
-      self.sources = $.extend({}, sources); // Clone object
+      self.temp_sources = $.extend({}, self.sources); // Clone object
     };
 
     self.get = function(query, page, limit) {
       // Where the "magic" happens
       // Requests "get" data; a page is cumulative of all defined sources
-      //   @query: optional, self.last_query if blank. This should already be encoded
+      //   @query: optional, self.last_query if blank. This should not be encoded
       //   @page: page number to check for in each source
       //   @limit: How many records to return for each source
       var new_page    = page || 0;
       self.last_query = query || self.last_query;
+      self.limit      = limit || self.limit;
 
       function request(url, data_type, source, options, headers) {
         $.ajax({
@@ -199,7 +202,6 @@
         }).then(
           function success(res) {
             // Normalize returned data, or not
-            console.log("Search Response", query, source, res);
             if(res === undefined) res = [];
             if(res.query) {
               var item = res.query.results.rss.channel.item || [];
@@ -210,17 +212,23 @@
             if(res.length === 0) { return $.Deferred().resolve([]).promise(); }
             console.log("Search Response", query, source, res);
 
-            if(res.length > self.limit) {
-              // Split response in half if too big...
+            if(res.length > 25) { // TODO: magic number...
+              // Split response in fourths if too big...
               return ($.when(
                 $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
-                  data: { source: source, body: res.slice(0, res.length/2) }
+                  data: { source: source, body: res.slice(0, res.length*(1/4)) }
                 }),
                 $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
-                  data: { source: source, body: res.slice(res.length/2) }
+                  data: { source: source, body: res.slice(res.length*(1/4), res.length*(2/4)) }
+                }),
+                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                  data: { source: source, body: res.slice(res.length*(2/4), res.length*(3/4)) }
+                }),
+                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                  data: { source: source, body: res.slice(res.length*(3/4)) }
                 })
-              ).then(function success(res1, res2) {
-                var res_concat = res1[0].concat(res2[0]);
+              ).then(function success(res1, res2, res3, res4) {
+                var res_concat = res1[0].concat(res2[0], res3[0], res4[0]);
                 return res_concat;
               }));
 
@@ -237,26 +245,60 @@
             // Broadcast search returned
             self.response.push({ source: source, page: new_page, data: res});
             $rootScope.$broadcast("onsearchreturned");
+          },
+          function error(res) {
+            console.error(res);
+            self.response.push({ source: source, page: new_page, data: []});
+            $rootScope.$broadcast("onsearchreturned");
           }
         );
       }
 
-      for(var key in self.sources) {
-        if(self.sources[key]) {
+      for(var key in self.temp_sources) {
+        if(self.temp_sources[key]) {
           switch(key) {
             case "e926":
+              var query = self.last_query.split(" ");
+              var new_query = "";
+              for(var i = query.length - 2; i > 0; i--) {
+                if(query[i] === "or" || query[i] === "OR") {
+                  query[i-1] = "~" + query[i-1];
+                  query[i+1] = "~" + query[i+1];
+                  query.splice(i, 1);
+                } else if(query[i] === "not" || query[i] === "NOT") {
+                  query[i+1] = "-" + query[i+1];
+                  query.splice(i, 1);
+                } else if(query[i] === "and" || query[i] === "AND") {
+                  query.splice(i, 1);
+                }
+              }
+              new_query = query.join(" ");
+
               var options = {
-                "tags":  self.last_query, // TODO: normalize query
+                "tags":  new_query, // TODO: normalize query
                 "page":  new_page + 1, // e926 starts paging at 1....
                 "limit": self.limit,
               }
-              request("https://e926.net/post/index.json", "jsonp", "e926", options);
-
+              if(self.mature) {
+                request("https://e621.net/post/index.json", "jsonp", "e926", options);
+              } else {
+                request("https://e926.net/post/index.json", "jsonp", "e926", options);
+              }
               break;
 
             case "deviantart":
+              var query = self.last_query.split(" ");
+              var new_query = "";
+              for(var i = query.length - 2; i > 0; i--) {
+                if(query[i] === "or")       { query[i] =  "OR"; }
+                else if(query[i] === "not") { query[i] = "NOT"; }
+                else if(query[i] === "and") { query[i] = "AND"; }
+              }
+              new_query = query.join(" ");
+
               var options = [
-                "?q=boost%3apopular%20" + self.last_query,
+                "?q=boost%3apopular%20" + encodeURIComponent(new_query),
+                "&mature_content="  + self.mature.toString(),
                 "&limit="  + self.limit,
                 "&offset=" + new_page * self.limit,
                 "&order=9" // browse, sorted by popularity
@@ -275,9 +317,18 @@
               break;
 
             case "imgur":
+              var query = self.last_query.split(" ");
+              var new_query = "";
+              for(var i = query.length - 2; i > 0; i--) {
+                if(query[i] === "or")       { query[i] =  "OR"; }
+                else if(query[i] === "not") { query[i] = "NOT"; }
+                else if(query[i] === "and") { query[i] = "AND"; }
+              }
+              new_query = query.join(" ");
+
               var options = {
                 "sort": "viral",
-                "q":    "tag:"+ decodeURIComponent(self.last_query),
+                "q":    "tag:"+ new_query,
                 "page": new_page,
               }
               var headers = { "Authorization": "Client-ID 1f63c77eaec2b1c" };
@@ -325,9 +376,12 @@
       }
 
       // Check if page number exists in listing_buffer
+      var a = self.listing_buffer[response.page];
       if(self.listing_buffer[response.page]) {
         // Concat array
-        self.listing_buffer[response.page].data.concat(response.data);
+        self.listing_buffer[response.page].data.push.apply(
+          self.listing_buffer[response.page].data, response.data
+        );
       } else {
         self.listing_buffer[response.page] = { page: response.page, data: response.data };
       }
@@ -403,14 +457,13 @@
       if(!self.first_page && self.can_page) {
         self.can_page = false;
 
-        if(self.last_page) self.last_page = false;
         self._calcPage(--self.current_page);
         self.broadcast("onnavigatepage");
       }
     };
 
     self.nextPage = function() {
-      if(!self.last_page && self.can_page) {
+      if(self.can_page) {
         self.can_page = false;
 
         if(self.first_page) self.first_page = false;

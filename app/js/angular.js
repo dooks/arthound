@@ -3,7 +3,7 @@ window.ng_hound = (function(ng) {
     console.error("Angular not found");
   }
 
-  var ng_app = ng.module("ngHound", ["jQueryScrollbar", "ngRoute"]);
+  var ng_app = ng.module("ngHound", ["jQueryScrollbar", "ngRoute", "rzModule"]);
 
   ng_app.config(["$locationProvider", "$routeProvider",
       function($locationProvider, $routeProvider) {
@@ -18,6 +18,7 @@ window.ng_hound = (function(ng) {
 
   ng_app.modal_about      = $("#modal_about");
   ng_app.modal_info       = $("#modal_info");
+  ng_app.modal_help       = $("#modal_help");
 
   ng_app.base_searchbar      = $("#base_searchbar");
     ng_app.searchbar_info    = $("#searchbar_info");
