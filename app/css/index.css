@@ -51,7 +51,7 @@ a:hover { color: #CDB380; }
 
 .modal-body .container-fluid > div { height: 30px;  }
 .rzslider-trimmed        { margin-top: 15px;        }
-.highlight               { color: red;              }
+.highlight               { color: red !important;   }
 
 
 

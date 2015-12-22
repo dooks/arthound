@@ -114,10 +114,16 @@
     });
 
     $scope.$on("onsearchend", function() {
-      State.changeSubstate("LOAD", false);
-      State.changeSubstate("SEARCH", false);
-      Search.query = "";
-      self.query = "";
+      if(Navigate.listing_buffer.length === 0) {
+        State.changeSubstate("LOAD", false);
+        State.changeSubstate("SEARCH", true);
+        self.query = "No search results...";
+      } else {
+        State.changeSubstate("LOAD", false);
+        State.changeSubstate("SEARCH", false);
+        Search.query = "";
+        self.query = "";
+      }
     });
 
     $scope.$on("onnosources", function() {
