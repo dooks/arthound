@@ -78,8 +78,8 @@ html, body {
 }
 
 .image-square-container-full {
-  width:          16.66%;
-  padding-bottom: 16.66%;
+  width:          25%;
+  padding-bottom: 25%;
 }
 
 .image-square-container > div {
@@ -88,9 +88,9 @@ html, body {
   height: 100%;
   padding: 0;
 
-  filter:grayscale(1);
-  -webkit-filter:grayscale(1);
-  -moz-filter:grayscale(1);
+  filter:         brightness(0.6) grayscale(1);
+  -webkit-filter: brightness(0.6) grayscale(1);
+  -moz-filter:    brightness(0.6) grayscale(1);
   background-size:     cover;
   background-repeat:   no-repeat;
   background-position: center;
@@ -98,16 +98,16 @@ html, body {
 }
   .image-square-container > div:hover {
     border: 1px solid #031634;
-    filter:grayscale(0);
-    -webkit-filter:grayscale(0);
-    -moz-filter:grayscale(0);
+    filter:         brightness(1) grayscale(0);
+    -webkit-filter: brightness(1) grayscale(0);
+    -moz-filter:    brightness(1) grayscale(0);
   }
   .image-square-container-selected { border: 1px solid #CDB380; }
   .image-square-container-selected > div {
     border: 1px solid #CDB380;
-    filter:grayscale(0)         !important;
-    -webkit-filter:grayscale(0) !important;
-    -moz-filter:grayscale(0)    !important;
+    filter:         brightness(1) grayscale(0) !important;
+    -webkit-filter: brightness(1) grayscale(0) !important;
+    -moz-filter:    brightness(1) grayscale(0) !important;
   }
 
 
@@ -140,14 +140,6 @@ html, body {
     opacity: 1;
   }
 
-  #searchbar_info {
-    height: 100px;
-  }
-
-  #searchbar_message {
-    height: 100px;
-  }
-
   #searchbar_view > div {
     position: relative;
     min-width: 40%;
@@ -156,8 +148,6 @@ html, body {
     display: block;
     margin: 0 auto;
   }
-
-  #searchbar_view > div > h3   { cursor: pointer; color: white; }
 
     #searchbar_search {
       font-size: 15pt;
@@ -292,7 +282,8 @@ html, body {
   #overlay_prev   { top:   50%; margin-left: 20px; }
   #overlay_next   { top:   50%;       right: 20px; }
   #overlay_search { top:  70px; margin-left: 20px; }
-  #overlay_about  { top: 120px; margin-left: 20px; }
+  #overlay_help   { top: 120px; margin-left: 20px; }
+  #overlay_about  { top: 170px; margin-left: 20px; }
 
   #overlay_info {
     bottom:        20px;
@@ -369,7 +360,6 @@ html, body {
 
   .page-button {
     text-align:  center;
-    border:      1px solid #036564;
     color:       white;
     width:       100%;
     HEIGHT:      40px;
@@ -395,6 +385,60 @@ html, body {
 
 
 
+
+
+/*************** SIMPLE INNER SCROLLBAR ***************/
+.scrollbar-inner > .scroll-element,
+.scrollbar-inner > .scroll-element div {
+    border: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    z-index: 10;
+}
+
+.scrollbar-inner > .scroll-element div {
+    display: block;
+    height: 100%;
+    left: 0;
+    top: 0;
+    width: 100%;
+}
+
+.scrollbar-inner > .scroll-element.scroll-y {
+    height: 100%;
+    right: 0 !important;
+    top: 0;
+    width: 8px;
+}
+
+.scrollbar-inner > .scroll-element .scroll-element_outer {
+    overflow: hidden;
+}
+
+.scrollbar-inner > .scroll-element .scroll-element_outer,
+.scrollbar-inner > .scroll-element .scroll-element_track,
+.scrollbar-inner > .scroll-element .scroll-bar {
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+}
+
+.scrollbar-inner > .scroll-element .scroll-element_track,
+.scrollbar-inner > .scroll-element .scroll-bar {
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=90)" !important;
+    filter: alpha(opacity=90) !important;
+    opacity: 0.9 !important;
+}
+.scrollbar-inner > .scroll-element .scroll-element_track { background-color: #033649 !important; }
+.scrollbar-inner > .scroll-element .scroll-bar { background-color: #E8DDCB !important; }
+.scrollbar-inner > .scroll-element:hover .scroll-bar { background-color: #CDB380 !important; }
+.scrollbar-inner > .scroll-element.scroll-draggable .scroll-bar { background-color: #FFFFFF !important; }
+
+
+/* update scrollbar offset if both scrolls are visible */
+.scrollbar-inner > .scroll-element.scroll-y.scroll-scrollx_visible .scroll-element_track { top: -12px; }
+.scrollbar-inner > .scroll-element.scroll-y.scroll-scrollx_visible .scroll-element_size { top: -12px; }
 
 
 

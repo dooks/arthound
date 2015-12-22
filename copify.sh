@@ -2,8 +2,7 @@
 cat app/index.html > public/index.html
 
 #minify CSS
-node_modules/.bin/cleancss \
--o public/css/index.min.css app/css/index.css
+cat app/css/index.css > public/css/index.min.css
 
 # Concatenate JS files
 node_modules/.bin/browserify \
