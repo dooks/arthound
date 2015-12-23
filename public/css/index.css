@@ -329,9 +329,6 @@ html, body {
     #overlay_info > div:last-child > ul > li {
       padding:    3px;
       display: inline;
-      user-select:                  none;
-      -moz-user-select:             none;
-      -webkit-user-select:          none;
     }
 
     #overlay_info > div:last-child > ul > li:hover {
@@ -341,7 +338,6 @@ html, body {
     #overlay_info > div:last-child > ul > li > a {
       color: black !important;
     }
-
 
 
 

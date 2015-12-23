@@ -215,16 +215,16 @@
             if(res.length > 25) { // TODO: magic number...
               // Split response in fourths if too big...
               return ($.when(
-                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                $.ajax({ method: "POST", url: "https://arthound-server.herokuapp.com/get/normalize",
                   data: { source: source, body: res.slice(0, res.length*(1/4)) }
                 }),
-                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                $.ajax({ method: "POST", url: "https://arthound-server.herokuapp.com/get/normalize",
                   data: { source: source, body: res.slice(res.length*(1/4), res.length*(2/4)) }
                 }),
-                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                $.ajax({ method: "POST", url: "https://arthound-server.herokuapp.com/get/normalize",
                   data: { source: source, body: res.slice(res.length*(2/4), res.length*(3/4)) }
                 }),
-                $.ajax({ method: "POST", url: "http://dev.stardust.red:7050/get/normalize",
+                $.ajax({ method: "POST", url: "https://arthound-server.herokuapp.com/get/normalize",
                   data: { source: source, body: res.slice(res.length*(3/4)) }
                 })
               ).then(function success(res1, res2, res3, res4) {
@@ -235,7 +235,7 @@
             } else {
               return $.ajax({
                 method: "POST",
-                url: "http://dev.stardust.red:7050/get/normalize",
+                url: "https://arthound-server.herokuapp.com/get/normalize",
                 data: { source: source, body: res }
               });
             }
