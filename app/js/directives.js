@@ -35,13 +35,21 @@
     };
   });
 
-  ng_app.directive("navclick", ["State", "Search", "Navigate", function(State, Search, Navigate) {
+  ng_app.directive("navclick",
+    ["$rootScope", "State", "Search", "Navigate",
+    function($rootScope, State, Search, Navigate) {
     return {
       restrict: "A",
       link: function(scope, element, attrs) {
         var func = null;
 
         switch(attrs.navclick) {
+          case "zoom":
+            func = function() {
+              Navigate.current.zoom = !Navigate.current.zoom;
+              Navigate.to(Navigate.current.index);
+            };
+            break;
           case "tile":
             func = function() { Navigate.to(attrs.index); };
             break;
@@ -49,24 +57,16 @@
             func = function() { State.toggleSubstate("OVERLAY"); };
             break;
           case "search":
-            func = function() { State.changeSubstate("LOAD", true); Search.get(attrs.query); };
+            func = function() { $rootScope.$broadcast("onkeyenter"); };
             break;
           case "search_overlay":
-            func = function() { State.toggleSubstate("SEARCH"); };
-            break;
-          case "about":
-            func = function() { ng_app.modal_about.modal({ keyboard: true }); };
-            break;
-          case "list":
             func = function() {
-              State.toggleSubstate("LIST");
-              /* do nothing */ }
-            break;
-          case "full":
-            func = function() {
-              State.toggleSubstate("FULL");
-              if(State.substates["LIST"]) State.changeSubstate("LIST", false);
+              State.toggleSubstate("SEARCH");
+              ng_app.searchbar_search.focus();
             };
+            break;
+          case "grid":
+            func = function() { State.toggleSubstate("LIST"); }
             break;
           case "next":
             func = function() { Navigate.next(); };
@@ -83,8 +83,14 @@
           case "info":
             func = function() { ng_app.modal_info.modal({ keyboard: true }); };
             break;
+          case "options":
+            func = function() { ng_app.modal_options.modal({ keyboard: true }); };
+            break;
           case "help":
             func = function() { ng_app.modal_help.modal({ keyboard: true }); };
+            break;
+          case "about":
+            func = function() { ng_app.modal_about.modal({ keyboard: true }); };
             break;
           default:
             func = function() { /* do nothing */ };

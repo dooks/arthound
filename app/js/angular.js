@@ -1,4 +1,9 @@
 window.ng_hound = (function(ng) {
+  $(document).ready(function() {
+    var version = "0.8.9";
+    $(".version").html(version);
+  });
+
   if(ng === undefined || ng === null) {
     console.error("Angular not found");
   }
@@ -18,6 +23,7 @@ window.ng_hound = (function(ng) {
 
   ng_app.modal_about      = $("#modal_about");
   ng_app.modal_info       = $("#modal_info");
+  ng_app.modal_options    = $("#modal_options");
   ng_app.modal_help       = $("#modal_help");
 
   ng_app.base_searchbar      = $("#base_searchbar");

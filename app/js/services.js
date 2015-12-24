@@ -1,4 +1,7 @@
 (function(ng_app, viewport) {
+  //var normalize_url = "https://arthound-server.herokuapp.com/get/normalize";
+  var normalize_url = "http://dev.stardust.red:7050/get/normalize";
+
   ng_app.service("State", ["$rootScope", function($rootScope) {
     // TODO: why does initializing this make it persistent....?
     var self = this;
@@ -7,7 +10,9 @@
                        "SEARCH":  false,
                        "LIST":    false,
                        "LOAD":    false,
-                       "OVERLAY": false
+                       "OVERLAY": false,
+                       "LAST":    false,
+                       "FIRST":   false
                      };
 
     self.changeState = function(state) {
@@ -28,6 +33,7 @@
         case "LOAD":
         case "OVERLAY":
         case "LIST":
+        case "FIRST":
         case "LAST":
           self.substates[substate] = (!!value); // Evaluate value as boolean
           $rootScope.$apply();
@@ -42,6 +48,7 @@
         case "SEARCH":
         case "LOAD":
         case "OVERLAY":
+        case "FIRST":
         case "LIST":
         case "LAST":
           self.substates[substate] = (!self.substates[substate]); // Evaluate value as boolean
@@ -55,7 +62,7 @@
     self.view_state      = "";
     self.view_last_state = "";
     self.viewport   = viewport;
-    self.view_interval   = 200;
+    self.view_interval   = 50;
     self.view_can_change = true;
 
     // Initialize Bootstrap states
@@ -210,22 +217,30 @@
             }
             if(res.data)  { res = res.data || [];                             }
             if(res.length === 0) { return $.Deferred().resolve([]).promise(); }
-            console.log("Search Response", query, source, res);
+            console.log("Search Response", url, query, source, res);
 
             if(res.length > 25) { // TODO: magic number...
               // Split response in fourths if too big...
               return ($.when(
-                $.ajax({ method: "POST", url: "https://arthound-server.herokuapp.com/get/normalize",
-                  data: { source: source, body: res.slice(0, res.length*(1/4)) }
+                $.ajax({ method: "POST", url: normalize_url,
+                  data: { source: source,
+                          body: res.slice(0, res.length*(1/4)),
+                          mature: self.mature }
                 }),
-                $.ajax({ method: "POST", url: "https://arthound-server.herokuapp.com/get/normalize",
-                  data: { source: source, body: res.slice(res.length*(1/4), res.length*(2/4)) }
+                $.ajax({ method: "POST", url: normalize_url,
+                  data: { source: source,
+                          body: res.slice(res.length*(1/4), res.length*(2/4)),
+                          mature: self.mature }
                 }),
-                $.ajax({ method: "POST", url: "https://arthound-server.herokuapp.com/get/normalize",
-                  data: { source: source, body: res.slice(res.length*(2/4), res.length*(3/4)) }
+                $.ajax({ method: "POST", url: normalize_url,
+                  data: { source: source,
+                          body: res.slice(res.length*(2/4), res.length*(3/4)),
+                          mature: self.mature }
                 }),
-                $.ajax({ method: "POST", url: "https://arthound-server.herokuapp.com/get/normalize",
-                  data: { source: source, body: res.slice(res.length*(3/4)) }
+                $.ajax({ method: "POST", url: normalize_url,
+                  data: { source: source,
+                          body: res.slice(res.length*(3/4)),
+                          mature: self.mature }
                 })
               ).then(function success(res1, res2, res3, res4) {
                 var res_concat = res1[0].concat(res2[0], res3[0], res4[0]);
@@ -235,8 +250,8 @@
             } else {
               return $.ajax({
                 method: "POST",
-                url: "https://arthound-server.herokuapp.com/get/normalize",
-                data: { source: source, body: res }
+                url: normalize_url,
+                data: { source: source, body: res, mature: self.mature }
               });
             }
           }
@@ -272,7 +287,7 @@
                   query.splice(i, 1);
                 }
               }
-              new_query = query.join(" ");
+              new_query = query.join("+");
 
               var options = {
                 "tags":  new_query, // TODO: normalize query
@@ -297,8 +312,7 @@
               new_query = query.join(" ");
 
               var options = [
-                "?q=boost%3apopular%20" + encodeURIComponent(new_query),
-                "&mature_content="  + self.mature.toString(),
+                "?q=boost%3apopular%20" + encodeURIComponent(new_query).replace("%20", "+"),
                 "&limit="  + self.limit,
                 "&offset=" + new_page * self.limit,
                 "&order=9" // browse, sorted by popularity
@@ -324,7 +338,7 @@
                 else if(query[i] === "not") { query[i] = "NOT"; }
                 else if(query[i] === "and") { query[i] = "AND"; }
               }
-              new_query = query.join(" ");
+              new_query = query.join("+");
 
               var options = {
                 "sort": "viral",
@@ -395,11 +409,13 @@
         // self.listing_buffer[i] = { page: 0, data: {} }
         if(self.listing_buffer[i]) { // Paging may not start at 1
           var b = self.listing_buffer[i];
+          if(i > 0) { self.page_sizes[b.page] = b.data.length + self.page_sizes[i-1]; }
+          else      { self.page_sizes[b.page] = b.data.length; }
 
-          if(i > 0) {
-            self.page_sizes[b.page] = b.data.length + self.page_sizes[i-1];
-          } else {
-            self.page_sizes[b.page] = b.data.length;
+          // Sort by individual defaults, or a single key if specified
+          var key = "date";
+          if(key  !== "none") {
+            self.listing_buffer[i].data.sort(function(a, b) { return b[key] - a[key]; });
           }
 
           for(var j = 0; j < b.data.length; j++) {
@@ -467,7 +483,8 @@
         self.can_page = false;
 
         if(self.first_page) self.first_page = false;
-        self._calcPage(++self.current_page);
+        self.current_page = (+self.listing_buffer[self.listing_buffer.length - 1].page) + 1;
+        //self._calcPage(++self.current_page);
         self.broadcast("onnavigatepage");
       }
     };
