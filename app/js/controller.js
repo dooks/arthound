@@ -50,7 +50,6 @@
         if(query.page) Navigate.current_page = query.page;
 
         Search.resetSources();
-        State.changeSubstate("LAST", false);
         State.changeSubstate("LOAD", true);
         Search.get(query.q, query.page || undefined, query.limit || undefined)
       }
@@ -84,6 +83,7 @@
 
     $scope.$on("onkeyenter", function() {
       if(State.substates["SEARCH"] && State.state !== "LOAD") {
+        State.changeSubstate("FIRST", false);
         State.changeSubstate("LAST", false);
         State.changeSubstate("LOAD", true);
         $location.search("q", self.query);
@@ -99,6 +99,7 @@
         Search.get(self.query);
       } else {
         State.changeSubstate("SEARCH", true);
+        ng_app.searchbar_search.focus();
       }
     });
 
@@ -113,6 +114,7 @@
       }
     });
 
+    /* TODO: fix response timings
     $scope.$on("onsearchend", function() {
       if(Navigate.listing_buffer.length === 0) {
         State.changeSubstate("LOAD", false);
@@ -125,6 +127,7 @@
         self.query = "";
       }
     });
+    */
 
     $scope.$on("onnosources", function() {
       if(Navigate.listing_buffer.length === 0) {
@@ -147,7 +150,7 @@
     self.state     = State.state;
     self.substates = State.substates;
     self.last_page = false;
-    self.scrollbar = { "onScroll": function(y, x) { } };
+    //self.scrollbar = { "onScroll": function(y, x) { } };
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -177,34 +180,36 @@
       if(Search.response[0].data.length === 0) {
         // Turn off this source
         Search.disableSource(Search.response[0].source);
-      }
-      else {
+      } else {
         Navigate.append(Search.response[0]);
         self.listing = Navigate.getDisplay(Navigate.listing_buffer);
       }
 
-      Search.clearResponse(); // Clear oldest response
+      Search.clearResponse();
     });
 
     $scope.$on("onsearchend", function() {
+      Navigate.reindex(); // Re-index all pages
+
       if(Navigate.listing_buffer.length === 0) {
         // Change state to ACTIVE and LIST
         State.changeState("DEFAULT");
+        State.changeState("SEARCH", true); // TODO: change response timing
         State.changeSubstate("LIST", false);
         Navigate.listing_buffer.length = 0;
         self.listing.length            = 0;
       } else {
-        Navigate.reindex(); // Re-index all pages
+        State.changeSubstate("LOAD", false); // TODO: move to a LoadCtrl
 
         // Allow paging again
         Navigate.can_page = true;
         self.can_page     = true;
 
-        if(!self.substates["LAST"]) {
-          $location.search("page", Navigate.current_page);
-        }
-
+        if(!self.substates["LAST"]) { $location.search("page", Navigate.current_page); }
         if(Navigate.index === 0) Navigate.to(0);
+        if(Navigate.page_sizes[0] !== 0 && !self.substates["LAST"]) {
+          State.changeSubstate("FIRST", true);
+        }
 
         // Change state to ACTIVE and LIST
         State.changeState("ACTIVE");
@@ -244,19 +249,16 @@
       self.current = Navigate.current;
 
       if(self.current) {
-        if(typeof self.current.date === "string") { self.date = self.current.date; }
-        else {
-          // Convert date to readable Date
-          var date = new Date(self.current.date * 1000);
-          self.date = date.toDateString();
-        }
+        // Convert date to readable Date
+        var date = new Date(self.current.date * 1000);
+        self.date = date.toDateString();
       }
 
       $scope.$apply();
     });
   }]);
 
-  ng_app.controller("HelpCtrl",
+  ng_app.controller("OptionsCtrl",
     ["$scope", "$rootScope", "Search",
     function($scope, $rootScope, Search) {
     // Toggles for search options
