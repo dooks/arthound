@@ -1,6 +1,6 @@
 (function(ng_app, viewport) {
-  //var normalize_url = "https://arthound-server.herokuapp.com/get/normalize";
-  var normalize_url = "http://dev.stardust.red:7050/get/normalize";
+  var normalize_url = "https://arthound-server.herokuapp.com/get/normalize";
+  //var normalize_url = "http://dev.stardust.red:7050/get/normalize";
 
   ng_app.service("State", ["$rootScope", function($rootScope) {
     // TODO: why does initializing this make it persistent....?
