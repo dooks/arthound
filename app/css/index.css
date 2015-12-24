@@ -8,7 +8,10 @@ a {
   color: #E8DDCB;
 }
 
-a:hover { color: #CDB380; }
+a:hover { cursor: pointer; color: #CDB380 !important; }
+ul      { padding: 0; list-style-type: none;          }
+
+.col-centered { float: none; margin: 0 auto; }
 
 .absolute-wrapper {
   position: absolute;
@@ -35,7 +38,6 @@ a:hover { color: #CDB380; }
   padding: 0 !important;
 }
 
-.close { color: #E8DDCB; }
 .modal-content {
   color: #E8DDCB;
   background-color: black;
@@ -43,15 +45,26 @@ a:hover { color: #CDB380; }
   border: 1px solid #E8DDCB;
   border-radius: 10px;
 }
-.modal-content ul        { list-style-type: none;   }
+
 .modal-body li           { word-wrap: break-word;   }
-.modal-body ul li span   { margin: 10px;            }
 .modal-footer ul li      { display: inline;         }
 .modal-content ul li img { height: 50px;            }
+.modal-body > .container-fluid {
+  margin:           0;
+  margin-top:    10px;
+}
 
-.modal-body .container-fluid > div { height: 30px;  }
 .rzslider-trimmed        { margin-top: 15px;        }
 .highlight               { color: red !important;   }
+.truncate {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+button:hover {
+  color: #E8DDCB;
+}
 
 
 
@@ -102,7 +115,7 @@ html, body {
     -webkit-filter: brightness(1) grayscale(0);
     -moz-filter:    brightness(1) grayscale(0);
   }
-  .image-square-container-selected { border: 1px solid #CDB380; }
+  .image-square-container-selected { border: 1px dashed #CDB380; }
   .image-square-container-selected > div {
     border: 1px solid #CDB380;
     filter:         brightness(1) grayscale(0) !important;
@@ -140,46 +153,40 @@ html, body {
     opacity: 1;
   }
 
-  #searchbar_view > div {
-    position: relative;
-    min-width: 40%;
-    max-width: 50%;
-    height: 32px;
-    display: block;
-    margin: 0 auto;
-  }
+  #searchbar_view .modal-content { margin: 0 auto; }
 
-    #searchbar_search {
-      font-size: 15pt;
-      width:     100%;
-      height:    32px;
-      outline:      0;
-      background-color: #E8DDCB;
-
-      border-radius: 5px;
-      color: black;
-      box-shadow: 0 0 3px #ccc, 0 10px 15px #ebebeb inset;
-      text-indent: 32px;
+    #searchbar_search_container {
+      width:        100%;
+      padding-left: 40px;
+      height:       32px;
+      border:          0;
     }
 
-    #searchbar_search_button {
-      position: absolute;
-      width: 32px;
-      padding:  0;
-      border:   0;
-      z-index:  1;
-      color: #AAA;
-      top:   10px;
-      left:   0px;
+    #searchbar_search {
+      width:     100%;
+      font-size: 15pt;
+      outline:      0;
+      border:       0;
+      color:  #E8DDCB;
+      border-bottom: 1px dashed #E8DDCB;
       background-color: transparent;
     }
 
-    .search_button_inactive {
-      pointer-events: none;
+    #searchbar_search_icon {
+      position: absolute;
+      width:        40px;
+      left:            0;
+      top:           5px;
+      font-size:   1.5em;
+      z-index:         1;
     }
 
-
-
+    .searchbar_button {
+      font-size:        2vw;
+      display: inline-block;
+      background-color: transparent;
+      border:             0;
+    }
 
 
 
@@ -278,12 +285,11 @@ html, body {
       display: inline-block;
     }
 
-  #overlay_list   { top:  20px; margin-left: 20px; }
+  #overlay_grid   { top:  20px; margin-left: 20px; }
+  #overlay_search { top:  20px; margin-left: 70px; }
+  #overlay_full   { top:  20px;       right: 20px; }
   #overlay_prev   { top:   50%; margin-left: 20px; }
   #overlay_next   { top:   50%;       right: 20px; }
-  #overlay_search { top:  70px; margin-left: 20px; }
-  #overlay_help   { top: 120px; margin-left: 20px; }
-  #overlay_about  { top: 170px; margin-left: 20px; }
 
   #overlay_info {
     bottom:        20px;
@@ -318,9 +324,6 @@ html, body {
     #overlay_info > div:first-child > ul > li {
       width: 100%;
       font-size: 0.9em;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
     }
 
     #overlay_info > div:last-child > ul > li {
@@ -347,10 +350,11 @@ html, body {
   background-image: linear-gradient(0deg, #031634, #036564);
   z-index:   4;
 
-  /* Will be overriden be full-sidebar */
   width:   200px; /* Size on page is managed through base_view  */
   left:        0;
-  overflow: none;
+  overflow: auto;
+  -moz-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch;
 }
 
   #listing_grid {
