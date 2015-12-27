@@ -87,6 +87,7 @@
         State.changeSubstate("LAST", false);
         State.changeSubstate("LOAD", true);
         $location.search("q", self.query);
+        ng_app.searchbar_search.blur();
 
         // this is a new search, so...
         // clear the old listing_buffer
@@ -131,9 +132,11 @@
 
     $scope.$on("onnosources", function() {
       if(Navigate.listing_buffer.length === 0) {
+        State.changeSubstate("LOAD", false);
         State.changeSubstate("SEARCH", true);
         self.query = "No search results...";
       } else {
+        State.changeSubstate("LOAD", false);
         State.changeSubstate("SEARCH", false);
         self.query = "";
       }
@@ -150,7 +153,6 @@
     self.state     = State.state;
     self.substates = State.substates;
     self.last_page = false;
-    //self.scrollbar = { "onScroll": function(y, x) { } };
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -200,6 +202,7 @@
         self.listing.length            = 0;
       } else {
         State.changeSubstate("LOAD", false); // TODO: move to a LoadCtrl
+        State.changeSubstate("SEARCH", false); // TODO: move to a LoadCtrl
 
         // Allow paging again
         Navigate.can_page = true;
@@ -236,13 +239,18 @@
   }]);
 
   ng_app.controller("InfoCtrl",
-    ["$scope", "Navigate",
-    function($scope, Navigate) {
+    ["$scope", "Navigate", "State",
+    function($scope, Navigate, State) {
     // Handles display info for current image
     // How many images got returned
     var self       = this;
-    self.current   = {};
-    self.date      =  0;
+    self.current   =   {};
+    self.date      =    0;
+    self.state     = State.state;
+    self.substates = State.substates;
+
+    $scope.$on("onstatechange",    function() { self.state     = State.state;     });
+    $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
     $scope.$on("onnavigate", function() {
       // Update image info box
@@ -282,7 +290,6 @@
     self.current = {};
     self.state     = State.state;
     self.substates = State.substates;
-    self.scrollbar = { "onScroll": function(y, x) { /* Options... */ } };
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -309,7 +316,9 @@
       self.current = Navigate.current;
 
       if(self.current) {
-        var image = (self.current.preview || self.current.content || self.current.thumbs);
+        var image = "";
+        if(State.substates["FULL"]) image = self.current.preview;
+        else image = (self.current.content || self.current_preview || self.current.thumbs);
 
         if(self.current.zoom) {
           // View full resolution picture instead

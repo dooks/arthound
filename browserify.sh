@@ -5,9 +5,19 @@ node_modules/.bin/html-minifier \
 --use-short-doctype --remove-empty-attributes --remove-optional-tags \
 app/index.html > public/index.html
 
-#minify CSS
+# minify and concatenate
 node_modules/.bin/cleancss \
--o public/css/index.min.css app/css/index.css
+-o public/css/index.css app/css/index.css
+cat \
+app/css/bootstrap.min.css \
+app/css/bootstrap-theme.min.css \
+public/css/index.css \
+app/css/rzslider.min.css \
+> public/css/index.min.css
+
+# Copy plugins
+cp app/js/fastclick.js public/js/fastclick.js
+cp app/js/rzslider.js public/js/rzslider.js
 
 # Uglify initial files
 node_modules/.bin/browserify \
@@ -23,3 +33,5 @@ app/js/bootstrap.min.js \
 app/js/bootstrap-toolkit.min.js \
 app/js/index.js \
 | node_modules/.bin/uglifyjs > public/js/index.min.js;
+
+

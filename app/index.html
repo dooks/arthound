@@ -7,14 +7,10 @@
                                maximum-scale=1, user-scalable=no">
 
 <!-- Bootstrap includes -->
-<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
-<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
 <link href='https://fonts.googleapis.com/css?family=Arvo' rel='stylesheet' type='text/css'>
 
 <!-- User includes -->
 <link rel="stylesheet" type="text/css" href="css/index.min.css" />
-<link rel="stylesheet" type="text/css" href="css/jquery.scrollbar.css" />
-<link rel="stylesheet" type="text/css" href="css/rzslider.min.css" />
 
 <!-- jQuery includes -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
@@ -204,7 +200,7 @@
         <div class="container-fluid relative-wrapper" style="padding: 0;">
           <span id="searchbar_search_icon" class="glyphicon glyphicon-search"></span>
           <div id="searchbar_search_container">
-            <input id="searchbar_search" type="search" autocomplete="on" class="col-xs-11"
+            <input id="searchbar_search" type="search" class="col-xs-11"
                      ng-model="searchbar.query" />
            </div>
         </div>
@@ -226,12 +222,15 @@
 <!-- title -->
 <div id="base_title_container" ng-controller="TitleCtrl as title"
      ng-class="{hidden: title.state != 'DEFAULT'}">
-  <div id="base_title">
+  <div id="base_title" class="container-fluid">
+    <div class="col-xs-11 col-sm-7 col-centered text-center">
 
-    <h1>Art Hound</h1>
-    <p>Discover art.</p>
-    <p>Type anywhere, any time, to search.</p>
-    <p><span navclick="search_overlay" class="glyphicon glyphicon-search"></span></p>
+      <h1>Art Hound</h1>
+      <p>Discover art.</p>
+      <p>Type anywhere, any time, to search.</p>
+      <p><span navclick="search_overlay" class="glyphicon glyphicon-search"></span></p>
+
+    </div>
   </div>
 </div>
 
@@ -269,11 +268,10 @@
     </div>
     </div>
 
-    <div id="page_next" title="Load Next Page"
+    <div id="page_next" title="Load Next Page" clas="page-button"
       ng-class=
-      "{'page-button': true,
-      'page-button-inactive': !listing.can_page,
-      'hidden': listing.substates['LAST'] }"
+      "{'page-button-inactive': !listing.can_page,
+        'hidden': listing.substates['LAST'] }"
       navclick="page_next">
       <span>Load Next Page...</span>
     </div>
@@ -289,7 +287,10 @@
       </div>
 
       <div id="overlay_full" class="overlay_button overlay_back" title="Toggle Zoom">
-          <span navclick="zoom" class="glyphicon glyphicon-resize-full"></span>
+          <span navclick="zoom" class="glyphicon"
+            ng-class="{'glyphicon-resize-full': !image.current.zoom,
+                       'glyphicon-resize-small': image.current.zoom
+                      }"></span>
       </div>
 
       <div id="overlay_prev" class="overlay_button overlay_back" title="Previous">
@@ -303,20 +304,24 @@
           <span navclick="search_overlay" class="glyphicon glyphicon-search"></span>
       </div>
 
-      <div id="overlay_info" class="overlay_back" ng-controller="InfoCtrl as info">
-        <div><ul>
-          <li class="truncate">
-            <a href="{{ info.current.url }}" title="{{ info.current.title }}">
-            {{ info.current.title }}</a>
-          </li>
-          <li>by <a ng-href="{{ info.current.author_link }}">{{ info.current.author }}</a></li>
-          <li>{{ info.date }}</li>
-        </ul></div>
+      <div id="overlay_info_container" class="container-fluid">
+        <div id="overlay_info" ng-controller="InfoCtrl as info"
+          class="overlay_back col-xs-10 col-sm-3"
+          ng-class="{'col-centered': info.substates['FULL']}" >
+          <div><ul>
+            <li class="truncate">
+              <a href="{{ info.current.url }}" title="{{ info.current.title }}">
+              {{ info.current.title }}</a>
+            </li>
+            <li>by <a ng-href="{{ info.current.author_link }}">{{ info.current.author }}</a></li>
+            <li>{{ info.date }}</li>
+          </ul></div>
 
-        <div><ul>
-          <li><a href="{{info.current.content}}" title="Download" class="glyphicon glyphicon-save"></a></li>
-          <li><span navclick="info" class="glyphicon glyphicon-info-sign" title="More Info"></span></li>
-        </ul></div>
+          <div><ul>
+            <li><a href="{{info.current.content}}" title="Download" class="glyphicon glyphicon-save"></a></li>
+            <li><span navclick="info" class="glyphicon glyphicon-info-sign" title="More Info"></span></li>
+          </ul></div>
+        </div>
       </div>
     </div>
 
@@ -328,7 +333,7 @@
 </div>
 
 <!-- Plugin includes -->
-<script src="js/jquery.scrollbar.js"></script>
+<script src="js/fastclick.js"></script>
 <script src="js/rzslider.js"></script>
 
 <!-- User includes -->
