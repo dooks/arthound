@@ -289,9 +289,10 @@ html, body {
   #overlay_next   { top:   50%;       right: 20px; }
 
   #overlay_info_container {
-    position: absolute;
-    bottom:       20px;
-    width:        100%;
+    position: fixed;
+    bottom:    20px;
+    width:     100%;
+    z-index:      3;
     padding: 0 20px;
   }
 

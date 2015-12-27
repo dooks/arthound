@@ -288,10 +288,10 @@
                   query.splice(i, 1);
                 }
               }
-              new_query = query.join("+");
+              new_query = query.join(" ");
 
               var options = {
-                "tags":  new_query, // TODO: normalize query
+                "tags":  "score:>10 " + new_query, // TODO: normalize query
                 "page":  new_page + 1, // e926 starts paging at 1....
                 "limit": self.limit,
               }
@@ -342,7 +342,7 @@
                 else if(query[i] === "not") { query[i] = "NOT"; }
                 else if(query[i] === "and") { query[i] = "AND"; }
               }
-              new_query = query.join("+");
+              new_query = query.join(" ");
 
               var options = {
                 "sort": "viral",
@@ -459,7 +459,7 @@
         self.current = self.findByIndex(self.index);
         self.broadcast("onnavigate");
         return true;
-      } else { return false; }
+      } else { self.prevPage(); }
     };
 
     self.to = function(n) {
