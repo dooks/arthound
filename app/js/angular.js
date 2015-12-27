@@ -1,14 +1,15 @@
 window.ng_hound = (function(ng) {
   $(document).ready(function() {
-    var version = "0.8.9";
+    var version = "0.8.11";
     $(".version").html(version);
+    window.FastClick.attach(document.body);
   });
 
   if(ng === undefined || ng === null) {
     console.error("Angular not found");
   }
 
-  var ng_app = ng.module("ngHound", ["jQueryScrollbar", "ngRoute", "rzModule"]);
+  var ng_app = ng.module("ngHound", ["ngRoute", "rzModule"]);
 
   ng_app.config(["$locationProvider", "$routeProvider",
       function($locationProvider, $routeProvider) {

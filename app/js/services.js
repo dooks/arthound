@@ -88,6 +88,7 @@
             // If "xs", switch to FULL substate
             if(self.view_state === "xs") { self.changeSubstate("FULL", true); }
             if(self.view_state === "sm" || self.view_state === "md" || self.view_state === "lg") {
+              self.changeSubstate("LIST", true);
               self.changeSubstate("FULL", false);
             }
           }
@@ -196,7 +197,7 @@
       //   @page: page number to check for in each source
       //   @limit: How many records to return for each source
       var new_page    = page || 0;
-      self.last_query = query || self.last_query;
+      self.last_query = query || self.last_query || " ";
       self.limit      = limit || self.limit;
 
       function request(url, data_type, source, options, headers) {
@@ -217,7 +218,7 @@
             }
             if(res.data)  { res = res.data || [];                             }
             if(res.length === 0) { return $.Deferred().resolve([]).promise(); }
-            console.log("Search Response", url, query, source, res);
+            console.log("Search Response", query, source, res);
 
             if(res.length > 25) { // TODO: magic number...
               // Split response in fourths if too big...
@@ -309,14 +310,17 @@
                 else if(query[i] === "not") { query[i] = "NOT"; }
                 else if(query[i] === "and") { query[i] = "AND"; }
               }
-              new_query = query.join(" ");
+              new_query = encodeURIComponent(query.join(" "));
 
               var options = [
-                "?q=boost%3apopular%20" + encodeURIComponent(new_query).replace("%20", "+"),
+                "?q=boost%3apopular%20" + encodeURIComponent(new_query)
+                                          .replace(/'/g, "%27")
+                                          .replace(/%20/g, "+"),
                 "&limit="  + self.limit,
                 "&offset=" + new_page * self.limit,
                 "&order=9" // browse, sorted by popularity
               ].join("");
+
 
               // Use Yahoo API as a proxy to retrieve rss.xml as a JSON
               var url = "http://backend.deviantart.com/rss.xml" + options;
