@@ -373,10 +373,10 @@
 
     self.initialize = function(limit) {
       // reinitialize values based on page limit
-      self.current        = {};
       self.current_limit  = limit || 3; // How far ahead or behind to buffer
       self.current_index  = 0; // Index of image to be displayed
       self.current_page   = 0;
+      self.direction      = "";
       self.index          = 0;
       self.last_index     = 0; // Last index
       self.display_low    = 0 - self.current_limit; // How far ahead to buffer
@@ -444,8 +444,8 @@
     self.next = function() {
       if(self.index + 1 < self.last_index) {
         self.index += 1;
-        self.current = self.findByIndex(self.index);
-        self.broadcast("onnavigate");
+        self.direction = "LEFT";
+        self.broadcast("onnavigateadj");
         return true;
       } else if((self.index + 1) === self.last_index) {
         self.nextPage();
@@ -456,8 +456,8 @@
     self.prev = function() {
       if((self.index - 1) >= 0) {
         self.index -= 1;
-        self.current = self.findByIndex(self.index);
-        self.broadcast("onnavigate");
+        self.direction = "RIGHT";
+        self.broadcast("onnavigateadj");
         return true;
       } else { self.prevPage(); }
     };
@@ -467,7 +467,6 @@
       n = Number(n);
       if(n >= 0 && n < self.page_sizes[self.page_sizes.length - 1])  {
         self.index = n;
-        self.current = self.findByIndex(self.index);
         self.broadcast("onnavigate");
         return true;
       } else { return false; }
@@ -488,7 +487,6 @@
 
         if(self.first_page) self.first_page = false;
         self.current_page = (+self.listing_buffer[self.listing_buffer.length - 1].page) + 1;
-        //self._calcPage(++self.current_page);
         self.broadcast("onnavigatepage");
       }
     };
@@ -523,6 +521,8 @@
 
     self.findByIndex = function(index) {
       // Return item in listing_buffer based on index
+      index = (index > 0) ? (index < self.last_index) ? index : self.last_index - 1 : 0;
+
       if(index >= self.page_sizes[0]) {
 
         for(var i = 1; i < self.page_sizes.length; i++) {

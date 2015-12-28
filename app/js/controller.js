@@ -170,6 +170,11 @@
       if(State.substates["FULL"]) { State.changeSubstate("LIST", false); }
     });
 
+    $scope.$on("onnavigateadj", function() {
+      self.current = Navigate.index;
+      if(State.substates["FULL"]) { State.changeSubstate("LIST", false); }
+    });
+
     $scope.$on("onnavigatepage", function() {
       if(State.state !== "LOAD") {
         self.can_page = false;
@@ -209,7 +214,7 @@
         self.can_page     = true;
 
         if(!self.substates["LAST"]) { $location.search("page", Navigate.current_page); }
-        if(Navigate.index === 0) Navigate.to(0);
+        Navigate.to(Navigate.index);
         if(Navigate.page_sizes[0] !== 0 && !self.substates["LAST"]) {
           State.changeSubstate("FIRST", true);
         }
@@ -264,6 +269,19 @@
 
       $scope.$apply();
     });
+
+    $scope.$on("onnavigateadj", function() {
+      // Update image info box
+      self.current = Navigate.findByIndex(Navigate.index);
+
+      if(self.current) {
+        // Convert date to readable Date
+        var date = new Date(self.current.date * 1000);
+        self.date = date.toDateString();
+      }
+
+      $scope.$apply();
+    });
   }]);
 
   ng_app.controller("OptionsCtrl",
@@ -287,9 +305,45 @@
     function($scope, State, Navigate, Keyboard) {
     // Handles current image being shown
     var self = this;
-    self.current = {};
+    self.current   = new Deque(5);
     self.state     = State.state;
     self.substates = State.substates;
+
+    self.wrap = function(dir, class_lt2, class_lft, class_ctr, class_rgt, class_rt2) {
+      var left2  = $("." + class_lt2);
+      var left   = $("." + class_lft);
+      var center = $("." + class_ctr);
+      var right  = $("." + class_rgt);
+      var right2 = $("." + class_rt2);
+
+      switch(dir) {
+        case "LEFT":
+           left2.removeClass(class_lt2);
+            left.removeClass(class_lft + " inanimate");
+          center.removeClass(class_ctr);
+           right.removeClass(class_rgt + " inanimate");
+          right2.removeClass(class_rt2);
+           left2.addClass(class_rt2 + " inanimate");
+            left.addClass(class_lt2);
+          center.addClass(class_lft);
+           right.addClass(class_ctr);
+          right2.addClass(class_rgt + " inanimate");
+          break;
+
+        case "RIGHT":
+           left2.removeClass(class_lt2);
+            left.removeClass(class_lft + " inanimate");
+          center.removeClass(class_ctr);
+           right.removeClass(class_rgt + " inanimate");
+          right2.removeClass(class_rt2);
+           left2.addClass(class_lft + " inanimate");
+            left.addClass(class_ctr);
+          center.addClass(class_rgt);
+           right.addClass(class_rt2);
+          right2.addClass(class_lt2 + " inanimate");
+          break;
+      }
+    };
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
@@ -297,43 +351,49 @@
     $scope.$on("onkeyarrow", function() {
       if(!State.substates["SEARCH"]) {
         switch(Keyboard.ord) {
-          case "LEFT":
-            Navigate.prev();
-            break;
-          case "RIGHT":
-            Navigate.next();
-            break;
+          case "LEFT":  Navigate.prev(); break;
+          case "RIGHT": Navigate.next(); break;
         }
       }
     });
 
-    $scope.$on("onnavigate", function() {
-      // Blank out src
-      ng_app.image_front.attr("src", "");
-      ng_app.image_back.css("background-image", "url('')");
+    $scope.$on("onnavigateadj", function() {
+      // Get left, center, and right content...
+      if(Navigate.direction === "LEFT") {
+        self.wrap("LEFT",  "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
+        self.current.push(Navigate.findByIndex(Navigate.index + 2));
+        self.current.shift();
+        $(".image_rt2 > div").css("background-image", "url('"
+            + self.current.get(2).content + "')");
 
-      // Display preview image if available, otherwise full resolution picture
-      self.current = Navigate.current;
-
-      if(self.current) {
-        var image = "";
-        if(State.substates["FULL"]) image = self.current.preview;
-        else image = (self.current.content || self.current_preview || self.current.thumbs);
-
-        if(self.current.zoom) {
-          // View full resolution picture instead
-          image = self.current.content;
-          ng_app.image_front.attr("src", image);
-        } else {
-          ng_app.image_front.attr("src", image);
-          ng_app.image_back.css("background-image", "url('" + image + "')");
-        }
-
-        $scope.$apply();
       } else {
-        // Do not update
-        console.log("Could not find image", Navigate.index);
+        self.wrap("RIGHT", "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
+        self.current.unshift(Navigate.findByIndex(Navigate.index - 2));
+        self.current.pop();
+        $(".image_lt2 > div").css("background-image", "url('"
+            + self.current.get(0).content + "')");
       }
+    });
+
+    $scope.$on("onnavigate", function() {
+      // Get left, center, and right content...
+      self.current.clear();
+      self.current.push(Navigate.findByIndex(Navigate.index - 2),
+                        Navigate.findByIndex(Navigate.index - 1),
+                        Navigate.findByIndex(Navigate.index),
+                        Navigate.findByIndex(Navigate.index + 1),
+                        Navigate.findByIndex(Navigate.index + 2));
+
+      $(".image_lt2 > div").css("background-image", "url('"
+          + self.current.get(0).content + "')");
+      $(".image_lft > div").css("background-image", "url('"
+          + self.current.get(1).content + "')");
+      $(".image_ctr > div").css("background-image", "url('"
+          + self.current.get(2).content + "')");
+      $(".image_rgt > div").css("background-image", "url('"
+          + self.current.get(3).content + "')");
+      $(".image_rt2 > div").css("background-image", "url('"
+          + self.current.get(4).content + "')");
     });
   }]);
 

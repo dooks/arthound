@@ -339,8 +339,11 @@
       </div>
     </div>
 
-    <img id="image_front" navclick="overlay" ng-class="{base_image_zoom: image.current.zoom}"/>
-    <div id="image_back"  ng-class="{hidden: image.current.zoom}"></div>
+    <div class="image_container image_lt2" navclick="overlay"> <div></div> </div>
+    <div class="image_container image_lft" navclick="overlay"> <div></div> </div>
+    <div class="image_container image_ctr" navclick="overlay"> <div></div> </div>
+    <div class="image_container image_rgt" navclick="overlay"> <div></div> </div>
+    <div class="image_container image_rt2" navclick="overlay"> <div></div> </div>
   </div>
 
 
@@ -349,6 +352,7 @@
 <!-- Plugin includes -->
 <script src="js/fastclick.js"></script>
 <script src="js/rzslider.js"></script>
+<script src="js/deque.js"></script>
 
 <!-- User includes -->
 <script type="text/javascript" src="js/index.min.js"></script>

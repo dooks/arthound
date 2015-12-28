@@ -19,6 +19,7 @@ cp -r app/img/* public/img
 cp app/js/angular.min.js public/js/angular.min.js
 cp app/js/angular-route.min.js public/js/angular-route.min.js
 cp app/js/angular-touch.min.js public/js/angular-touch.min.js
+cp app/js/deque.js public/js/deque.js
 cp app/js/fastclick.js public/js/fastclick.js
 cp app/js/rzslider.js public/js/rzslider.js
 

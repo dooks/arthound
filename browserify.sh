@@ -15,7 +15,14 @@ public/css/index.css \
 app/css/rzslider.min.css \
 > public/css/index.min.css
 
+# copy fonts
+cp -r app/fonts/* public/fonts
+
+# copy images
+cp -r app/img/* public/img
+
 # Copy plugins
+cp app/js/deque.js public/js/deque.js
 cp app/js/fastclick.js public/js/fastclick.js
 cp app/js/rzslider.js public/js/rzslider.js
 
