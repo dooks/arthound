@@ -243,7 +243,7 @@ html, body {
     width: 100%;
     padding: 0;
     margin: 0;
-    transition: transform 0.5s;
+    transition: all 0.5s;
     background-color: black;
   }
 

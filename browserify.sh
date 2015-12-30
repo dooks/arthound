@@ -22,7 +22,8 @@ cp -r app/fonts/* public/fonts
 cp -r app/img/* public/img
 
 # Copy plugins
-cp app/js/deque.js public/js/deque.js
+cp app/js/hammer.min.js public/js/hammer.min.js
+cp app/js/angular-hammer.min.js public/js/angular-hammer.min.js
 cp app/js/fastclick.js public/js/fastclick.js
 cp app/js/rzslider.js public/js/rzslider.js
 

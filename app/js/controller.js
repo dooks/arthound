@@ -170,11 +170,6 @@
       if(State.substates["FULL"]) { State.changeSubstate("LIST", false); }
     });
 
-    $scope.$on("onnavigateadj", function() {
-      self.current = Navigate.index;
-      if(State.substates["FULL"]) { State.changeSubstate("LIST", false); }
-    });
-
     $scope.$on("onnavigatepage", function() {
       if(State.state !== "LOAD") {
         self.can_page = false;
@@ -259,19 +254,6 @@
 
     $scope.$on("onnavigate", function() {
       // Update image info box
-      self.current = Navigate.current;
-
-      if(self.current) {
-        // Convert date to readable Date
-        var date = new Date(self.current.date * 1000);
-        self.date = date.toDateString();
-      }
-
-      $scope.$apply();
-    });
-
-    $scope.$on("onnavigateadj", function() {
-      // Update image info box
       self.current = Navigate.findByIndex(Navigate.index);
 
       if(self.current) {
@@ -305,7 +287,7 @@
     function($scope, State, Navigate, Keyboard) {
     // Handles current image being shown
     var self = this;
-    self.current   = new Deque(5);
+    self.buffer    = new Deque(5);
     self.state     = State.state;
     self.substates = State.substates;
 
@@ -357,43 +339,42 @@
       }
     });
 
-    $scope.$on("onnavigateadj", function() {
+    $scope.$on("onnavigate", function() {
       // Get left, center, and right content...
       if(Navigate.direction === "LEFT") {
         self.wrap("LEFT",  "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
-        self.current.push(Navigate.findByIndex(Navigate.index + 2));
-        self.current.shift();
+        self.buffer.push(Navigate.findByIndex(Navigate.index + 2));
+        self.buffer.shift();
         $(".image_rt2 > div").css("background-image", "url('"
-            + self.current.get(2).content + "')");
+            + self.buffer.get(4).content + "')");
 
-      } else {
+      } else if(Navigate.direction === "RIGHT") {
         self.wrap("RIGHT", "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
-        self.current.unshift(Navigate.findByIndex(Navigate.index - 2));
-        self.current.pop();
+        self.buffer.unshift(Navigate.findByIndex(Navigate.index - 2));
+        self.buffer.pop();
         $(".image_lt2 > div").css("background-image", "url('"
-            + self.current.get(0).content + "')");
+            + self.buffer.get(0).content + "')");
+      } else {
+
+        // Get left, center, and right content...
+        self.buffer.clear();
+        self.buffer.push(Navigate.findByIndex(Navigate.index - 2),
+                          Navigate.findByIndex(Navigate.index - 1),
+                          Navigate.findByIndex(Navigate.index),
+                          Navigate.findByIndex(Navigate.index + 1),
+                          Navigate.findByIndex(Navigate.index + 2));
+
+        $(".image_lt2 > div").css("background-image", "url('"
+            + self.buffer.get(0).content + "')");
+        $(".image_lft > div").css("background-image", "url('"
+            + self.buffer.get(1).content + "')");
+        $(".image_ctr > div").css("background-image", "url('"
+            + self.buffer.get(2).content + "')");
+        $(".image_rgt > div").css("background-image", "url('"
+            + self.buffer.get(3).content + "')");
+        $(".image_rt2 > div").css("background-image", "url('"
+            + self.buffer.get(4).content + "')");
       }
-    });
-
-    $scope.$on("onnavigate", function() {
-      // Get left, center, and right content...
-      self.current.clear();
-      self.current.push(Navigate.findByIndex(Navigate.index - 2),
-                        Navigate.findByIndex(Navigate.index - 1),
-                        Navigate.findByIndex(Navigate.index),
-                        Navigate.findByIndex(Navigate.index + 1),
-                        Navigate.findByIndex(Navigate.index + 2));
-
-      $(".image_lt2 > div").css("background-image", "url('"
-          + self.current.get(0).content + "')");
-      $(".image_lft > div").css("background-image", "url('"
-          + self.current.get(1).content + "')");
-      $(".image_ctr > div").css("background-image", "url('"
-          + self.current.get(2).content + "')");
-      $(".image_rgt > div").css("background-image", "url('"
-          + self.current.get(3).content + "')");
-      $(".image_rt2 > div").css("background-image", "url('"
-          + self.current.get(4).content + "')");
     });
   }]);
 

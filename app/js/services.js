@@ -370,14 +370,14 @@
     // Contains navigation listing
     // Listing data must be { "{{Page #}}": chunk }
     var self = this;
+    self.null_post = { "preview": "", "content": "", "thumbnails": ""};
 
     self.initialize = function(limit) {
       // reinitialize values based on page limit
       self.current_limit  = limit || 3; // How far ahead or behind to buffer
-      self.current_index  = 0; // Index of image to be displayed
+      self.index          = 0;
       self.current_page   = 0;
       self.direction      = "";
-      self.index          = 0;
       self.last_index     = 0; // Last index
       self.display_low    = 0 - self.current_limit; // How far ahead to buffer
       self.display_high   = 0 + self.current_limit; // How far behind to buffer
@@ -445,7 +445,7 @@
       if(self.index + 1 < self.last_index) {
         self.index += 1;
         self.direction = "LEFT";
-        self.broadcast("onnavigateadj");
+        self.broadcast("onnavigate");
         return true;
       } else if((self.index + 1) === self.last_index) {
         self.nextPage();
@@ -457,7 +457,7 @@
       if((self.index - 1) >= 0) {
         self.index -= 1;
         self.direction = "RIGHT";
-        self.broadcast("onnavigateadj");
+        self.broadcast("onnavigate");
         return true;
       } else { self.prevPage(); }
     };
@@ -467,15 +467,15 @@
       n = Number(n);
       if(n >= 0 && n < self.page_sizes[self.page_sizes.length - 1])  {
         self.index = n;
+        self.direction = "";
         self.broadcast("onnavigate");
         return true;
       } else { return false; }
     };
 
     self.prevPage = function() {
-      if(!self.first_page && self.can_page) {
+      if(self.current_page > 0 && self.can_page) {
         self.can_page = false;
-
         self._calcPage(--self.current_page);
         self.broadcast("onnavigatepage");
       }
@@ -484,8 +484,6 @@
     self.nextPage = function() {
       if(self.can_page) {
         self.can_page = false;
-
-        if(self.first_page) self.first_page = false;
         self.current_page = (+self.listing_buffer[self.listing_buffer.length - 1].page) + 1;
         self.broadcast("onnavigatepage");
       }
@@ -521,10 +519,8 @@
 
     self.findByIndex = function(index) {
       // Return item in listing_buffer based on index
-      index = (index > 0) ? (index < self.last_index) ? index : self.last_index - 1 : 0;
-
+      if(index < 0 || index >= self.last_index) return self.null_post;
       if(index >= self.page_sizes[0]) {
-
         for(var i = 1; i < self.page_sizes.length; i++) {
           if(self.page_sizes[i] > index) {
             var sub_index = index - self.page_sizes[i - 1];
