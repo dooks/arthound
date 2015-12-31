@@ -62,7 +62,11 @@ ul      { padding: 0; list-style-type: none;          }
   overflow: hidden;
 }
 
-.inanimate { transition: initial !important; }
+.inanimate {
+  transition: initial !important;
+  -webkit-transition: initial !important;
+     -moz-transition: initial !important;
+}
 
 button:hover {
   color: #E8DDCB;
@@ -243,8 +247,16 @@ html, body {
     width: 100%;
     padding: 0;
     margin: 0;
-    transition: all 0.5s;
-    background-color: black;
+    left: 0;
+
+    user-select: none;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+
+    transition: transform 0.5s, left 0.5s;
+    background-size:     contain;
+    background-repeat:   no-repeat;
+    background-position: center;
   }
 
     .image_lt2 {         transform: translateX(-200%) translateZ(0);
@@ -255,7 +267,10 @@ html, body {
                  -webkit-transform: translateX(-100%) translateZ(0);
                     -moz-transform: translateX(-100%) translateZ(0);
                  z-index: 2; }
-    .image_ctr { z-index: 2; }
+    .image_ctr {         transform: translateX(    0) translateZ(0);
+                 -webkit-transform: translateX(    0) translateZ(0);
+                    -moz-transform: translateX(    0) translateZ(0);
+                 z-index: 2; }
     .image_rgt {         transform: translateX( 100%) translateZ(0);
                  -webkit-transform: translateX( 100%) translateZ(0);
                     -moz-transform: translateX( 100%) translateZ(0);
@@ -264,15 +279,6 @@ html, body {
                  -webkit-transform: translateX( 200%) translateZ(0);
                     -moz-transform: translateX( 200%) translateZ(0);
                  z-index: 1; }
-
-    .image_container > div {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
 
   .overlay_back {
     position: fixed;
@@ -317,6 +323,9 @@ html, body {
     #overlay_info {
       position:  relative;
       border-radius: 10px;
+      user-select: none;
+      -webkit-user-select: none;
+         -moz-user-select: none;
     }
 
     #overlay_info > div {

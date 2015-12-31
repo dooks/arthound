@@ -3,7 +3,8 @@
   "version": "0.7.4",
   "private": true,
   "scripts": {
-    "start": "./browserify.sh"
+    "start": "./browserify.sh",
+    "clean": "rm -rf public; git checkout public"
   },
   "dependencies": {
     "uglifyjs": "~2.4.10",

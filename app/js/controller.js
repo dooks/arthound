@@ -8,6 +8,8 @@
 
     $scope.$on("onstatechange",    function() { self.state = State.state;         });
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
+
+    $scope
   }]);
 
   ng_app.controller("LoadingCtrl", ["$scope", "State",
@@ -221,7 +223,7 @@
         // Update listing display
         //self.listing = Navigate.getDisplay(Navigate.listing_buffer);
         self.listing = Navigate.listing_buffer;
-        console.log("Listing", self.listing);
+        //console.log("Listing", self.listing);
       }
     });
   }]);
@@ -291,12 +293,104 @@
     self.state     = State.state;
     self.substates = State.substates;
 
+    self.image_center = {};
+    self.touch_vel    = 0;
+    self.touch_x      = 0;
+    self.touch_y      = 0;
+    self.trim_x       = 0;
+    self.trim_y       = 0;
+    self.new_x        = 0;
+    self.new_y        = 0;
+    self.touch_scale  = 1;
+    self.touch_size   = 1;
+    self.new_size     = 1;
+
+    $scope.onPinch = function(ev) {
+      switch(ev.type) {
+        case "pinchin":
+        case "pinchout":
+          ng_app.image_containers.addClass("inanimate");
+          self.touch_scale = ev.scale;
+          self.trim_x = (ev.target.offsetWidth  * self.touch_scale - ev.target.offsetWidth ) / 2;
+          self.trim_y = (ev.target.offsetHeight * self.touch_scale - ev.target.offsetHeight) / 2;
+          break;
+        case "pinchend":
+          ng_app.image_containers.removeClass("inanimate");
+          break;
+      }
+
+      self.image_center.css({
+        "transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
+                     "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+      });
+    };
+
+    $scope.onPan = function(ev) {
+      switch(ev.type) {
+        case "panstart":
+          self.trim_x = (ev.target.offsetWidth  * self.touch_scale - ev.target.offsetWidth ) / 2;
+          self.trim_y = (ev.target.offsetHeight * self.touch_scale - ev.target.offsetHeight) / 2;
+          break;
+
+        case "panmove":
+          ng_app.image_containers.addClass("inanimate");
+          self.new_x = self.touch_x + ev.deltaX;
+          self.new_y = self.touch_y + ev.deltaY;
+
+          if(self.new_x >= self.trim_x || self.new_x <= -self.trim_x) {
+            ng_app.image_containers.css({
+              "left": self.new_x + "px"
+            });
+          } else {
+            self.image_center.css({
+              "transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
+                           "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+            });
+          }
+          break;
+
+        case "panend":
+          ng_app.image_containers.removeClass("inanimate");
+          self.touch_x = (self.new_x <= self.trim_x) ?
+                           (self.new_x >= -self.trim_x) ?
+                             self.new_x : -self.trim_x : self.trim_x;
+          self.touch_y = (self.new_y <= self.trim_y) ?
+                           (self.new_y >= -self.trim_y) ?
+                             self.new_y : -self.trim_y : self.trim_y;
+
+          ng_app.image_containers.css({ "left": "0" });
+          self.image_center.css({
+            "transform": "translate(" + self.touch_x + "px, " + self.touch_y + "px) " +
+                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+          });
+          break;
+      }
+    };
+
+    $scope.onTap = function(ev) {
+      State.toggleSubstate("OVERLAY");
+    };
+
     self.wrap = function(dir, class_lt2, class_lft, class_ctr, class_rgt, class_rt2) {
       var left2  = $("." + class_lt2);
       var left   = $("." + class_lft);
       var center = $("." + class_ctr);
       var right  = $("." + class_rgt);
       var right2 = $("." + class_rt2);
+
+      // Reset transform styles
+      self.touch_vel    = 0;
+      self.trim_x       = 0;
+      self.trim_y       = 0;
+      self.touch_x      = 0;
+      self.touch_y      = 0;
+      self.new_x        = 0;
+      self.new_y        = 0;
+      self.scale        - 1;
+      self.touch_size   = 1;
+      self.new_size     = 1;
+
+      self.image_center[0].style.removeProperty("transform");
 
       switch(dir) {
         case "LEFT":
@@ -325,6 +419,8 @@
           right2.addClass(class_lt2 + " inanimate");
           break;
       }
+
+      self.image_center = $(".image_ctr");
     };
 
     $scope.$on("onstatechange",    function() { self.state     = State.state;     });
@@ -345,14 +441,14 @@
         self.wrap("LEFT",  "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
         self.buffer.push(Navigate.findByIndex(Navigate.index + 2));
         self.buffer.shift();
-        $(".image_rt2 > div").css("background-image", "url('"
+        $(".image_rt2").css("background-image", "url('"
             + self.buffer.get(4).content + "')");
 
       } else if(Navigate.direction === "RIGHT") {
         self.wrap("RIGHT", "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
         self.buffer.unshift(Navigate.findByIndex(Navigate.index - 2));
         self.buffer.pop();
-        $(".image_lt2 > div").css("background-image", "url('"
+        $(".image_lt2").css("background-image", "url('"
             + self.buffer.get(0).content + "')");
       } else {
 
@@ -364,17 +460,19 @@
                           Navigate.findByIndex(Navigate.index + 1),
                           Navigate.findByIndex(Navigate.index + 2));
 
-        $(".image_lt2 > div").css("background-image", "url('"
+        $(".image_lt2").css("background-image", "url('"
             + self.buffer.get(0).content + "')");
-        $(".image_lft > div").css("background-image", "url('"
+        $(".image_lft").css("background-image", "url('"
             + self.buffer.get(1).content + "')");
-        $(".image_ctr > div").css("background-image", "url('"
+        $(".image_ctr").css("background-image", "url('"
             + self.buffer.get(2).content + "')");
-        $(".image_rgt > div").css("background-image", "url('"
+        $(".image_rgt").css("background-image", "url('"
             + self.buffer.get(3).content + "')");
-        $(".image_rt2 > div").css("background-image", "url('"
+        $(".image_rt2").css("background-image", "url('"
             + self.buffer.get(4).content + "')");
       }
+
+      self.image_center = $(".image_ctr");
     });
   }]);
 

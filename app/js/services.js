@@ -218,7 +218,7 @@
             }
             if(res.data)  { res = res.data || [];                             }
             if(res.length === 0) { return $.Deferred().resolve([]).promise(); }
-            console.log("Search Response", query, source, res);
+            //console.log("Search Response", query, source, res);
 
             if(res.length > 25) { // TODO: magic number...
               // Split response in fourths if too big...
