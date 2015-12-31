@@ -302,6 +302,7 @@
     self.new_x        = 0;
     self.new_y        = 0;
     self.touch_scale  = 1;
+    self.new_scale    = 1;
     self.touch_size   = 1;
     self.new_size     = 1;
 
@@ -310,26 +311,32 @@
         case "pinchin":
         case "pinchout":
           ng_app.image_containers.addClass("inanimate");
-          self.touch_scale = ev.scale;
-          self.trim_x = (ev.target.offsetWidth  * self.touch_scale - ev.target.offsetWidth ) / 2;
-          self.trim_y = (ev.target.offsetHeight * self.touch_scale - ev.target.offsetHeight) / 2;
+          self.new_scale = self.touch_scale * ev.scale;
+          if(self.new_scale < 0.5) self.new_scale = 0.5;
+          self.trim_x = (ev.target.offsetWidth  * self.new_scale - ev.target.offsetWidth ) / 2;
+          self.trim_y = (ev.target.offsetHeight * self.new_scale - ev.target.offsetHeight) / 2;
           break;
         case "pinchend":
+          self.touch_scale = self.new_scale;
           ng_app.image_containers.removeClass("inanimate");
           break;
       }
 
       self.image_center.css({
         "transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
-                     "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+                     "scale(" + self.new_scale + ", " + self.new_scale + ")",
+        "-webkit-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
+                     "scale(" + self.new_scale + ", " + self.new_scale + ")",
+        "-moz-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
+                     "scale(" + self.new_scale + ", " + self.new_scale + ")"
       });
     };
 
     $scope.onPan = function(ev) {
       switch(ev.type) {
         case "panstart":
-          self.trim_x = (ev.target.offsetWidth  * self.touch_scale - ev.target.offsetWidth ) / 2;
-          self.trim_y = (ev.target.offsetHeight * self.touch_scale - ev.target.offsetHeight) / 2;
+          self.trim_x = (ev.target.offsetWidth  * self.new_scale - ev.target.offsetWidth ) / 2;
+          self.trim_y = (ev.target.offsetHeight * self.new_scale - ev.target.offsetHeight) / 2;
           break;
 
         case "panmove":
@@ -338,13 +345,15 @@
           self.new_y = self.touch_y + ev.deltaY;
 
           if(self.new_x >= self.trim_x || self.new_x <= -self.trim_x) {
-            ng_app.image_containers.css({
-              "left": self.new_x + "px"
-            });
+            ng_app.image_containers.css({ "left": self.new_x + "px" });
           } else {
             self.image_center.css({
               "transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
-                           "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+                           "scale(" + self.new_scale + ", " + self.new_scale + ")",
+              "-webkit-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
+                           "scale(" + self.new_scale + ", " + self.new_scale + ")",
+              "-moz-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
+                           "scale(" + self.new_scale + ", " + self.new_scale + ")"
             });
           }
           break;
@@ -361,15 +370,26 @@
           ng_app.image_containers.css({ "left": "0" });
           self.image_center.css({
             "transform": "translate(" + self.touch_x + "px, " + self.touch_y + "px) " +
-                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+                         "scale(" + self.new_scale + ", " + self.new_scale + ")",
+            "-webkit-transform": "translate(" + self.touch_x + "px, " + self.touch_y + "px) " +
+                         "scale(" + self.new_scale + ", " + self.new_scale + ")",
+            "-moz-transform": "translate(" + self.touch_x + "px, " + self.touch_y + "px) " +
+                         "scale(" + self.new_scale + ", " + self.new_scale + ")"
           });
           break;
       }
     };
 
-    $scope.onTap = function(ev) {
-      State.toggleSubstate("OVERLAY");
-    };
+    $scope.onSwipe = function(ev) {
+      switch(ev.type) {
+        case "swipeleft":
+          Navigate.next();
+          break;
+        case "swiperight":
+          Navigate.prev();
+          break;
+      }
+    }
 
     self.wrap = function(dir, class_lt2, class_lft, class_ctr, class_rgt, class_rt2) {
       var left2  = $("." + class_lt2);
@@ -378,19 +398,21 @@
       var right  = $("." + class_rgt);
       var right2 = $("." + class_rt2);
 
-      // Reset transform styles
+      // Reset values
       self.touch_vel    = 0;
-      self.trim_x       = 0;
-      self.trim_y       = 0;
       self.touch_x      = 0;
       self.touch_y      = 0;
+      self.trim_x       = 0;
+      self.trim_y       = 0;
       self.new_x        = 0;
       self.new_y        = 0;
-      self.scale        - 1;
+      self.touch_scale  = 1;
+      self.new_scale    = 1;
       self.touch_size   = 1;
       self.new_size     = 1;
-
       self.image_center[0].style.removeProperty("transform");
+      self.image_center[0].style.removeProperty("-webkit-transform");
+      self.image_center[0].style.removeProperty("-moz-transform");
 
       switch(dir) {
         case "LEFT":
@@ -436,22 +458,24 @@
     });
 
     $scope.$on("onnavigate", function() {
+      // Return ["content"] or ["preview"] depending on viewport
+      var content = self.substates["FULL"] ? "preview" : "content";
+
       // Get left, center, and right content...
       if(Navigate.direction === "LEFT") {
         self.wrap("LEFT",  "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
         self.buffer.push(Navigate.findByIndex(Navigate.index + 2));
         self.buffer.shift();
         $(".image_rt2").css("background-image", "url('"
-            + self.buffer.get(4).content + "')");
+            + self.buffer.get(4)[content] + "')");
 
       } else if(Navigate.direction === "RIGHT") {
         self.wrap("RIGHT", "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
         self.buffer.unshift(Navigate.findByIndex(Navigate.index - 2));
         self.buffer.pop();
         $(".image_lt2").css("background-image", "url('"
-            + self.buffer.get(0).content + "')");
+            + self.buffer.get(0)[content] + "')");
       } else {
-
         // Get left, center, and right content...
         self.buffer.clear();
         self.buffer.push(Navigate.findByIndex(Navigate.index - 2),
@@ -461,15 +485,15 @@
                           Navigate.findByIndex(Navigate.index + 2));
 
         $(".image_lt2").css("background-image", "url('"
-            + self.buffer.get(0).content + "')");
+            + self.buffer.get(0)[content] + "')");
         $(".image_lft").css("background-image", "url('"
-            + self.buffer.get(1).content + "')");
+            + self.buffer.get(1)[content] + "')");
         $(".image_ctr").css("background-image", "url('"
-            + self.buffer.get(2).content + "')");
+            + self.buffer.get(2)[content] + "')");
         $(".image_rgt").css("background-image", "url('"
-            + self.buffer.get(3).content + "')");
+            + self.buffer.get(3)[content] + "')");
         $(".image_rt2").css("background-image", "url('"
-            + self.buffer.get(4).content + "')");
+            + self.buffer.get(4)[content] + "')");
       }
 
       self.image_center = $(".image_ctr");

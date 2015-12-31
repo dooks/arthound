@@ -262,7 +262,7 @@ html, body {
     .image_lt2 {         transform: translateX(-200%) translateZ(0);
                  -webkit-transform: translateX(-200%) translateZ(0);
                     -moz-transform: translateX(-200%) translateZ(0);
-                 z-index: 1; }
+                 z-index: -1; }
     .image_lft {         transform: translateX(-100%) translateZ(0);
                  -webkit-transform: translateX(-100%) translateZ(0);
                     -moz-transform: translateX(-100%) translateZ(0);
@@ -278,7 +278,7 @@ html, body {
     .image_rt2 {         transform: translateX( 200%) translateZ(0);
                  -webkit-transform: translateX( 200%) translateZ(0);
                     -moz-transform: translateX( 200%) translateZ(0);
-                 z-index: 1; }
+                 z-index: -1; }
 
   .overlay_back {
     position: fixed;
