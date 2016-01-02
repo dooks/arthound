@@ -104,7 +104,21 @@
       <ul>
         <li class="container-fluid" ng-repeat="(key, val) in info.current">
           <div class="col-xs-12 col-sm-3"><label>{{ key }}</label></div>
-          <div class="col-xs-12 col-sm-9 truncate" title="{{ val }}">{{ val }}</div>
+          <div ng-if="
+            key == 'content' ||
+            key == 'link'    ||
+            key == 'preview' ||
+            key == 'url'     ||
+            key == 'thumbs'"
+            class="col-xs-12 col-sm-9 truncate" title="{{ val }}">
+              <a href="{{ val }}">{{ val }}</a></div>
+          <div ng-if="
+            key != 'content' &&
+            key != 'link'    &&
+            key != 'preview' &&
+            key != 'url'     &&
+            key != 'thumbs'"
+            class="col-xs-12 col-sm-9 truncate" title="{{ val }}">{{ val }}</div>
         </li>
       </ul>
     </div>
@@ -129,13 +143,13 @@
     <div class="container-fluid">
       <div class="col-xs-12 col-sm-3"><label>Sources:</label></div>
       <div class="col-xs-12 col-sm-3">
-        Deviant Art: <input type="checkbox" ng-model="options.Search.sources.deviantart"/>
+        <label>Deviant Art: <input type="checkbox" ng-model="options.Search.sources.deviantart"/></label>
       </div>
       <div class="col-xs-12 col-sm-3 text-center">
-        e926: <input type="checkbox" ng-model="options.Search.sources.e926"/>
+        <label>e926: <input type="checkbox" ng-model="options.Search.sources.e926"/></label>
       </div>
       <div class="col-xs-12 col-sm-3 text-center">
-        Imgur: <input type="checkbox" ng-model="options.Search.sources.imgur"/>
+        <label>Imgur: <input type="checkbox" ng-model="options.Search.sources.imgur"/></label>
       </div>
     </div>
 
@@ -167,11 +181,10 @@
     <div class="modal-body">
       <div class="container-fluid">
         <p>Uses simple boolean to search [AND, OR, NOT]. Booleans consists of [term] [boolean] [term]. Booleans are case insensitive.</p>
-        <p>For quality searches, the site automatically pulls from popular submissions for each source first (score quota, minimum number of views, etc). This can be disabled in options.</p>
-        <p>If a tag cannot be found, Deviant Art is persistent in returning <i>something</i>.</p>
-        <p>e926 does not allow more than 5 total search terms without authentication and will not return anything if this occurs. Search terms do <i>not</i> include booleans.</p>
+        <p>For quality searches, the site automatically pulls from popular submissions for each source first (score quota, minimum number of views, etc), then sorted by date.</p>
+        <p>e926 does not allow more than 4 total search terms without authentication and will not return anything if this occurs. Search terms do <i>not</i> include booleans.</p>
         <p>Limit controls how much is returned per source. Imgur does not provide limit options, and will return more than this limit.</p>
-        <p>Due to its API credit use, response time for returning searches from Imgur will diminish until reset after 24 hours.</p>
+        <p>Due to its API credit limit, response time for returning searches from Imgur will diminish until reset after 24 hours.</p>
       </div>
 
       <div class="container-fluid">
@@ -266,15 +279,16 @@
         </div>
       </div>
     </div>
-    </div>
 
-    <div id="page_next" title="Load Next Page" clas="page-button"
+    <div id="page_next" title="Load Next Page" class="page-button"
       ng-class=
       "{'page-button-inactive': !listing.can_page,
         'hidden': listing.substates['LAST'] }"
       navclick="page_next">
       <span>Load Next Page...</span>
     </div>
+    </div>
+
   </div>
 
   <!-- image -->
@@ -286,17 +300,10 @@
           <span navclick="grid" class="glyphicon glyphicon-th-large"></span>
       </div>
 
-      <div id="overlay_full" class="overlay_button overlay_back" title="Toggle Zoom">
-          <span navclick="zoom" class="glyphicon"
-            ng-class="{'glyphicon-resize-full': !image.current.zoom,
-                       'glyphicon-resize-small': image.current.zoom
-                      }"></span>
-      </div>
-
-      <div id="overlay_prev" class="overlay_button overlay_back" title="Previous">
+      <div id="overlay_prev" class="overlay_button overlay_back hidden-xs" title="Previous">
           <span navclick="prev" class="glyphicon glyphicon-menu-left"></span>
       </div>
-      <div id="overlay_next" class="overlay_button overlay_back" title="Next">
+      <div id="overlay_next" class="overlay_button overlay_back hidden-xs" title="Next">
           <span navclick="next" class="glyphicon glyphicon-menu-right"></span>
       </div>
 
@@ -325,16 +332,55 @@
       </div>
     </div>
 
-    <img id="image_front" navclick="overlay" ng-class="{base_image_zoom: image.current.zoom}"/>
-    <div id="image_back"  ng-class="{hidden: image.current.zoom}"></div>
+    <div class="image_container image_lt2"
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
+    </div>
+
+    <div class="image_container image_lft"
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
+    </div>
+
+    <div class="image_container image_ctr"
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
+    </div>
+
+    <div class="image_container image_rgt"
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
+    </div>
+
+    <div class="image_container image_rt2"
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
+    </div>
+
   </div>
-
-
 </div>
 
 <!-- Plugin includes -->
+<script src="js/hammer.min.js"></script>
+<script src="js/angular-hammer.min.js"></script>
 <script src="js/fastclick.js"></script>
 <script src="js/rzslider.js"></script>
+<script src="js/deque.js"></script>
 
 <!-- User includes -->
 <script type="text/javascript" src="js/index.min.js"></script>

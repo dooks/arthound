@@ -35,6 +35,17 @@
     };
   });
 
+  ng_app.directive("mouse", function() {
+    return {
+      restrict: "A",
+      link: function(scope, element, attrs) {
+        // TODO: find better way to parse attrs...
+        var property = attrs.mouse.split(".");
+        element.bind("mousewheel", scope[property[0]][property[1]]);
+      }
+    };
+  });
+
   ng_app.directive("navclick",
     ["$rootScope", "State", "Search", "Navigate",
     function($rootScope, State, Search, Navigate) {

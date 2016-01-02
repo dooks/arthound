@@ -12,6 +12,7 @@ a:hover { cursor: pointer; color: #CDB380 !important; }
 ul      { padding: 0; list-style-type: none;          }
 
 .col-centered { float: none; margin: 0 auto; }
+.close { opacity: 1 !important; color: white; }
 
 .absolute-wrapper {
   position: absolute;
@@ -60,6 +61,12 @@ ul      { padding: 0; list-style-type: none;          }
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.inanimate {
+          transition: initial !important;
+  -webkit-transition: initial !important;
+     -moz-transition: initial !important;
 }
 
 button:hover {
@@ -221,7 +228,7 @@ html, body {
 
 
 #base_image {
-  overflow: auto;
+  overflow: hidden;
   margin:      0;
   padding:     0;
   border:      0;
@@ -229,32 +236,57 @@ html, body {
   position: relative;
 }
 
-  #image_front {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    z-index: 2;
-    display: block;
-    margin: 0 auto;
-  }
-
-  #image_back {
+  /* CSS Swipe animation */
+  #image_viewport {
     position: relative;
     width: 100%;
-    height: 100%;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: 1;
   }
 
-  .base_image_zoom {
-    position: initial !important;
-    width:       auto !important;
-    height:      auto !important;
-    opacity:        1 !important;
+  .image_container {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    left: 0;
+
+    -webkit-user-select: none;
+       -moz-user-select: none;
+    user-select: none;
+
+            transition: transform 0.5s, left 0.5s;
+    -webkit-transition: transform 0.5s, left 0.5s;
+       -moz-transition: transform 0.5s, left 0.5s;
+    background-size:     contain;
+    background-repeat:   no-repeat;
+    background-position: center;
   }
+    .image_container > img {
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+    }
+
+    .image_lt2 {         transform: translateX(-200%) translateZ(0);
+                 -webkit-transform: translateX(-200%) translateZ(0);
+                    -moz-transform: translateX(-200%) translateZ(0);
+                 z-index: -1; }
+    .image_lft {         transform: translateX(-100%) translateZ(0);
+                 -webkit-transform: translateX(-100%) translateZ(0);
+                    -moz-transform: translateX(-100%) translateZ(0);
+                 z-index: 2; }
+    .image_ctr {         transform: translateX(    0) translateZ(0);
+                 -webkit-transform: translateX(    0) translateZ(0);
+                    -moz-transform: translateX(    0) translateZ(0);
+                 z-index: 2; }
+    .image_rgt {         transform: translateX( 100%) translateZ(0);
+                 -webkit-transform: translateX( 100%) translateZ(0);
+                    -moz-transform: translateX( 100%) translateZ(0);
+                 z-index: 2; }
+    .image_rt2 {         transform: translateX( 200%) translateZ(0);
+                 -webkit-transform: translateX( 200%) translateZ(0);
+                    -moz-transform: translateX( 200%) translateZ(0);
+                 z-index: -1; }
 
   .overlay_back {
     position: fixed;
@@ -282,22 +314,25 @@ html, body {
       display: inline-block;
     }
 
-  #overlay_grid   { top:  20px; margin-left: 20px; }
-  #overlay_search { top:  20px; margin-left: 70px; }
-  #overlay_full   { top:  20px;       right: 20px; }
+  #overlay_grid   { top:  20px;       right: 20px; }
+  #overlay_search { top:  20px; margin-left: 20px; }
   #overlay_prev   { top:   50%; margin-left: 20px; }
   #overlay_next   { top:   50%;       right: 20px; }
 
   #overlay_info_container {
-    position: absolute;
-    bottom:       20px;
-    width:        100%;
+    position: fixed;
+    bottom:    20px;
+    width:     100%;
+    z-index:      3;
     padding: 0 20px;
   }
 
     #overlay_info {
       position:  relative;
       border-radius: 10px;
+      -webkit-user-select: none;
+         -moz-user-select: none;
+      user-select: none;
     }
 
     #overlay_info > div {
@@ -332,9 +367,9 @@ html, body {
     #overlay_info > div:last-child > ul > li {
       padding:    3px;
       display: inline;
-      user-select:                  none;
-      -moz-user-select:             none;
       -webkit-user-select:          none;
+      -moz-user-select:             none;
+      user-select:                  none;
     }
 
     #overlay_info > div:last-child > ul > li:hover {
@@ -446,9 +481,6 @@ html, body {
 /* update scrollbar offset if both scrolls are visible */
 .scrollbar-inner > .scroll-element.scroll-y.scroll-scrollx_visible .scroll-element_track { top: -12px; }
 .scrollbar-inner > .scroll-element.scroll-y.scroll-scrollx_visible .scroll-element_size { top: -12px; }
-
-
-
 
 
 
