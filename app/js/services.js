@@ -20,7 +20,6 @@
         case "DEFAULT":
         case "ACTIVE":
           self.state = state;
-          $rootScope.$apply();
           $rootScope.$broadcast("onstatechange");
           break;
       }
@@ -36,7 +35,6 @@
         case "FIRST":
         case "LAST":
           self.substates[substate] = (!!value); // Evaluate value as boolean
-          $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
           break;
       }
@@ -52,7 +50,6 @@
         case "LIST":
         case "LAST":
           self.substates[substate] = (!self.substates[substate]); // Evaluate value as boolean
-          $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
           break;
       }

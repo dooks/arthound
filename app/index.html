@@ -300,13 +300,6 @@
           <span navclick="grid" class="glyphicon glyphicon-th-large"></span>
       </div>
 
-      <div id="overlay_full" class="overlay_button overlay_back" title="Toggle Zoom">
-          <span navclick="zoom" class="glyphicon"
-            ng-class="{'glyphicon-resize-full': !image.current.zoom,
-                       'glyphicon-resize-small': image.current.zoom
-                      }"></span>
-      </div>
-
       <div id="overlay_prev" class="overlay_button overlay_back hidden-xs" title="Previous">
           <span navclick="prev" class="glyphicon glyphicon-menu-left"></span>
       </div>
@@ -340,38 +333,43 @@
     </div>
 
     <div class="image_container image_lt2"
-      hm-pinchin="onPinch"    hm-pinchout="onPinch"   hm-pinchend="onPinch"
-      hm-panstart="onPan"     hm-panmove="onPan"      hm-panend="onPan"
-      hm-swipeleft="onSwipe"  hm-swiperight="onSwipe"
-      navclick="overlay">
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
     </div>
 
     <div class="image_container image_lft"
-      hm-pinchin="onPinch"    hm-pinchout="onPinch"   hm-pinchend="onPinch"
-      hm-panstart="onPan"     hm-panmove="onPan"      hm-panend="onPan"
-      hm-swipeleft="onSwipe"  hm-swiperight="onSwipe"
-      navclick="overlay">
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
     </div>
 
     <div class="image_container image_ctr"
-      hm-pinchin="onPinch"    hm-pinchout="onPinch"   hm-pinchend="onPinch"
-      hm-panstart="onPan"     hm-panmove="onPan"      hm-panend="onPan"
-      hm-swipeleft="onSwipe"  hm-swiperight="onSwipe"
-      navclick="overlay">
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
     </div>
 
     <div class="image_container image_rgt"
-      hm-pinchin="onPinch"    hm-pinchout="onPinch"   hm-pinchend="onPinch"
-      hm-panstart="onPan"     hm-panmove="onPan"      hm-panend="onPan"
-      hm-swipeleft="onSwipe"  hm-swiperight="onSwipe"
-      navclick="overlay">
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
     </div>
 
     <div class="image_container image_rt2"
-      hm-pinchin="onPinch"    hm-pinchout="onPinch"   hm-pinchend="onPinch"
-      hm-panstart="onPan"     hm-panmove="onPan"      hm-panend="onPan"
-      hm-swipeleft="onSwipe"  hm-swiperight="onSwipe"
-      navclick="overlay">
+      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+      mouse="image.onScroll" navclick="overlay">
+      <img draggable="false" />
     </div>
 
   </div>
