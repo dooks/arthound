@@ -1,11 +1,31 @@
-# mini HTML
+# copy HTML
 cat app/index.html > public/index.html
 
-#minify CSS
-cat app/css/index.css > public/css/index.min.css
+# concatenate CSS
+cat \
+app/css/bootstrap.min.css \
+app/css/bootstrap-theme.min.css \
+app/css/index.css \
+app/css/rzslider.min.css \
+> public/css/index.min.css
+
+# copy fonts
+cp -r app/fonts/* public/fonts
+
+# copy images
+cp -r app/img/* public/img
+
+# Copy plugins;
+cp app/js/angular.min.js public/js/angular.min.js
+cp app/js/angular-route.min.js public/js/angular-route.min.js
+cp app/js/hammer.min.js public/js/hammer.min.js
+cp app/js/angular-hammer.min.js public/js/angular-hammer.min.js
+cp app/js/deque.js public/js/deque.js
+cp app/js/fastclick.js public/js/fastclick.js
+cp app/js/rzslider.js public/js/rzslider.js
 
 # Concatenate JS files
-node_modules/.bin/browserify \
+cat \
 app/js/bootstrap.min.js \
 app/js/bootstrap-toolkit.min.js \
 app/js/angular.js \

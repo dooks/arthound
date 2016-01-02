@@ -1,14 +1,15 @@
 window.ng_hound = (function(ng) {
   $(document).ready(function() {
-    var version = "0.8.9";
+    var version = "0.8.16";
     $(".version").html(version);
+    window.FastClick.attach(document.body);
   });
 
   if(ng === undefined || ng === null) {
     console.error("Angular not found");
   }
 
-  var ng_app = ng.module("ngHound", ["jQueryScrollbar", "ngRoute", "rzModule"]);
+  var ng_app = ng.module("ngHound", ["ngRoute", "rzModule", "hmTouchEvents"]);
 
   ng_app.config(["$locationProvider", "$routeProvider",
       function($locationProvider, $routeProvider) {
@@ -37,8 +38,9 @@ window.ng_hound = (function(ng) {
       ng_app.overlay_list   = $("#overlay_list");
       ng_app.overlay_next   = $("#overlay_next");
       ng_app.overlay_prev   = $("#overlay_prev");
-    ng_app.image_front  = $("#image_front");
-    ng_app.image_back     = $("#image_back");
+    ng_app.image_containers = $(".image_container");
+      ng_app.image_front    = $("#image_front");
+      ng_app.image_back     = $("#image_back");
 
   ng_app.base_listing     = $("#base_listing");
     ng_app.page_next      = $("#page_next");

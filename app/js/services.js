@@ -20,7 +20,6 @@
         case "DEFAULT":
         case "ACTIVE":
           self.state = state;
-          $rootScope.$apply();
           $rootScope.$broadcast("onstatechange");
           break;
       }
@@ -36,7 +35,6 @@
         case "FIRST":
         case "LAST":
           self.substates[substate] = (!!value); // Evaluate value as boolean
-          $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
           break;
       }
@@ -52,7 +50,6 @@
         case "LIST":
         case "LAST":
           self.substates[substate] = (!self.substates[substate]); // Evaluate value as boolean
-          $rootScope.$apply();
           $rootScope.$broadcast("onsubstatechange");
           break;
       }
@@ -88,6 +85,7 @@
             // If "xs", switch to FULL substate
             if(self.view_state === "xs") { self.changeSubstate("FULL", true); }
             if(self.view_state === "sm" || self.view_state === "md" || self.view_state === "lg") {
+              self.changeSubstate("LIST", true);
               self.changeSubstate("FULL", false);
             }
           }
@@ -196,7 +194,7 @@
       //   @page: page number to check for in each source
       //   @limit: How many records to return for each source
       var new_page    = page || 0;
-      self.last_query = query || self.last_query;
+      self.last_query = query || self.last_query || " ";
       self.limit      = limit || self.limit;
 
       function request(url, data_type, source, options, headers) {
@@ -217,7 +215,7 @@
             }
             if(res.data)  { res = res.data || [];                             }
             if(res.length === 0) { return $.Deferred().resolve([]).promise(); }
-            console.log("Search Response", url, query, source, res);
+            //console.log("Search Response", query, source, res);
 
             if(res.length > 25) { // TODO: magic number...
               // Split response in fourths if too big...
@@ -287,10 +285,10 @@
                   query.splice(i, 1);
                 }
               }
-              new_query = query.join("+");
+              new_query = query.join(" ");
 
               var options = {
-                "tags":  new_query, // TODO: normalize query
+                "tags":  "score:>10 " + new_query, // TODO: normalize query
                 "page":  new_page + 1, // e926 starts paging at 1....
                 "limit": self.limit,
               }
@@ -309,14 +307,17 @@
                 else if(query[i] === "not") { query[i] = "NOT"; }
                 else if(query[i] === "and") { query[i] = "AND"; }
               }
-              new_query = query.join(" ");
+              new_query = encodeURIComponent(query.join(" "));
 
               var options = [
-                "?q=boost%3apopular%20" + encodeURIComponent(new_query).replace("%20", "+"),
+                "?q=boost%3apopular%20" + encodeURIComponent(new_query)
+                                          .replace(/'/g, "%27")
+                                          .replace(/%20/g, "+"),
                 "&limit="  + self.limit,
                 "&offset=" + new_page * self.limit,
                 "&order=9" // browse, sorted by popularity
               ].join("");
+
 
               // Use Yahoo API as a proxy to retrieve rss.xml as a JSON
               var url = "http://backend.deviantart.com/rss.xml" + options;
@@ -338,7 +339,7 @@
                 else if(query[i] === "not") { query[i] = "NOT"; }
                 else if(query[i] === "and") { query[i] = "AND"; }
               }
-              new_query = query.join("+");
+              new_query = query.join(" ");
 
               var options = {
                 "sort": "viral",
@@ -366,14 +367,14 @@
     // Contains navigation listing
     // Listing data must be { "{{Page #}}": chunk }
     var self = this;
+    self.null_post = { "preview": "", "content": "", "thumbnails": ""};
 
     self.initialize = function(limit) {
       // reinitialize values based on page limit
-      self.current        = {};
       self.current_limit  = limit || 3; // How far ahead or behind to buffer
-      self.current_index  = 0; // Index of image to be displayed
-      self.current_page   = 0;
       self.index          = 0;
+      self.current_page   = 0;
+      self.direction      = "";
       self.last_index     = 0; // Last index
       self.display_low    = 0 - self.current_limit; // How far ahead to buffer
       self.display_high   = 0 + self.current_limit; // How far behind to buffer
@@ -440,7 +441,7 @@
     self.next = function() {
       if(self.index + 1 < self.last_index) {
         self.index += 1;
-        self.current = self.findByIndex(self.index);
+        self.direction = "LEFT";
         self.broadcast("onnavigate");
         return true;
       } else if((self.index + 1) === self.last_index) {
@@ -452,10 +453,10 @@
     self.prev = function() {
       if((self.index - 1) >= 0) {
         self.index -= 1;
-        self.current = self.findByIndex(self.index);
+        self.direction = "RIGHT";
         self.broadcast("onnavigate");
         return true;
-      } else { return false; }
+      } else { self.prevPage(); }
     };
 
     self.to = function(n) {
@@ -463,16 +464,15 @@
       n = Number(n);
       if(n >= 0 && n < self.page_sizes[self.page_sizes.length - 1])  {
         self.index = n;
-        self.current = self.findByIndex(self.index);
+        self.direction = "";
         self.broadcast("onnavigate");
         return true;
       } else { return false; }
     };
 
     self.prevPage = function() {
-      if(!self.first_page && self.can_page) {
+      if(self.current_page > 0 && self.can_page) {
         self.can_page = false;
-
         self._calcPage(--self.current_page);
         self.broadcast("onnavigatepage");
       }
@@ -481,10 +481,7 @@
     self.nextPage = function() {
       if(self.can_page) {
         self.can_page = false;
-
-        if(self.first_page) self.first_page = false;
         self.current_page = (+self.listing_buffer[self.listing_buffer.length - 1].page) + 1;
-        //self._calcPage(++self.current_page);
         self.broadcast("onnavigatepage");
       }
     };
@@ -519,8 +516,8 @@
 
     self.findByIndex = function(index) {
       // Return item in listing_buffer based on index
+      if(index < 0 || index >= self.last_index) return self.null_post;
       if(index >= self.page_sizes[0]) {
-
         for(var i = 1; i < self.page_sizes.length; i++) {
           if(self.page_sizes[i] > index) {
             var sub_index = index - self.page_sizes[i - 1];
