@@ -64,6 +64,12 @@
 
     // Initialize Bootstrap states
     $(document).ready(function() {
+      // TODO: hack.... force images to base_view's size
+      ng_app.image_images.css({
+        "max-width":  ng_app.base_view.width()  + "px",
+        "max-height": ng_app.base_view.height() + "px"
+      });
+
       self.view_state      = viewport.current();
       self.view_last_state = self.view_state;
       $rootScope.$broadcast("onviewportchange");
@@ -76,6 +82,12 @@
 
       $(window).resize(function() {
         if(self.view_can_change) {
+          // TODO: hack.... force images to base_view's size
+          ng_app.image_images.css({
+            "max-width":  ng_app.base_image.width()  + "px",
+            "max-height": ng_app.base_image.height() + "px"
+          });
+
           self.view_can_change = false;
           self.view_state = viewport.current();
 
@@ -154,8 +166,8 @@
     var self = this;
     self.query        = "";
     self.response     = [];
-    self.sources      = { "deviantart": true, "e926": true, "imgur": true };
-    self.mature       = false;
+    self.sources      = { "deviantart": false, "e926": true, "imgur": false };
+    self.mature       = true;
     self.temp_sources = {};
     self.limit        = 24; // Default hard limit
 
@@ -375,7 +387,9 @@
       self.index          = 0;
       self.current_page   = 0;
       self.direction      = "";
-      self.last_index     = 0; // Last index
+      self.last_index     = 0;
+      self.first_page     = false;
+      self.last_page      = false;
       self.display_low    = 0 - self.current_limit; // How far ahead to buffer
       self.display_high   = 0 + self.current_limit; // How far behind to buffer
 
@@ -471,7 +485,7 @@
     };
 
     self.prevPage = function() {
-      if(self.current_page > 0 && self.can_page) {
+      if(!self.first_page > 0 && self.can_page) {
         self.can_page = false;
         self._calcPage(--self.current_page);
         self.broadcast("onnavigatepage");
@@ -479,7 +493,7 @@
     };
 
     self.nextPage = function() {
-      if(self.can_page) {
+      if(!self.last_page && self.can_page) { // TODO: currently no check for last page...
         self.can_page = false;
         self.current_page = (+self.listing_buffer[self.listing_buffer.length - 1].page) + 1;
         self.broadcast("onnavigatepage");
