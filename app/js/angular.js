@@ -1,6 +1,6 @@
 window.ng_hound = (function(ng) {
   $(document).ready(function() {
-    var version = "0.8.16";
+    var version = "0.9.0";
     $(".version").html(version);
     window.FastClick.attach(document.body);
   });
@@ -39,8 +39,7 @@ window.ng_hound = (function(ng) {
       ng_app.overlay_next   = $("#overlay_next");
       ng_app.overlay_prev   = $("#overlay_prev");
     ng_app.image_containers = $(".image_container");
-      ng_app.image_front    = $("#image_front");
-      ng_app.image_back     = $("#image_back");
+      ng_app.image_images   = $(".image_container > div > div > img");
 
   ng_app.base_listing     = $("#base_listing");
     ng_app.page_next      = $("#page_next");

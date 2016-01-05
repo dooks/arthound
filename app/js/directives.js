@@ -41,7 +41,7 @@
       link: function(scope, element, attrs) {
         // TODO: find better way to parse attrs...
         var property = attrs.mouse.split(".");
-        element.bind("mousewheel", scope[property[0]][property[1]]);
+        element.bind("wheel", scope[property[0]][property[1]]);
       }
     };
   });

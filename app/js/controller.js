@@ -19,7 +19,7 @@
     $scope.$on("onstatechange",    function() { self.state = State.state;     });
     $scope.$on("onsubstatechange", function() {
       self.substates = State.substates;
-      $scope.$apply();
+      if(!$scope.$$phase) { $scope.$apply(); /* TODO: anti-pattern, hack */ }
     });
   }]);
 
@@ -47,7 +47,7 @@
     $scope.$on("onstatechange",    function() { self.state = State.state; });
     $scope.$on("onsubstatechange", function() {
       self.substates = State.substates;
-      //$scope.$apply();
+      if(!$scope.$$phase) { $scope.$apply(); /* TODO: anti-pattern, hack */ }
     });
 
     // Initialize search query on page load, if exists
@@ -66,7 +66,7 @@
       if(State.substates["SEARCH"]) {
         if(Keyboard.ord === "UP") {
           self.query = Search.last_query;
-          $scope.$apply();
+          if(!$scope.$$phase) { $scope.$apply(); /* TODO: anti-pattern, hack */ }
         } else {
           ng_app.searchbar_search.focus();
         }
@@ -77,7 +77,7 @@
       ng_app.searchbar_search.focus();
 
       if(!State.substates["SEARCH"]) {
-        $scope.$apply();
+        if(!$scope.$$phase) { $scope.$apply(); /* TODO: anti-pattern, hack */ }
         State.changeSubstate("SEARCH", true);
         ng_app.searchbar_search.focus();
       }
@@ -85,7 +85,7 @@
 
     $scope.$on("onkeybackspace", function() {
       if(self.query === "") State.changeSubstates("SEARCH", false);
-      $scope.$apply();
+      if(!$scope.$$phase) { $scope.$apply(); /* TODO: anti-pattern, hack */ }
     });
 
     $scope.$on("onkeyenter", function() {
@@ -93,7 +93,7 @@
         State.changeSubstate("FIRST", false);
         State.changeSubstate("LAST", false);
         State.changeSubstate("LOAD", true);
-        $location.search("q", self.query);
+        $location.search({ "q": self.query, "limit": Search.limit });
         ng_app.searchbar_search.blur();
 
         // this is a new search, so...
@@ -171,7 +171,10 @@
       }
     });
 
-    $scope.$on("onnosources", function() { State.changeSubstate("LAST", true); });
+    $scope.$on("onnosources", function() {
+      State.changeSubstate("LAST", true);
+      Navigate.last_page = true;
+    });
 
     $scope.$on("onnavigate", function() {
       self.current = Navigate.index;
@@ -216,15 +219,21 @@
         Navigate.can_page = true;
         self.can_page     = true;
 
-        if(!self.substates["LAST"]) { $location.search("page", Navigate.current_page); }
-        Navigate.to(Navigate.index);
+        // If this is the first page...
         if(Navigate.page_sizes[0] !== 0 && !self.substates["LAST"]) {
           State.changeSubstate("FIRST", true);
         }
 
-        // Change state to ACTIVE and LIST
+        // Update page URL only if page was not the last one...
+        // Otherwise, update page first/last flags
+        if(!self.substates["LAST"])  { $location.search("page", Navigate.current_page); }
+        else                         { Navigate.last_page = true;                       }
+        if( self.substates["FIRST"]) { Navigate.first_page = true;                      }
+
+        // Change state to ACTIVE and LIST, and navigate to current item
         State.changeState("ACTIVE");
         State.changeSubstate("LIST", true);
+        Navigate.to(Navigate.index);
 
         // Update listing display
         //self.listing = Navigate.getDisplay(Navigate.listing_buffer);
@@ -270,9 +279,7 @@
         self.date = date.toDateString();
       }
 
-      if(!$scope.$$phase) {
-        $scope.$apply(); // TODO: anti-pattern, hack
-      }
+      if(!$scope.$$phase) { $scope.$apply(); /* TODO: anti-pattern, hack */ }
     });
   }]);
 
@@ -301,21 +308,31 @@
     self.state     = State.state;
     self.substates = State.substates;
 
-    self.image_center = {};
+    self.image_center = {
+      css: function()    {},
+      width: function()  { return 0; },
+      height: function() { return 0; }
+    };
     self.reset = function() {
-      self.touch_vel    = 0;
-      self.center_x     = 0;
-      self.center_y     = 0;
-      self.touch_x      = 0;
-      self.touch_y      = 0;
+      self.base_width   =  self.image_center.width();
+      self.base_height  = self.image_center.height();
       self.trim_x       = 0;
       self.trim_y       = 0;
+      self.touch_x      = 0;
+      self.touch_y      = 0;
       self.new_x        = 0;
       self.new_y        = 0;
       self.touch_scale  = 1;
+      self.max_scale    = 3;
+      self.touch_x_over = 0;
       self.new_scale    = 1;
-      self.touch_size   = 1;
       self.new_size     = 1;
+
+      self.image_center.css({
+        "transform": "translate3d(0, 0, 0) scale(1, 1)",
+"-webkit-transform": "translate3d(0, 0, 0) scale(1, 1)",
+   "-moz-transform": "translate3d(0, 0, 0) scale(1, 1)"
+      });
     };
     self.reset();
 
@@ -323,97 +340,143 @@
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
 
+    self.onTap = function(ev) {
+      switch(ev.tapCount) {
+        case 1:
+          // Toggle overlay
+          State.toggleSubstate("OVERLAY");
+          break;
+        case 2:
+          window.scrollTo(0, 1); // Hide address bar on mobile....
+
+          // Toggle zoom
+          if(self.touch_scale > 1) {
+            self.touch_x = 0;
+            self.touch_y = 0;
+            self.touch_scale = 1;
+          } else if(self.touch_scale <= 1) {
+            self.touch_scale = self.max_scale;
+          }
+
+          self.image_center.css({
+            "transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
+    "-webkit-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
+       "-moz-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+          });
+          break;
+      }
+    }
+
+    self.onPress = function(ev) {
+    }
+
     self.onPinch = function(ev) {
       switch(ev.type) {
         case "pinchstart":
-          self.center_x = ev.center.x;
-          self.center_y = ev.center.y;
+          self.last_pinch = "pinchstart"; // Hammer.js is firing extraneous pinch event
+          ng_app.image_images.addClass("inanimate");
           break;
 
         case "pinchin":
         case "pinchout":
-          if(ev.scale !== 1) {
-            ng_app.image_containers.addClass("inanimate");
+          // Prevent jump: there is one last pinch event after pinchend for some reason
+          if(self.last_pinch !== "pinchend") {
             self.new_scale = self.touch_scale * ev.scale;
-            if(self.new_scale < 1) self.new_scale = 1;
-            self.trim_x = (ev.target.offsetWidth  * self.new_scale - ev.target.offsetWidth ) / 2;
-            self.trim_y = (ev.target.offsetHeight * self.new_scale - ev.target.offsetHeight) / 2;
 
-            //self.image_center.css({
-              //"transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
-                           //"scale(" + self.new_scale + ", " + self.new_scale + ")",
-              //"-webkit-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
-                           //"scale(" + self.new_scale + ", " + self.new_scale + ")",
-              //"-moz-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
-                           //"scale(" + self.new_scale + ", " + self.new_scale + ")",
-              //"transform-origin": self.center_x + "px " + self.center_y + "px",
-              //"-webkit-transform-origin": self.center_x + "px " + self.center_y + "px",
-              //"-moz-transform-origin": self.center_x + "px " + self.center_y + "px"
-            //});
+            if(self.new_scale < 1) { self.new_scale = 1; self.touch_x = 0; self.touch_y = 0; }
+
+            self.image_center.css({
+              "transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                           "scale(" + self.new_scale + ", " + self.new_scale + ")",
+      "-webkit-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                           "scale(" + self.new_scale + ", " + self.new_scale + ")",
+         "-moz-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                           "scale(" + self.new_scale + ", " + self.new_scale + ")"
+            });
           }
           break;
 
         case "pinchend":
-          ng_app.image_containers.removeClass("inanimate");
+          self.last_pinch = "pinchend";
+
+          ng_app.image_images.removeClass("inanimate");
           self.touch_scale = self.new_scale;
           break;
       }
     };
 
     self.onPan = function(ev) {
-      if(ev.type === "panstart") {
-        self.trim_x = (ev.target.offsetWidth  * self.new_scale - ev.target.offsetWidth ) / 2;
-        self.trim_y = (ev.target.offsetHeight * self.new_scale - ev.target.offsetHeight) / 2;
-      }
+      switch(ev.type) {
+        case "panstart":
+          ng_app.image_containers.addClass("inanimate");
+          ng_app.image_images.addClass("inanimate");
+          self.image_width  =  self.image_center.width();
+          self.image_height = self.image_center.height();
+          self.base_width   =  ng_app.base_image.width();
+          self.base_height  = ng_app.base_image.height();
+          self.trim_x       = ((self.image_width  * self.touch_scale) -  self.base_width) / 2;
+          self.trim_y       = ((self.image_height * self.touch_scale) - self.base_height) / 2;
+          break;
 
-      if(ev.type === "panmove") {
-        ng_app.image_containers.addClass("inanimate");
-        self.new_x = self.touch_x + ev.deltaX;
-        //self.new_y = self.touch_y + ev.deltaY;
+        case "panmove":
+          if(self.image_height * self.touch_scale >= self.base_height) {
+            self.new_y = self.touch_y + ev.deltaY;
 
-        if(self.new_y >=  self.trim_y) { self.new_y =  self.trim_y; }
-        //if(self.new_y <= -self.trim_y) { self.new_y = -self.trim_y; }
-        if(self.new_x >= self.trim_x || self.new_x <= -self.trim_x) {
-          ng_app.image_containers.css({ "left": self.new_x + "px" });
-        } else {
+            // Keep self.new_y within trim_y limits
+            self.new_y = self.new_y <=  self.trim_y ?
+                           self.new_y >= -self.trim_y ?
+                             self.new_y : -self.trim_y  : self.trim_y;
+          } else {
+            self.new_y = 0;
+          }
+
+          self.new_x = self.touch_x + ev.deltaX;
+
+          // If image is scaled
+          if(self.image_width * self.touch_scale >= self.base_width) {
+            // Transfer excess into touch_x_over, and limit new_x within trim_x limits
+            if(self.new_x <= -self.trim_x)      { self.touch_x_over = self.new_x + self.trim_x; }
+            else if(self.new_x >=  self.trim_x) { self.touch_x_over = self.new_x - self.trim_x; }
+            else                                { self.touch_x_over = 0; }
+
+            // Keep self.new_x within trim_x limits
+            self.new_x = self.new_x <=  self.trim_x ?
+                           self.new_x >= -self.trim_x ?
+                             self.new_x : -self.trim_x  : self.trim_x;
+          } else {
+            // Only translate parent
+            self.touch_x_over = self.new_x;
+            self.new_x = 0;
+          }
+
+          ng_app.image_containers.css({"left": self.touch_x_over + "px"});
           self.image_center.css({
-            "transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
+            "transform": "translate3d(" + self.new_x + "px, " + self.new_y + "px, 0px) " +
                          "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-            "-webkit-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
+    "-webkit-transform": "translate3d(" + self.new_x + "px, " + self.new_y + "px, 0px) " +
                          "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-            "-moz-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
-                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-            "transform-origin": "50% 50%",
-            "-webkit-transform-origin": "50% 50%",
-            "-moz-transform-origin": "50% 50%"
+       "-moz-transform": "translate3d(" + self.new_x + "px, " + self.new_y + "px, 0px) " +
+                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
           });
-        }
-      }
+          break;
 
-      if(ev.type === "panend") {
-        ng_app.image_containers.removeClass("inanimate");
+        case "panend":
+          ng_app.image_containers.removeClass("inanimate");
+          ng_app.image_images.removeClass("inanimate");
+          self.touch_x = self.new_x;
+          self.touch_y = self.new_y;
 
-        if(self.new_x <= -ev.target.offsetWidth/2) Navigate.next();
-        else if(self.new_x >= ev.target.offsetWidth/2) Navigate.prev();
-        self.touch_x = (self.new_x <= self.trim_x) ?
-                         (self.new_x >= -self.trim_x) ?
-                           self.new_x : -self.trim_x : self.trim_x;
-        //self.touch_y = (self.new_y <= self.trim_y) ?
-                         //(self.new_y >= -self.trim_y) ?
-                           //self.new_y : -self.trim_y : self.trim_y;
-
-        ng_app.image_containers.css({ "left": "0" });
-        self.image_center.css({
-          "transform": "translate(" + self.touch_x + "px, " + self.touch_y + "px) " +
-                       "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-          "-webkit-transform": "translate(" + self.touch_x + "px, " + self.touch_y + "px) " +
-                       "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-          "-moz-transform": "translate(" + self.touch_x + "px, " + self.touch_y + "px) " +
-                       "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-          "transform-origin": self.center_x + "% " + self.center_y + "%",
-          "-webkit-transform-origin": self.center_x + "% " + self.center_y + "%",
-          "-moz-transform-origin": self.center_x + "% " + self.center_y + "%"
-        });
+          // Only switch to next if panned more than 3/4 of the way through
+          if(self.touch_x_over <= -ev.target.offsetWidth / 2)
+            Navigate.next();
+          if(self.touch_x_over >=  ev.target.offsetWidth / 2)
+            Navigate.prev();
+          self.touch_x_over = 0;
+          ng_app.image_containers.css({"left": "0px"});
+          break;
       }
     };
 
@@ -430,32 +493,20 @@
 
     self.onScroll = function(ev) {
       self.new_scale = self.touch_scale;
-      if(ev.originalEvent.deltaY > 0) {
-        // Positive - down direction
-        self.new_scale -= 0.1;
-      } else if(ev.originalEvent.deltaY < 0) {
-        // Negative - up direction
-        self.new_scale += 0.1;
-      }
+      if(ev.originalEvent.deltaY > 0)      { self.new_scale -= 0.1; }
+      else if(ev.originalEvent.deltaY < 0) { self.new_scale += 0.1; }
 
-      if(self.new_scale < 1) self.new_scale = 1;
+      if(self.new_scale < 1) { self.new_scale = 1; self.touch_x = 0; self.touch_y = 0; }
       self.touch_scale = self.new_scale;
-      self.trim_x = (ev.target.offsetWidth  * self.touch_scale - ev.target.offsetWidth ) / 2;
-      self.trim_y = (ev.target.offsetHeight * self.touch_scale - ev.target.offsetHeight) / 2;
-      self.center_x = ev.offsetX / ev.target.offsetWidth  * 100;
-      self.center_y = ev.offsetY / ev.target.offsetHeight * 100;
 
-      //self.image_center.css({
-        //"transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
-                     //"scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-        //"-webkit-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
-                     //"scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-        //"-moz-transform": "translate(" + self.new_x + "px, " + self.new_y + "px) " +
-                     //"scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-        //"transform-origin": self.center_x + "% " + self.center_y + "%",
-        //"-webkit-transform-origin": self.center_x + "% " + self.center_y + "%",
-        //"-moz-transform-origin": self.center_x + "% " + self.center_y + "%"
-      //});
+      self.image_center.css({
+         "transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                      "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
+ "-webkit-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                      "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
+    "-moz-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                      "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+      });
     };
 
     self.wrap = function(dir, class_lt2, class_lft, class_ctr, class_rgt, class_rt2) {
@@ -467,10 +518,6 @@
 
       // Reset values
       self.reset();
-
-      self.image_center[0].style.removeProperty("transform");
-      self.image_center[0].style.removeProperty("-webkit-transform");
-      self.image_center[0].style.removeProperty("-moz-transform");
 
       switch(dir) {
         case "LEFT":
@@ -500,8 +547,10 @@
           break;
       }
 
-      self.image_center = $(".image_ctr");
+      self.image_center = $(".image_ctr > div > div > img");
     };
+
+    self.initSlide = function(jq, buffer) { jq.attr("src", buffer); };
 
     $scope.$on("onkeyarrow", function() {
       if(!State.substates["SEARCH"]) {
@@ -521,17 +570,13 @@
         self.wrap("LEFT",  "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
         self.buffer.push(Navigate.findByIndex(Navigate.index + 2));
         self.buffer.shift();
-        $(".image_rt2").css("background-image", "url('"
-            + self.buffer.get(4)[content] + "')");
-        $(".image_rt2 > img").attr("src", self.buffer.get(4)[content]);
+        self.initSlide($(".image_rt2 > div > div > img"), self.buffer.get(4)[content]);
 
       } else if(Navigate.direction === "RIGHT") {
         self.wrap("RIGHT", "image_lt2", "image_lft", "image_ctr", "image_rgt", "image_rt2");
         self.buffer.unshift(Navigate.findByIndex(Navigate.index - 2));
         self.buffer.pop();
-        $(".image_lt2").css("background-image", "url('"
-            + self.buffer.get(0)[content] + "')");
-        $(".image_lt2 > img").attr("src", self.buffer.get(0)[content]);
+        self.initSlide($(".image_lt2 > div > div > img"), self.buffer.get(0)[content]);
       } else {
         // Get left, center, and right content...
         self.buffer.clear();
@@ -541,24 +586,15 @@
                           Navigate.findByIndex(Navigate.index + 1),
                           Navigate.findByIndex(Navigate.index + 2));
 
-        $(".image_lt2").css("background-image", "url('"
-            + self.buffer.get(0)[content] + "')");
-        $(".image_lt2 > img").attr("src", self.buffer.get(0)[content]);
-        $(".image_lft").css("background-image", "url('"
-            + self.buffer.get(1)[content] + "')");
-        $(".image_lft > img").attr("src", self.buffer.get(1)[content]);
-        $(".image_ctr").css("background-image", "url('"
-            + self.buffer.get(2)[content] + "')");
-        $(".image_ctr > img").attr("src", self.buffer.get(2)[content]);
-        $(".image_rgt").css("background-image", "url('"
-            + self.buffer.get(3)[content] + "')");
-        $(".image_rgt > img").attr("src", self.buffer.get(3)[content]);
-        $(".image_rt2").css("background-image", "url('"
-            + self.buffer.get(4)[content] + "')");
-        $(".image_rt2 > img").attr("src", self.buffer.get(4)[content]);
+        self.initSlide($(".image_lt2 > div > div > img"), self.buffer.get(0)[content]);
+        self.initSlide($(".image_lft > div > div > img"), self.buffer.get(1)[content]);
+        self.initSlide($(".image_ctr > div > div > img"), self.buffer.get(2)[content]);
+        self.initSlide($(".image_rgt > div > div > img"), self.buffer.get(3)[content]);
+        self.initSlide($(".image_rt2 > div > div > img"), self.buffer.get(4)[content]);
+        self.reset();
       }
 
-      self.image_center = $(".image_ctr");
+      self.image_center = $(".image_ctr > div > div > img");
     });
   }]);
 
