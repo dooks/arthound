@@ -323,14 +323,15 @@
       self.new_x        = 0;
       self.new_y        = 0;
       self.touch_scale  = 1;
+      self.max_scale    = 3;
       self.touch_x_over = 0;
       self.new_scale    = 1;
       self.new_size     = 1;
 
       self.image_center.css({
         "transform": "translate3d(0, 0, 0) scale(1, 1)",
-        "-webkit-transform": "translate3d(0, 0, 0) scale(1, 1)",
-        "-moz-transform": "translate3d(0, 0, 0) scale(1, 1)"
+"-webkit-transform": "translate3d(0, 0, 0) scale(1, 1)",
+   "-moz-transform": "translate3d(0, 0, 0) scale(1, 1)"
       });
     };
     self.reset();
@@ -339,16 +340,70 @@
     $scope.$on("onsubstatechange", function() { self.substates = State.substates; });
 
 
+    self.onTap = function(ev) {
+      switch(ev.tapCount) {
+        case 1:
+          // Toggle overlay
+          State.toggleSubstate("OVERLAY");
+          break;
+        case 2:
+          window.scrollTo(0, 1); // Hide address bar on mobile....
+
+          // Toggle zoom
+          if(self.touch_scale > 1) {
+            self.touch_x = 0;
+            self.touch_y = 0;
+            self.touch_scale = 1;
+          } else if(self.touch_scale <= 1) {
+            self.touch_scale = self.max_scale;
+          }
+
+          self.image_center.css({
+            "transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
+    "-webkit-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
+       "-moz-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                         "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+          });
+          break;
+      }
+    }
+
+    self.onPress = function(ev) {
+    }
+
     self.onPinch = function(ev) {
       switch(ev.type) {
         case "pinchstart":
+          self.last_pinch = "pinchstart"; // Hammer.js is firing extraneous pinch event
+          ng_app.image_images.addClass("inanimate");
           break;
 
         case "pinchin":
         case "pinchout":
+          // Prevent jump: there is one last pinch event after pinchend for some reason
+          if(self.last_pinch !== "pinchend") {
+            self.new_scale = self.touch_scale * ev.scale;
+
+            if(self.new_scale < 1) { self.new_scale = 1; self.touch_x = 0; self.touch_y = 0; }
+
+            self.image_center.css({
+              "transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                           "scale(" + self.new_scale + ", " + self.new_scale + ")",
+      "-webkit-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                           "scale(" + self.new_scale + ", " + self.new_scale + ")",
+         "-moz-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                           "scale(" + self.new_scale + ", " + self.new_scale + ")"
+            });
+          }
           break;
 
         case "pinchend":
+          self.last_pinch = "pinchend";
+
+          ng_app.image_images.removeClass("inanimate");
+          self.touch_scale = self.new_scale;
           break;
       }
     };
@@ -357,6 +412,7 @@
       switch(ev.type) {
         case "panstart":
           ng_app.image_containers.addClass("inanimate");
+          ng_app.image_images.addClass("inanimate");
           self.image_width  =  self.image_center.width();
           self.image_height = self.image_center.height();
           self.base_width   =  ng_app.base_image.width();
@@ -400,22 +456,23 @@
           self.image_center.css({
             "transform": "translate3d(" + self.new_x + "px, " + self.new_y + "px, 0px) " +
                          "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-            "-webkit-transform": "translate3d(" + self.new_x + "px, " + self.new_y + "px, 0px) " +
+    "-webkit-transform": "translate3d(" + self.new_x + "px, " + self.new_y + "px, 0px) " +
                          "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-            "-moz-transform": "translate3d(" + self.new_x + "px, " + self.new_y + "px, 0px) " +
+       "-moz-transform": "translate3d(" + self.new_x + "px, " + self.new_y + "px, 0px) " +
                          "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
           });
           break;
 
         case "panend":
           ng_app.image_containers.removeClass("inanimate");
+          ng_app.image_images.removeClass("inanimate");
           self.touch_x = self.new_x;
           self.touch_y = self.new_y;
 
           // Only switch to next if panned more than 3/4 of the way through
-          if(self.touch_x_over <= -ev.target.offsetWidth / (self.touch_scale * 2))
+          if(self.touch_x_over <= -ev.target.offsetWidth / 2)
             Navigate.next();
-          if(self.touch_x_over >=  ev.target.offsetWidth / (self.touch_scale * 2))
+          if(self.touch_x_over >=  ev.target.offsetWidth / 2)
             Navigate.prev();
           self.touch_x_over = 0;
           ng_app.image_containers.css({"left": "0px"});
@@ -443,12 +500,12 @@
       self.touch_scale = self.new_scale;
 
       self.image_center.css({
-        "transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
-                     "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-        "-webkit-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
-                     "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
-        "-moz-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
-                     "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
+         "transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                      "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
+ "-webkit-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                      "scale(" + self.touch_scale + ", " + self.touch_scale + ")",
+    "-moz-transform": "translate3d(" + self.touch_x + "px, " + self.touch_y + "px, 0px) " +
+                      "scale(" + self.touch_scale + ", " + self.touch_scale + ")"
       });
     };
 

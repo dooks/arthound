@@ -166,8 +166,8 @@
     var self = this;
     self.query        = "";
     self.response     = [];
-    self.sources      = { "deviantart": false, "e926": true, "imgur": false };
-    self.mature       = true;
+    self.sources      = { "deviantart": true, "e926": true, "imgur": true };
+    self.mature       = false;
     self.temp_sources = {};
     self.limit        = 24; // Default hard limit
 

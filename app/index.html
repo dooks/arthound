@@ -140,20 +140,22 @@
     </div>
 
     <div class="modal-body" ng-controller="OptionsCtrl as options">
-    <div class="container-fluid">
+    <div class="container-fluid text-center">
       <div class="col-xs-12 col-sm-3"><label>Sources:</label></div>
       <div class="col-xs-12 col-sm-3">
-        <label>Deviant Art: <input type="checkbox" ng-model="options.Search.sources.deviantart"/></label>
+        <label class="highlight">Deviant Art: <input type="checkbox" ng-model="options.Search.sources.deviantart"/></label>
       </div>
       <div class="col-xs-12 col-sm-3 text-center">
-        <label>e926: <input type="checkbox" ng-model="options.Search.sources.e926"/></label>
+        <label class="highlight">e926: <input type="checkbox" ng-model="options.Search.sources.e926"/></label>
       </div>
       <div class="col-xs-12 col-sm-3 text-center">
-        <label>Imgur: <input type="checkbox" ng-model="options.Search.sources.imgur"/></label>
+        <label class="highlight">Imgur: <input type="checkbox" ng-model="options.Search.sources.imgur"/></label>
       </div>
     </div>
 
-    <div class="container-fluid">
+    <hr/>
+
+    <div class="container-fluid text-center">
       <div class="col-xs-12 col-sm-3"><label>Limit:</label></div>
       <div class="col-xs-12 col-sm-9">
         <rzslider class="rzslider-trimmed"
@@ -293,7 +295,14 @@
 
   <!-- image -->
   <div id="base_image" ng-controller="ImageCtrl as image" ng-cloak
-    ng-class="{hidden: image.state != 'ACTIVE'}">
+    ng-class="{hidden: image.state != 'ACTIVE'}"
+    hm-tap="image.onTap"          hm-pinchstart="image.onPinch"
+    hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
+    hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
+    hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
+    hm-manager-options='{"time": "50ms"}'
+    mouse="image.onScroll">
+
     <div id="image_overlay" ng-controller="OverlayCtrl as overlay"
       ng-class="{hidden: !overlay.substates['OVERLAY']}">
       <div id="overlay_grid" class="overlay_button overlay_back" title="Grid Listing">
@@ -332,43 +341,23 @@
       </div>
     </div>
 
-    <div class="image_container image_lt2"
-      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
-      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
-      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
-      mouse="image.onScroll" navclick="overlay">
+    <div class="image_container image_lt2">
       <div><div> <img class="image_images" draggable="false" /> </div></div>
     </div>
 
-    <div class="image_container image_lft"
-      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
-      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
-      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
-      mouse="image.onScroll" navclick="overlay">
+    <div class="image_container image_lft">
       <div><div> <img class="image_images" draggable="false" /> </div></div>
     </div>
 
-    <div class="image_container image_ctr"
-      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
-      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
-      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
-      mouse="image.onScroll" navclick="overlay">
+    <div class="image_container image_ctr">
       <div><div> <img class="image_images" draggable="false" /> </div></div>
     </div>
 
-    <div class="image_container image_rgt"
-      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
-      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
-      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
-      mouse="image.onScroll" navclick="overlay">
+    <div class="image_container image_rgt">
       <div><div> <img class="image_images" draggable="false" /> </div></div>
     </div>
 
-    <div class="image_container image_rt2"
-      hm-pinchin="image.onPinch"    hm-pinchout="image.onPinch"   hm-pinchend="image.onPinch"
-      hm-panstart="image.onPan"     hm-panmove="image.onPan"      hm-panend="image.onPan"
-      hm-swipeleft="image.onSwipe"  hm-swiperight="image.onSwipe"
-      mouse="image.onScroll" navclick="overlay">
+    <div class="image_container image_rt2">
       <div><div> <img class="image_images" draggable="false" /> </div></div>
     </div>
 
