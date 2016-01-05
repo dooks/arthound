@@ -1,6 +1,6 @@
 window.ng_hound = (function(ng) {
   $(document).ready(function() {
-    var version = "0.9.0";
+    var version = "0.9.1";
     $(".version").html(version);
     window.FastClick.attach(document.body);
   });
