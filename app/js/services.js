@@ -227,7 +227,7 @@
             }
             if(res.data)  { res = res.data || [];                             }
             if(res.length === 0) { return $.Deferred().resolve([]).promise(); }
-            //console.log("Search Response", query, source, res);
+            //console.log("Search Response", query, source, url, options, res);
 
             if(res.length > 25) { // TODO: magic number...
               // Split response in fourths if too big...
@@ -300,15 +300,12 @@
               new_query = query.join(" ");
 
               var options = {
-                "tags":  "score:>10 " + new_query, // TODO: normalize query
+                "tags":  "score:>10 " + (self.mature ? "" : "rating:s ")  + new_query, // TODO: normalize query
                 "page":  new_page + 1, // e926 starts paging at 1....
                 "limit": self.limit,
               }
-              if(self.mature) {
-                request("https://e621.net/post/index.json", "jsonp", "e926", options);
-              } else {
-                request("https://e926.net/post/index.json", "jsonp", "e926", options);
-              }
+
+              request("https://e621.net/post/index.json", "jsonp", "e926", options);
               break;
 
             case "deviantart":
